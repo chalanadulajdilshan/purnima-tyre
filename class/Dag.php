@@ -159,7 +159,7 @@ class Dag
         return $array_res;
     }
 
-    public function getFilteredReports($from_date, $to_date, $status = '', $dag_no = '')
+    public function getFilteredReports($from_date, $to_date, $status = '', $dag_no = '', $my_number = '', $belt_id = '', $size_id = '')
     {
         $query = "SELECT 
                      d.*, 
@@ -167,6 +167,7 @@ class Dag
                      dept.name as department_name,
                      dc.name as company_name,
                      b.name as belt_design,
+                     s.name as size_name,
                      di.serial_number as serial_number,
                      d.vehicle_no as item_vehicle_no,
                      di.qty as qty,
@@ -178,6 +179,7 @@ class Dag
               LEFT JOIN dag_item di ON d.id = di.dag_id
               LEFT JOIN dag_company dc ON di.dag_company_id = dc.id
               LEFT JOIN belt_master b ON di.belt_id = b.id
+              LEFT JOIN size_master s ON di.size_id = s.id
               WHERE d.received_date BETWEEN '$from_date' AND '$to_date'";
 
         if (!empty($status)) {
@@ -185,6 +187,15 @@ class Dag
         }
         if (!empty($dag_no)) {
             $query .= " AND d.ref_no LIKE '%$dag_no%'";
+        }
+        if (!empty($my_number)) {
+            $query .= " AND d.my_number LIKE '%$my_number%'";
+        }
+        if (!empty($belt_id)) {
+            $query .= " AND di.belt_id = '$belt_id'";
+        }
+        if (!empty($size_id)) {
+            $query .= " AND di.size_id = '$size_id'";
         }
 
         $query .= " ORDER BY d.received_date DESC";

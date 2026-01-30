@@ -35,49 +35,83 @@ $DEPARTMENT_MASTER = new DepartmentMaster($DAG->department_id);
             }
 
             @page {
-                margin: 20mm;
+                size: landscape;
+                margin: 10mm;
+                margin-top: 30mm;
             }
 
-            body.print-a4 {
-                width: 210mm;
-                height: 297mm;
+            body {
+                width: 100%;
+                -webkit-print-color-adjust: exact;
+                /* Force background colors */
+                print-color-adjust: exact;
             }
 
-            body.print-a3 {
-                width: 297mm;
-                height: 420mm;
+            /* Override Bootstrap container for print */
+            .container,
+            .container-fluid {
+                width: 100% !important;
+                max-width: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
             }
 
-            body.print-a5 {
-                width: 148mm;
-                height: 210mm;
-            }
-
-            body.print-letter {
-                width: 8.5in;
-                height: 11in;
-            }
-
-            body.print-legal {
-                width: 8.5in;
-                height: 14in;
-            }
-
-            body.print-tabloid {
-                width: 11in;
-                height: 17in;
-            }
-
-            body.print-dotmatrix {
-                width: 9.5in;
-                height: 11in;
+            .card {
+                border: none !important;
+                box-shadow: none !important;
             }
         }
 
+        /* Professional Table Styling */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .table th,
+        .table td {
+            padding: 5px 8px !important;
+            /* Short paddings as requested */
+            vertical-align: middle;
+            border: 1px solid #dee2e6;
+            /* Distinct borders */
+            font-size: 13px;
+        }
+
+        .table thead th {
+            background-color: #f8f9fa !important;
+            /* Light gray header */
+            color: #495057;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        /* Typography & Layout */
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-size: 14px;
+            color: #333;
+        }
+
         .company-logo {
-            max-height: 120px;
+            max-height: 100px;
             width: auto;
             object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        .invoice-title h4,
+        .invoice-title h5,
+        .invoice-title h6 {
+            color: #333;
+            font-weight: 700;
+        }
+
+        /* Helper to ensure header is compact */
+        .mb-4 {
+            margin-bottom: 1.5rem !important;
         }
     </style>
 </head>
@@ -107,11 +141,19 @@ $DEPARTMENT_MASTER = new DepartmentMaster($DAG->department_id);
 
                     <div class="col-sm-6 text-sm-end float-end">
                         <p><strong>Receipt No:</strong> #<?php echo $DAG->ref_no ?></p>
-                        <p><strong>Receipt Date:</strong>
+                        <p><strong>Receipt Date:</strong> <?php echo date('d M, Y'); ?></p>
+                        <p><strong>Dag Received Date:</strong>
                             <?php echo date('d M, Y', strtotime($DAG->received_date)); ?></p>
                         <p><strong>Department Name:</strong> <?php echo $DEPARTMENT_MASTER->name ?></p>
                         <p><strong>Customer Issue Date:</strong>
-                            <?php echo !empty($DAG->customer_issue_date) ? date('d M, Y', strtotime($DAG->customer_issue_date)) : '-'; ?>
+                            <?php
+                            $c_date_header = $DAG->customer_issue_date;
+                            if (!empty($c_date_header) && $c_date_header != '0000-00-00') {
+                                echo date('d M, Y', strtotime($c_date_header));
+                            } else {
+                                echo '<span class="text-danger">Not Issued</span>';
+                            }
+                            ?>
                         </p>
                     </div>
                     <div class="mb-4">
@@ -127,8 +169,7 @@ $DEPARTMENT_MASTER = new DepartmentMaster($DAG->department_id);
                                         class="uil uil-building me-1"></i><?php echo $COMPANY_PROFILE->name ?></p>
                                 <p class="mb-1"><i
                                         class="uil uil-map-marker me-1"></i><?php echo $COMPANY_PROFILE->address ?></p>
-                                <p class="mb-1"><i
-                                        class="uil uil-envelope-alt me-1"></i><?php echo $COMPANY_PROFILE->email ?></p>
+
                                 <p><i class="uil uil-phone me-1"></i><?php echo $COMPANY_PROFILE->mobile_number_1 ?></p>
                             </div>
                         </div>
@@ -138,7 +179,7 @@ $DEPARTMENT_MASTER = new DepartmentMaster($DAG->department_id);
 
                             <p><?php echo $CUSTOMER_MASTER->name ?><br><?php echo $CUSTOMER_MASTER->address ?>
                                 <br><?php echo $CUSTOMER_MASTER->mobile_number ?><br>
-                                <?php echo $CUSTOMER_MASTER->email ?>
+                                
                             </p>
                         </div>
                     </div>
