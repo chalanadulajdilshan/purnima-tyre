@@ -1,5 +1,5 @@
 RewriteEngine On
-RewriteBase /purnima-tyre
+RewriteBase /
 
 # Redirect requests without .php to the actual .php files
 RewriteCond %{REQUEST_FILENAME}.php -f
