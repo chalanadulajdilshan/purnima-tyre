@@ -237,5 +237,20 @@ class DagItem
         return $array_res;
     }
 
+    // Get distinct statuses
+    public function getDistinctStatuses()
+    {
+        $query = "SELECT DISTINCT `status` FROM `dag_item` WHERE `status` IS NOT NULL AND `status` != '' ORDER BY `status` ASC";
+        $db = Database::getInstance();
+        $result = $db->readQuery($query);
+        $array_res = [];
+
+        while ($row = mysqli_fetch_array($result)) {
+            array_push($array_res, $row['status']);
+        }
+
+        return $array_res;
+    }
+
 }
 ?>

@@ -7,11 +7,14 @@ $DAG_REPORT = new Dag();
 // Get filter parameters
 $from_date = isset($_GET['from_date']) ? $_GET['from_date'] : date('Y-m-01');
 $to_date = isset($_GET['to_date']) ? $_GET['to_date'] : date('Y-m-d');
-$status = isset($_GET['status']) ? $_GET['status'] : '';
+$status = isset($_GET['filter_status']) ? $_GET['filter_status'] : '';
 $dag_no = isset($_GET['dag_no']) ? $_GET['dag_no'] : '';
+$my_number = isset($_GET['my_number']) ? $_GET['my_number'] : '';
+$belt_id = isset($_GET['belt_id']) ? $_GET['belt_id'] : '';
+$size_id = isset($_GET['size_id']) ? $_GET['size_id'] : '';
 
 // Get filtered DAG reports
-$reports = $DAG_REPORT->getFilteredReports($from_date, $to_date, $status, $dag_no);
+$reports = $DAG_REPORT->getFilteredReports($from_date, $to_date, $status, $dag_no, $my_number, $belt_id, $size_id);
 ?>
 <!doctype html>
 <html lang="en">
@@ -61,53 +64,96 @@ $reports = $DAG_REPORT->getFilteredReports($from_date, $to_date, $status, $dag_n
                                 <div class="card-body">
                                     <h4 class="card-title">Filter Options</h4>
                                     <form id="filter-form" method="get" action="">
-                                        <div class="row">
-                                            <div class="col-md-3">
-                                                <div class="mb-3">
-                                                    <label for="from_date" class="form-label">From Date</label>
-                                                    <div class="input-group" id="datepicker1">
-                                                        <input type="text" class="form-control date-picker"
-                                                            id="from_date" name="from_date"
-                                                            value="<?php echo $from_date ?>">
-                                                        <span class="input-group-text"><i
-                                                                class="mdi mdi-calendar"></i></span>
-                                                    </div>
+                                        <div class="row g-3 align-items-end">
+                                            <div class="col-md-2">
+                                                <label for="from_date" class="form-label">From Date</label>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control date-picker" id="from_date"
+                                                        name="from_date" value="<?php echo $from_date ?>">
+                                                    <span class="input-group-text"><i
+                                                            class="mdi mdi-calendar"></i></span>
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-3">
-                                                <div class="mb-3">
-                                                    <label for="to_date" class="form-label">To Date</label>
-                                                    <div class="input-group" id="datepicker2">
-                                                        <input type="text" class="form-control date-picker" id="to_date"
-                                                            name="to_date" value="<?php echo $to_date ?>">
-                                                        <span class="input-group-text"><i
-                                                                class="mdi mdi-calendar"></i></span>
-                                                    </div>
+                                            <div class="col-md-2">
+                                                <label for="to_date" class="form-label">To Date</label>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control date-picker" id="to_date"
+                                                        name="to_date" value="<?php echo $to_date ?>">
+                                                    <span class="input-group-text"><i
+                                                            class="mdi mdi-calendar"></i></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-3">
-                                                <div class="mb-3">
-                                                    <label class="form-label">Status</label>
-                                                    <select class="form-select" name="status">
-                                                        <option value="">All Status</option>
-                                                        <option value="pending" <?php echo ($status == 'pending') ? 'selected' : '' ?>>Pending</option>
-                                                        <option value="approved" <?php echo ($status == 'approved') ? 'selected' : '' ?>>Approved</option>
-                                                        <option value="rejected" <?php echo ($status == 'rejected') ? 'selected' : '' ?>>Rejected</option>
-                                                    </select>
+
+                                            <div class="col-md-2">
+                                                <label class="form-label">Status</label>
+                                                <select class="form-select" name="filter_status" id="filter_status">
+                                                    <option value="">All Status</option>
+                                                    <?php
+                                                    $DAG_ITEM = new DagItem();
+                                                    $statuses = $DAG_ITEM->getDistinctStatuses();
+                                                    foreach ($statuses as $st) {
+                                                        $selected = ($status == $st) ? 'selected' : '';
+                                                        echo '<option value="' . $st . '" ' . $selected . '>' . ucfirst($st) . '</option>';
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-2">
+                                                <label class="form-label">DAG Number</label>
+                                                <input type="text" class="form-control" name="dag_no" id="dag_no"
+                                                    value="<?php echo htmlspecialchars($dag_no) ?>"
+                                                    placeholder="Search DAG...">
+                                            </div>
+
+                                            <div class="col-md-2">
+                                                <label class="form-label">My Number</label>
+                                                <input type="text" class="form-control" name="my_number" id="my_number"
+                                                    value="<?php echo htmlspecialchars($my_number ?? '') ?>"
+                                                    placeholder="Search My No...">
+                                            </div>
+
+                                            <div class="col-md-2">
+                                                <label class="form-label">Belt</label>
+                                                <select class="form-select" name="belt_id" id="belt_id">
+                                                    <option value="">All Belts</option>
+                                                    <?php
+                                                    $BELT = new BeltMaster();
+                                                    $belts = $BELT->all();
+                                                    foreach ($belts as $belt) {
+                                                        $selected = (isset($belt_id) && $belt_id == $belt['id']) ? 'selected' : '';
+                                                        echo '<option value="' . $belt['id'] . '" ' . $selected . '>' . htmlspecialchars($belt['name']) . '</option>';
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-2">
+                                                <label class="form-label">Size</label>
+                                                <select class="form-select" name="size_id" id="size_id">
+                                                    <option value="">All Sizes</option>
+                                                    <?php
+                                                    $SIZE = new Sizes();
+                                                    $sizes = $SIZE->all();
+                                                    foreach ($sizes as $size) {
+                                                        $selected = (isset($size_id) && $size_id == $size['id']) ? 'selected' : '';
+                                                        echo '<option value="' . $size['id'] . '" ' . $selected . '>' . htmlspecialchars($size['name']) . '</option>';
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-2">
+                                                <div class="d-flex gap-2">
+                                                    <button class="btn btn-primary w-100" id="btn-filter">
+                                                        <i class="uil uil-filter me-1"></i> Filter
+                                                    </button>
+                                                    <button class="btn btn-secondary w-100" id="btn-reset-filter">
+                                                        <i class="uil uil-redo me-1"></i> Reset
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <div class="col-md-3">
-                                                <div class="mb-3">
-                                                    <label class="form-label">DAG Number</label>
-                                                    <input type="text" class="form-control" name="dag_no"
-                                                        value="<?php echo htmlspecialchars($dag_no) ?>">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="text-end">
-                                            <button type="submit" class="btn btn-primary w-md">Filter</button>
-                                            <a href="dag-viw-report.php" class="btn btn-secondary w-md">Reset</a>
                                         </div>
                                     </form>
                                 </div>
@@ -138,14 +184,14 @@ $reports = $DAG_REPORT->getFilteredReports($from_date, $to_date, $status, $dag_n
                                                     <th>#</th>
                                                     <th>Ref No</th>
                                                     <th>My Number</th>
-                                                    <th>Date</th>
+                                                    <th>Dag Received Date</th>
                                                     <th>Customer</th>
                                                     <th>Company</th>
                                                     <th>Department</th>
                                                     <th>Belt Design</th>
                                                     <th>Serial No</th>
                                                     <th>Vehicle No</th>
-                                                    <th>Qty</th>
+                                                    <th>Customer Issue Date</th>
                                                     <th>Total Amount</th>
                                                     <th>Status</th>
                                                     <th>Actions</th>
@@ -169,7 +215,16 @@ $reports = $DAG_REPORT->getFilteredReports($from_date, $to_date, $status, $dag_n
                                                             <td><?php echo htmlspecialchars($report['belt_design']); ?></td>
                                                             <td><?php echo htmlspecialchars($report['serial_number']); ?></td>
                                                             <td><?php echo htmlspecialchars($report['vehicle_no']); ?></td>
-                                                            <td class="text-center"><?php echo $report['qty']; ?></td>
+                                                            <td>
+                                                                <?php
+                                                                $c_date = $report['customer_issue_date'];
+                                                                if (!empty($c_date) && $c_date != '0000-00-00') {
+                                                                    echo date('d/m/Y', strtotime($c_date));
+                                                                } else {
+                                                                    echo '<span class="text-danger">Not Issued</span>';
+                                                                }
+                                                                ?>
+                                                            </td>
                                                             <td class="text-end">
                                                                 <?php echo number_format($report['total_amount'], 2); ?>
                                                             </td>
@@ -239,52 +294,9 @@ $reports = $DAG_REPORT->getFilteredReports($from_date, $to_date, $status, $dag_n
     <script src="assets/libs/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
     <script src="assets/libs/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
 
-    <!-- Datatable init js -->
-    <script>
-        $(document).ready(function () {
-            $('#dag-report-table').DataTable({
-                "order": [
-                    [2, "desc"]
-                ], // Sort by date descending by default
-                "pageLength": 25,
-                "responsive": true,
-                "dom": 'Bfrtip',
-                "buttons": ['copy', 'csv', 'excel', 'pdf', 'print']
-            });
-        });
+    <!-- DAG Report JS -->
+    <script src="ajax/js/dag-viw-report.js"></script>
 
-        function exportToExcel() {
-            window.location.href = 'ajax/export-dag-report.php?from_date=<?php echo urlencode($from_date); ?>&to_date=<?php echo urlencode($to_date); ?>&status=<?php echo urlencode($status); ?>&dag_no=<?php echo urlencode($dag_no); ?>';
-        }
-
-        function printReport() {
-            window.print();
-        }
-    </script>
-
-    <script>
-        // Ensure session is maintained during form submission
-        document.addEventListener('DOMContentLoaded', function () {
-            const filterForm = document.getElementById('filter-form');
-
-            if (filterForm) {
-                filterForm.addEventListener('submit', function (e) {
-                    // Get all form data
-                    const formData = new FormData(filterForm);
-
-                    // Add session ID if not already in form data
-                    if (!formData.has('PHPSESSID') && '<?php echo session_id(); ?>') {
-                        formData.append('PHPSESSID', '<?php echo session_id(); ?>');
-                    }
-
-                    // Build URL with query parameters
-                    const params = new URLSearchParams(formData).toString();
-                    window.location.href = 'dag-viw-report.php?' + params;
-                    e.preventDefault();
-                });
-            }
-        });
-    </script>
 </body>
 
 </html>
