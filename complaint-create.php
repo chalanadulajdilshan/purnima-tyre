@@ -3,6 +3,7 @@
 include 'class/include.php';
 include 'auth.php';
 
+
 $COMPLAINT = new CustomerComplaint(NULL);
 
 // Get the last inserted ID for auto-numbering
