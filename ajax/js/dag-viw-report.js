@@ -30,11 +30,7 @@ jQuery(document).ready(function ($) {
         }
     });
 
-    // Initialize DataTable - check if already initialized
-    if ($.fn.DataTable.isDataTable('#dag-report-table')) {
-        $('#dag-report-table').DataTable().destroy();
-    }
-
+    // Initialize DataTable on existing PHP-rendered data
     var dagReportTable = $('#dag-report-table').DataTable({
         responsive: true,
         searching: true,
@@ -63,26 +59,7 @@ jQuery(document).ready(function ($) {
     $("#btn-filter").click(function (event) {
         event.preventDefault();
 
-        // Validation
-        if (!$('#from_date').val() || $('#from_date').val().length === 0) {
-            swal({
-                title: "Error!",
-                text: "Please select a from date!",
-                type: "error",
-                timer: 2000,
-                showConfirmButton: false,
-            });
-            return false;
-        } else if (!$('#to_date').val() || $('#to_date').val().length === 0) {
-            swal({
-                title: "Error!",
-                text: "Please select a to date!",
-                type: 'error',
-                timer: 2000,
-                showConfirmButton: false
-            });
-            return false;
-        }
+        // Dates are optional - filter will fetch all records if no dates provided
 
         // Show preloader
         $('.someBlock').preloader({
@@ -143,19 +120,10 @@ jQuery(document).ready(function ($) {
         return false;
     });
 
-    // Reset button click handler
+    // Reset button click handler - simply refresh the page
     $('#btn-reset-filter').on('click', function (e) {
         e.preventDefault();
-
-        // Reset the form
-        $('#filter-form').trigger('reset');
-
-        // Clear datepickers
-        $('.date-picker').datepicker('setDate', null);
-
-        // Clear the DataTable
-        var dagReportTable = $('#dag-report-table').DataTable();
-        dagReportTable.clear().draw();
+        window.location.reload();
     });
 });
 

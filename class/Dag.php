@@ -159,7 +159,7 @@ class Dag
         return $array_res;
     }
 
-    public function getFilteredReports($from_date, $to_date, $status = '', $dag_no = '', $my_number = '', $belt_id = '', $size_id = '')
+    public function getFilteredReports($from_date = '', $to_date = '', $status = '', $dag_no = '', $my_number = '', $belt_id = '', $size_id = '')
     {
         $query = "SELECT 
                      d.*, 
@@ -180,7 +180,12 @@ class Dag
               LEFT JOIN dag_company dc ON di.dag_company_id = dc.id
               LEFT JOIN belt_master b ON di.belt_id = b.id
               LEFT JOIN size_master s ON di.size_id = s.id
-              WHERE d.received_date BETWEEN '$from_date' AND '$to_date'";
+              WHERE 1=1";
+
+        // Only apply date filter if both dates are provided
+        if (!empty($from_date) && !empty($to_date)) {
+            $query .= " AND d.received_date BETWEEN '$from_date' AND '$to_date'";
+        }
 
         if (!empty($status)) {
             $query .= " AND di.status = '$status'";
