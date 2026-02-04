@@ -122,6 +122,15 @@ $dag_id = 'DC/00/' . ($lastId + 1);
                                                     <input id="ref_no" name="ref_no" type="text"
                                                         value="<?php echo $dag_id; ?>" placeholder="Ref No"
                                                         class="form-control" readonly>
+
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-2">
+                                                <label for="my_number" class="form-label">My Number</label>
+                                                <div class="input-group mb-3">
+                                                    <input id="my_number" name="my_number" type="text"
+                                                        class="form-control" placeholder="My Number">
                                                     <button class="btn btn-info" type="button" data-bs-toggle="modal"
                                                         data-bs-target="#mainDagModel">
                                                         <i class="uil uil-search me-1"></i>
@@ -177,13 +186,7 @@ $dag_id = 'DC/00/' . ($lastId + 1);
                                                         class="form-control" placeholder="Vehicle No">
                                                 </div>
                                             </div>
-                                            <div class="col-md-2">
-                                                <label for="my_number" class="form-label">My Number</label>
-                                                <div class="input-group mb-3">
-                                                    <input id="my_number" name="my_number" type="text"
-                                                        class="form-control" placeholder="My Number">
-                                                </div>
-                                            </div>
+
 
                                             <div class="col-md-2">
                                                 <label for="customer_issue_date" class="form-label">Customer Issue
