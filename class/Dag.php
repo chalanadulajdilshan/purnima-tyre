@@ -6,7 +6,6 @@ class Dag
     public $ref_no;
     public $customer_id;
 
-    public $department_id;
     public $received_date;
     public $delivery_date;
     public $customer_request_date;
@@ -16,6 +15,12 @@ class Dag
     public $remark;
 
     public $is_print;
+
+    // Company-level fields
+    public $dag_company_id;
+    public $receipt_no;
+    public $company_issued_date;
+    public $company_status;
 
     // Constructor: Fetch by ID
     public function __construct($id = null)
@@ -28,7 +33,6 @@ class Dag
             if ($result) {
                 $this->id = $result['id'];
                 $this->ref_no = $result['ref_no'];
-                $this->department_id = $result['department_id'];
                 $this->customer_id = $result['customer_id'];
 
                 $this->received_date = $result['received_date'];
@@ -39,6 +43,10 @@ class Dag
                 $this->customer_issue_date = $result['customer_issue_date'];
                 $this->remark = $result['remark'];
                 $this->is_print = $result['is_print'];
+                $this->dag_company_id = isset($result['dag_company_id']) ? $result['dag_company_id'] : null;
+                $this->receipt_no = isset($result['receipt_no']) ? $result['receipt_no'] : null;
+                $this->company_issued_date = isset($result['company_issued_date']) ? $result['company_issued_date'] : null;
+                $this->company_status = isset($result['company_status']) ? $result['company_status'] : 'pending';
             }
         }
     }
@@ -50,11 +58,9 @@ class Dag
         $this->remark = mysqli_real_escape_string($db->DB_CON, $this->remark);
 
         $query = "INSERT INTO `dag` (
-            `ref_no`, `department_id`,`customer_id`, `received_date`, `delivery_date`, `customer_request_date`,
-            `vehicle_no`, `my_number`, `customer_issue_date`, `remark`
+            `ref_no`, `remark`, `dag_company_id`, `receipt_no`, `company_issued_date`, `company_status`
         ) VALUES (
-            '{$this->ref_no}', '{$this->department_id}','{$this->customer_id}', '{$this->received_date}', '{$this->delivery_date}', '{$this->customer_request_date}',
-            '{$this->vehicle_no}', '{$this->my_number}', '{$this->customer_issue_date}', '{$this->remark}'
+            '{$this->ref_no}', '{$this->remark}', '{$this->dag_company_id}', '{$this->receipt_no}', '{$this->company_issued_date}', '{$this->company_status}'
         )";
 
         $result = $db->readQuery($query);
@@ -73,15 +79,12 @@ class Dag
 
         $query = "UPDATE `dag` SET 
             `ref_no` = '{$this->ref_no}',
-            `department_id` = '{$this->department_id}',
-            `received_date` = '{$this->received_date}',
-            `delivery_date` = '{$this->delivery_date}',
-            `customer_request_date` = '{$this->customer_request_date}',
-            `vehicle_no` = '{$this->vehicle_no}',
-            `my_number` = '{$this->my_number}',
-            `customer_issue_date` = '{$this->customer_issue_date}',
             `remark` = '{$this->remark}',
-            `is_print` = '{$this->is_print}'
+            `is_print` = '{$this->is_print}',
+            `dag_company_id` = '{$this->dag_company_id}',
+            `receipt_no` = '{$this->receipt_no}',
+            `company_issued_date` = '{$this->company_issued_date}',
+            `company_status` = '{$this->company_status}'
             WHERE `id` = '{$this->id}'";
 
         return $db->readQuery($query);

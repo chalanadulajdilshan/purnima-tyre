@@ -20,6 +20,11 @@ class DagItem
     public $status;
     public $uc;
     public $customer_id;
+    public $my_number;
+    public $received_date;
+    public $customer_issue_date;
+    public $customer_request_date;
+    public $vehicle_no;
 
     // Constructor to fetch data by ID
     public function __construct($id = null)
@@ -48,6 +53,11 @@ class DagItem
                 $this->status = $result['status'];
                 $this->uc = $result['uc'];
                 $this->customer_id = isset($result['customer_id']) ? $result['customer_id'] : null;
+                $this->my_number = isset($result['my_number']) ? $result['my_number'] : null;
+                $this->received_date = isset($result['received_date']) ? $result['received_date'] : null;
+                $this->customer_issue_date = isset($result['customer_issue_date']) ? $result['customer_issue_date'] : null;
+                $this->customer_request_date = isset($result['customer_request_date']) ? $result['customer_request_date'] : null;
+                $this->vehicle_no = isset($result['vehicle_no']) ? $result['vehicle_no'] : null;
             }
         }
     }
@@ -55,10 +65,10 @@ class DagItem
     // Create a new record
     public function create()
     {
-        $query = "INSERT INTO `dag_item` (`dag_id`, `belt_id`, `size_id`, `serial_number`, `is_invoiced`, `casing_cost`, `qty`, `total_amount`, `dag_company_id`, `company_issued_date`, `company_delivery_date`, `receipt_no`, `brand_id`, `job_number`, `status`, `uc`, `customer_id`)
+        $query = "INSERT INTO `dag_item` (`dag_id`, `belt_id`, `size_id`, `serial_number`, `is_invoiced`, `casing_cost`, `qty`, `total_amount`, `dag_company_id`, `company_issued_date`, `company_delivery_date`, `receipt_no`, `brand_id`, `job_number`, `status`, `uc`, `customer_id`, `my_number`, `received_date`, `customer_issue_date`, `customer_request_date`, `vehicle_no`)
                   VALUES (
                     '{$this->dag_id}', '{$this->belt_id}', '{$this->size_id}', '{$this->serial_number}', '{$this->is_invoiced}', '{$this->casing_cost}',
-                    '{$this->qty}', '{$this->total_amount}', '{$this->dag_company_id}', '{$this->company_issued_date}', '{$this->company_delivery_date}', '{$this->receipt_no}', '{$this->brand_id}', '{$this->job_number}', '{$this->status}', '{$this->uc}', '{$this->customer_id}'
+                    '{$this->qty}', '{$this->total_amount}', '{$this->dag_company_id}', '{$this->company_issued_date}', '{$this->company_delivery_date}', '{$this->receipt_no}', '{$this->brand_id}', '{$this->job_number}', '{$this->status}', '{$this->uc}', '{$this->customer_id}', '{$this->my_number}', '{$this->received_date}', '{$this->customer_issue_date}', '{$this->customer_request_date}', '{$this->vehicle_no}'
                   )";
 
         $db = Database::getInstance();
@@ -89,7 +99,12 @@ class DagItem
                   `job_number` = '{$this->job_number}',
                   `status` = '{$this->status}',
                   `uc` = '{$this->uc}',
-                  `customer_id` = '{$this->customer_id}'
+                  `customer_id` = '{$this->customer_id}',
+                  `my_number` = '{$this->my_number}',
+                  `received_date` = '{$this->received_date}',
+                  `customer_issue_date` = '{$this->customer_issue_date}',
+                  `customer_request_date` = '{$this->customer_request_date}',
+                  `vehicle_no` = '{$this->vehicle_no}'
                   WHERE `id` = '{$this->id}'";
 
         $db = Database::getInstance();
@@ -144,7 +159,7 @@ class DagItem
 
     public function getByValuesDagId($dag_id)
     {
-        $query = "SELECT di.*, bm.name AS belt_title, sm.name AS size_name, dc.name AS dag_company_name, br.name AS brand_name, d.vehicle_no AS vehicle_no, cm.name AS customer_name
+        $query = "SELECT di.*, bm.name AS belt_title, sm.name AS size_name, dc.name AS dag_company_name, br.name AS brand_name, di.vehicle_no AS vehicle_no, cm.name AS customer_name, cm.code AS customer_code
               FROM `dag_item` di 
               LEFT JOIN `belt_master` bm ON di.belt_id = bm.id 
               LEFT JOIN `size_master` sm ON di.size_id = sm.id 
