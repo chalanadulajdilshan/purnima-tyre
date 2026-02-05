@@ -215,6 +215,7 @@ jQuery(document).ready(function () {
           <td>
             <button type="button" class="btn btn-warning btn-sm edit-item">Edit</button>
             <button type="button" class="btn btn-danger btn-sm remove-item">Remove</button>
+            ${['rejected_company', 'rejected_store'].includes(statusValue) ? '<button type="button" class="btn btn-primary btn-sm re-dag-item">New DAG</button>' : ''}
           </td>
         </tr>
       `);
@@ -492,6 +493,86 @@ jQuery(document).ready(function () {
   });
 
 
+  $(document).on("click", ".re-dag-item", function () {
+    const row = $(this).closest("tr");
+
+    // Extract details before resetting
+    const myNumber = row.find(".my_number").val();
+    const sizeDesignId = row.find(".size_id").val();
+    const sizeDesignText = row.closest("tr").find("td:eq(4)").text(); // Size Text
+    const beltDesignId = row.find(".belt_id").val();
+    const beltDesignText = row.closest("tr").find("td:eq(5)").text(); // Belt Text
+    const serialNum = row.find(".serial_num1").val();
+    const customerId = row.find(".item_customer_id").val();
+    const customerCode = row.closest("tr").find("td:eq(7)").contents().first().text().trim(); // Customer Code
+    const customerName = row.find(".customer_name").val();
+    const vehicleNo = row.find(".vehicle_no").val();
+    const brandId = row.find(".brand_id").val();
+    const brandText = row.closest("tr").find("td:eq(12)").text(); // Brand Text
+    const ucValue = row.find(".uc").val();
+
+    swal({
+      title: "Confirm New DAG?",
+      text: "This will clear the current session and start a new DAG for this item.",
+      type: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#34c38f",
+      confirmButtonText: "Yes, Start New DAG!",
+      closeOnConfirm: false
+    }, function () {
+      // 1. Reset form and session
+      resetDagForm();
+      $("#dagItemsBody").empty().append(`
+        <tr id="noDagItemRow">
+          <td colspan="15" class="text-center text-muted">No items added</td>
+        </tr>
+      `);
+
+      // 2. Fetch new Ref No
+      $.ajax({
+        url: "ajax/php/create-dag.php",
+        type: "POST",
+        data: { get_next_ref_no: true },
+        dataType: "json",
+        success: function (res) {
+          if (res.status === "success") {
+            $("#ref_no").val(res.ref_no);
+
+            // 3. Add the cloned item
+            const newRow = $(`
+                <tr class="dag-item-row">
+                  <td>${myNumber || '<span class="text-muted">N/A</span>'}<input type="hidden" name="my_number[]" class="my_number" value="${myNumber}"></td>
+                  <td><span class="text-muted">N/A</span><input type="hidden" name="received_date[]" class="received_date" value=""></td>
+                  <td><span class="text-muted">N/A</span><input type="hidden" name="customer_issue_date[]" class="customer_issue_date" value=""></td>
+                  <td><span class="text-muted">N/A</span><input type="hidden" name="customer_request_date[]" class="customer_request_date" value=""></td>
+                  <td>${sizeDesignText || '<span class="text-muted">N/A</span>'}<input type="hidden" name="size_design_id[]" class="size_id" value="${sizeDesignId}"></td>
+                  <td>${beltDesignText || '<span class="text-muted">N/A</span>'}<input type="hidden" name="belt_design_id[]" class="belt_id" value="${beltDesignId}"></td>
+                  <td>${serialNum || '<span class="text-muted">N/A</span>'}<input type="hidden" name="serial_num1[]" class="serial_num1" value="${serialNum}"></td>
+                  <td>${customerCode || '<span class="text-muted">N/A</span>'}<input type="hidden" name="item_customer_id[]" class="item_customer_id" value="${customerId}"><input type="hidden" name="customer_name[]" class="customer_name" value="${customerName}"></td>
+                  <td>${vehicleNo || '<span class="text-muted">N/A</span>'}<input type="hidden" name="vehicle_no[]" class="vehicle_no" value="${vehicleNo}"></td>
+                  <td><span class="text-muted">N/A</span><input type="hidden" name="job_number[]" value=""></td>
+                  <td>Pending DAG<input type="hidden" name="status[]" value="pending"></td>
+                  <td>${ucValue || '<span class="text-muted">N/A</span>'}<input type="hidden" name="uc[]" class="uc" value="${ucValue}"></td>
+                  <td>${brandText || '<span class="text-muted">N/A</span>'}<input type="hidden" name="brand_id[]" class="brand_id" value="${brandId}"></td>
+                  <td><span class="text-muted">N/A</span><input type="hidden" name="company_delivery_date[]" class="company_delivery_date" value=""></td>
+                  <td>
+                    <button type="button" class="btn btn-warning btn-sm edit-item">Edit</button>
+                    <button type="button" class="btn btn-danger btn-sm remove-item">Remove</button>
+                  </td>
+                </tr>
+              `);
+
+            $("#noDagItemRow").hide();
+            $("#dagItemsBody").append(newRow);
+            swal("Success!", "Started new DAG session with the rejected item.", "success");
+          } else {
+            swal("Error!", "Failed to fetch new Ref No.", "error");
+          }
+        }
+      });
+    });
+  });
+
   $(document).on("click", "#searchDagBtn", function () {
     loadDagTable();
   });
@@ -615,6 +696,7 @@ jQuery(document).ready(function () {
     <td>
       <button type="button" class="btn btn-warning btn-sm edit-item">Edit</button>
       <button type="button" class="btn btn-sm btn-danger remove-item">Remove</button>
+      ${['rejected_company', 'rejected_store'].includes(item.status) ? '<button type="button" class="btn btn-primary btn-sm re-dag-item">New DAG</button>' : ''}
     </td>
   </tr>`;
 
