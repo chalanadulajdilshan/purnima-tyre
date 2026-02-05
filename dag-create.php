@@ -488,12 +488,10 @@ $dag_id = 'DC/00/' . ($lastId + 1);
                             <tr>
                                 <th>#</th>
                                 <th>Ref No</th>
-                                <th>My Number</th>
-                                <th>Department</th>
-                                <th>Customer</th>
-                                <th>Received Date</th>
-                                <th>Customer Request</th>
-                                <th>Status</th>
+                                <th>Company Name</th>
+                                <th>Company Receipt No</th>
+                                <th>Company Issued Date</th>
+                                <th>Company Status</th>
                             </tr>
                         </thead>
 

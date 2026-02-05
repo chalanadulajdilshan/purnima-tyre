@@ -177,36 +177,28 @@ if (isset($_POST['load_dags'])) {
     $html = '';
     foreach ($dags as $key => $dag) {
         $key++;
-        $DEPARTMENT = new DepartmentMaster($dag['department_id']);
-        $CUSTOMER = new CustomerMaster($dag['customer_id']);
+        $DAG_COMPANY = new DagCompany($dag['dag_company_id']);
 
         $html .= '<tr class="select-dag" data-id="' . $dag['id'] . '"
                     data-ref_no="' . htmlspecialchars($dag['ref_no']) . '"
-                    data-department_id="' . $dag['department_id'] . '"
-                    data-customer_id="' . $dag['customer_id'] . '"
-                    data-customer_code="' . $CUSTOMER->code . '" data-customer_name="' . $CUSTOMER->name . '"
-                    data-vehicle_no="' . htmlspecialchars($dag['vehicle_no']) . '"
-                    data-my_number="' . htmlspecialchars($dag['my_number']) . '"
-                    data-customer_issue_date="' . htmlspecialchars($dag['customer_issue_date']) . '"
-                    data-received_date="' . $dag['received_date'] . '"
-                    data-customer_request_date="' . $dag['customer_request_date'] . '"
+                    data-department_id="' . ($dag['department_id'] ?? '') . '"
+                    data-customer_id="' . ($dag['customer_id'] ?? '') . '"
+                    data-vehicle_no="' . htmlspecialchars($dag['vehicle_no'] ?? '') . '"
+                    data-my_number="' . htmlspecialchars($dag['my_number'] ?? '') . '"
+                    data-customer_issue_date="' . htmlspecialchars($dag['customer_issue_date'] ?? '') . '"
+                    data-received_date="' . ($dag['received_date'] ?? '') . '"
+                    data-customer_request_date="' . ($dag['customer_request_date'] ?? '') . '"
                     data-dag_company_id="' . ($dag['dag_company_id'] ?? '') . '"
                     data-receipt_no="' . htmlspecialchars($dag['receipt_no'] ?? '') . '"
                     data-company_issued_date="' . ($dag['company_issued_date'] ?? '') . '"
                     data-company_status="' . ($dag['company_status'] ?? 'pending') . '"
-                    data-remark="' . htmlspecialchars($dag['remark']) . '">
+                    data-remark="' . htmlspecialchars($dag['remark'] ?? '') . '">
                     <td>' . $key . '</td>
                     <td>' . htmlspecialchars($dag['ref_no']) . '</td>
-                    <td>' . htmlspecialchars($dag['my_number']) . '</td>
-                    <td>' . htmlspecialchars($DEPARTMENT->name) . '</td>
-                    <td>' . htmlspecialchars($CUSTOMER->name) . '</td>
-                    <td>' . htmlspecialchars($dag['received_date']) . '</td>
-                    <td>' . htmlspecialchars($dag['customer_request_date']) . '</td>
-                    <td>
-                        <span class="badge bg-soft-secondary font-size-12">
-                            DAG Created
-                        </span>
-                    </td>
+                    <td>' . htmlspecialchars($DAG_COMPANY->name ?? 'N/A') . '</td>
+                    <td>' . htmlspecialchars($dag['receipt_no'] ?? 'N/A') . '</td>
+                    <td>' . htmlspecialchars($dag['company_issued_date'] ?? 'N/A') . '</td>
+                    <td>' . htmlspecialchars($dag['company_status'] ?? 'pending') . '</td>
                 </tr>';
     }
 
@@ -243,5 +235,17 @@ if (isset($_POST['delete'])) {
         echo json_encode(["status" => "error", "message" => "Failed to delete DAG"]);
     }
     exit();
+}
+
+if (isset($_POST['get_next_ref_no'])) {
+    $DAG = new Dag(NULL);
+    $lastId = $DAG->getLastID();
+    $dag_id = 'DC/00/' . ($lastId + 1);
+
+    echo json_encode([
+        'status' => 'success',
+        'ref_no' => $dag_id
+    ]);
+    exit;
 }
 ?>
