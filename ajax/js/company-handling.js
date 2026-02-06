@@ -120,6 +120,9 @@ $(document).ready(function () {
             // Switch to Update mode
             $('#create').hide();
             $('#update').show();
+
+            // Show print button with handling ID
+            $('#print').data('handling-id', handling_id).show();
         } else {
             // New entry mode for this complaint
             $('#id').val('0'); // Reset ID or keep 0
@@ -143,6 +146,7 @@ $(document).ready(function () {
 
             $('#create').show();
             $('#update').hide();
+            $('#print').hide();
         }
 
         $('#complaintModal').modal('hide');
@@ -259,6 +263,17 @@ $(document).ready(function () {
     // New Button
     $('#new').click(function () {
         location.reload();
+    });
+
+    // Print Button
+    $('#print').click(function (e) {
+        e.preventDefault();
+        var handlingId = $(this).data('handling-id');
+        if (!handlingId) {
+            swal("Error", "No record selected for printing.", "error");
+            return;
+        }
+        window.open('company-handling-print.php?id=' + handlingId, '_blank');
     });
 
     // Edit Button (Populate Form)

@@ -51,11 +51,7 @@ $complaint_no = 'CC/00/' . ($lastId + 1);
                                 </a>
                             <?php endif; ?>
 
-                            <?php if ($PERMISSIONS['print_page']): ?>
-                                <a href="#" class="btn btn-info" id="print" style="display: none;">
-                                    <i class="uil uil-print me-1"></i> Print
-                                </a>
-                            <?php endif; ?>
+
 
                             <?php if ($PERMISSIONS['edit_page']): ?>
                                 <a href="#" class="btn btn-warning" id="update" style="display: none;">
