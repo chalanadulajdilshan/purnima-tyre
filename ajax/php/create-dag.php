@@ -11,22 +11,18 @@ if (isset($_POST['create'])) {
 
     $DAG = new DAG(NULL);
 
-    // Set DAG master fields
+    // Set DAG master fields (company-level)
     $DAG->ref_no = $_POST['ref_no'];
-    $DAG->department_id = $_POST['department_id'];
-    $DAG->customer_id = $_POST['customer_id'];
-    $DAG->received_date = $_POST['received_date'];
-    $DAG->delivery_date = $_POST['delivery_date'];
-    $DAG->customer_request_date = $_POST['customer_request_date'];
-    $DAG->vehicle_no = $_POST['vehicle_no'];
-    $DAG->my_number = $_POST['my_number'];
-    $DAG->customer_issue_date = $_POST['customer_issue_date'];
     $DAG->remark = $_POST['remark'];
+    $DAG->dag_company_id = isset($_POST['dag_company_id']) ? $_POST['dag_company_id'] : null;
+    $DAG->receipt_no = isset($_POST['receipt_no']) ? $_POST['receipt_no'] : null;
+    $DAG->company_issued_date = isset($_POST['company_issued_date']) ? $_POST['company_issued_date'] : null;
+    $DAG->company_status = isset($_POST['company_status']) ? $_POST['company_status'] : 'pending';
 
     $dag_id = $DAG->create();
 
     if ($dag_id) {
-        // Insert DAG items
+        // Insert DAG items (with item-level fields)
         if (isset($_POST['dag_items'])) {
             $items = json_decode($_POST['dag_items'], true);
 
@@ -36,17 +32,23 @@ if (isset($_POST['create'])) {
                 $DAG_ITEM->belt_id = $item['belt_id'];
                 $DAG_ITEM->size_id = $item['size_id'];
                 $DAG_ITEM->serial_number = $item['serial_num1'];
-                $DAG_ITEM->qty = 1; // Always set qty to 1
-                $DAG_ITEM->is_invoiced = 0; // Default not invoiced
-                $DAG_ITEM->dag_company_id = $item['dag_company_id'];
-                $DAG_ITEM->company_issued_date = $item['company_issued_date'];
-                $DAG_ITEM->company_delivery_date = $item['company_delivery_date'];
-                $DAG_ITEM->receipt_no = $item['receipt_no'];
+                $DAG_ITEM->qty = 1;
+                $DAG_ITEM->is_invoiced = 0;
+                $DAG_ITEM->dag_company_id = isset($item['dag_company_id']) ? $item['dag_company_id'] : null;
+                $DAG_ITEM->company_issued_date = isset($item['company_issued_date']) ? $item['company_issued_date'] : null;
+                $DAG_ITEM->company_delivery_date = isset($item['company_delivery_date']) ? $item['company_delivery_date'] : null;
+                $DAG_ITEM->receipt_no = isset($item['receipt_no']) ? $item['receipt_no'] : null;
                 $DAG_ITEM->brand_id = isset($item['brand_id']) ? $item['brand_id'] : null;
-                $DAG_ITEM->job_number = $item['job_number'];
-                $DAG_ITEM->status = $item['status'];
+                $DAG_ITEM->job_number = isset($item['job_number']) ? $item['job_number'] : null;
+                $DAG_ITEM->status = isset($item['status']) ? $item['status'] : 'pending';
                 $DAG_ITEM->uc = isset($item['uc']) ? $item['uc'] : null;
                 $DAG_ITEM->customer_id = isset($item['customer_id']) && !empty($item['customer_id']) ? $item['customer_id'] : null;
+                // New item-level fields
+                $DAG_ITEM->my_number = isset($item['my_number']) ? $item['my_number'] : null;
+                $DAG_ITEM->received_date = isset($item['received_date']) ? $item['received_date'] : null;
+                $DAG_ITEM->customer_issue_date = isset($item['customer_issue_date']) ? $item['customer_issue_date'] : null;
+                $DAG_ITEM->customer_request_date = isset($item['customer_request_date']) ? $item['customer_request_date'] : null;
+                $DAG_ITEM->vehicle_no = isset($item['vehicle_no']) ? $item['vehicle_no'] : null;
                 $DAG_ITEM->create();
             }
         }
@@ -54,7 +56,7 @@ if (isset($_POST['create'])) {
         if ($dag_id) {
             echo json_encode([
                 'status' => 'success',
-                'id' => $dag_id // Return the newly created ID
+                'id' => $dag_id
             ]);
         } else {
             echo json_encode([
@@ -75,26 +77,22 @@ if (isset($_POST['create'])) {
 
 // Update Dag details
 if (isset($_POST['update'])) {
-    $DAG = new DAG($_POST['dag_id']); // use correct key 'dag_id' from JS
+    $DAG = new DAG($_POST['dag_id']);
 
-    // Update DAG master fields
+    // Update DAG master fields (company-level)
     $DAG->ref_no = $_POST['ref_no'];
-    $DAG->department_id = $_POST['department_id'];
-    $DAG->customer_id = $_POST['customer_id'];
-    $DAG->received_date = $_POST['received_date'];
-    $DAG->delivery_date = $_POST['delivery_date'];
-    $DAG->customer_request_date = $_POST['customer_request_date'];
-    $DAG->vehicle_no = $_POST['vehicle_no'];
-    $DAG->my_number = $_POST['my_number'];
-    $DAG->customer_issue_date = $_POST['customer_issue_date'];
     $DAG->remark = $_POST['remark'];
+    $DAG->dag_company_id = isset($_POST['dag_company_id']) ? $_POST['dag_company_id'] : null;
+    $DAG->receipt_no = isset($_POST['receipt_no']) ? $_POST['receipt_no'] : null;
+    $DAG->company_issued_date = isset($_POST['company_issued_date']) ? $_POST['company_issued_date'] : null;
+    $DAG->company_status = isset($_POST['company_status']) ? $_POST['company_status'] : 'pending';
 
     if ($DAG->update()) {
         // Delete all old DAG items
         $DAG_ITEM = new DagItem(null);
         $DAG_ITEM->deleteDagItemByItemId($DAG->id);
 
-        // Add new DAG items
+        // Add new DAG items with item-level fields
         if (isset($_POST['dag_items'])) {
             $items = json_decode($_POST['dag_items'], true);
             foreach ($items as $item) {
@@ -103,17 +101,23 @@ if (isset($_POST['update'])) {
                 $DAG_ITEM->belt_id = $item['belt_id'];
                 $DAG_ITEM->size_id = $item['size_id'];
                 $DAG_ITEM->serial_number = $item['serial_num1'];
-                $DAG_ITEM->qty = 1; // Always set qty to 1
-                $DAG_ITEM->is_invoiced = 0; // Default not invoiced
-                $DAG_ITEM->dag_company_id = $item['dag_company_id'];
-                $DAG_ITEM->company_issued_date = $item['company_issued_date'];
-                $DAG_ITEM->company_delivery_date = $item['company_delivery_date'];
-                $DAG_ITEM->receipt_no = $item['receipt_no'];
+                $DAG_ITEM->qty = 1;
+                $DAG_ITEM->is_invoiced = 0;
+                $DAG_ITEM->dag_company_id = isset($item['dag_company_id']) ? $item['dag_company_id'] : null;
+                $DAG_ITEM->company_issued_date = isset($item['company_issued_date']) ? $item['company_issued_date'] : null;
+                $DAG_ITEM->company_delivery_date = isset($item['company_delivery_date']) ? $item['company_delivery_date'] : null;
+                $DAG_ITEM->receipt_no = isset($item['receipt_no']) ? $item['receipt_no'] : null;
                 $DAG_ITEM->brand_id = isset($item['brand_id']) ? $item['brand_id'] : null;
-                $DAG_ITEM->job_number = $item['job_number'];
-                $DAG_ITEM->status = $item['status'];
+                $DAG_ITEM->job_number = isset($item['job_number']) ? $item['job_number'] : null;
+                $DAG_ITEM->status = isset($item['status']) ? $item['status'] : 'pending';
                 $DAG_ITEM->uc = isset($item['uc']) ? $item['uc'] : null;
                 $DAG_ITEM->customer_id = isset($item['customer_id']) && !empty($item['customer_id']) ? $item['customer_id'] : null;
+                // New item-level fields
+                $DAG_ITEM->my_number = isset($item['my_number']) ? $item['my_number'] : null;
+                $DAG_ITEM->received_date = isset($item['received_date']) ? $item['received_date'] : null;
+                $DAG_ITEM->customer_issue_date = isset($item['customer_issue_date']) ? $item['customer_issue_date'] : null;
+                $DAG_ITEM->customer_request_date = isset($item['customer_request_date']) ? $item['customer_request_date'] : null;
+                $DAG_ITEM->vehicle_no = isset($item['vehicle_no']) ? $item['vehicle_no'] : null;
                 $DAG_ITEM->create();
             }
         }
@@ -186,6 +190,10 @@ if (isset($_POST['load_dags'])) {
                     data-customer_issue_date="' . htmlspecialchars($dag['customer_issue_date']) . '"
                     data-received_date="' . $dag['received_date'] . '"
                     data-customer_request_date="' . $dag['customer_request_date'] . '"
+                    data-dag_company_id="' . ($dag['dag_company_id'] ?? '') . '"
+                    data-receipt_no="' . htmlspecialchars($dag['receipt_no'] ?? '') . '"
+                    data-company_issued_date="' . ($dag['company_issued_date'] ?? '') . '"
+                    data-company_status="' . ($dag['company_status'] ?? 'pending') . '"
                     data-remark="' . htmlspecialchars($dag['remark']) . '">
                     <td>' . $key . '</td>
                     <td>' . htmlspecialchars($dag['ref_no']) . '</td>

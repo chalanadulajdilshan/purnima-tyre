@@ -122,15 +122,6 @@ $dag_id = 'DC/00/' . ($lastId + 1);
                                                     <input id="ref_no" name="ref_no" type="text"
                                                         value="<?php echo $dag_id; ?>" placeholder="Ref No"
                                                         class="form-control" readonly>
-
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-2">
-                                                <label for="my_number" class="form-label">My Number</label>
-                                                <div class="input-group mb-3">
-                                                    <input id="my_number" name="my_number" type="text"
-                                                        class="form-control" placeholder="My Number">
                                                     <button class="btn btn-info" type="button" data-bs-toggle="modal"
                                                         data-bs-target="#mainDagModel">
                                                         <i class="uil uil-search me-1"></i>
@@ -138,96 +129,55 @@ $dag_id = 'DC/00/' . ($lastId + 1);
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-3">
-                                                <label for="department_id" class="form-label">Department <span
-                                                        class="text-danger"></span></label>
-                                                <select id="department_id" name="department_id" class="form-select"
-                                                    required>
-
-                                                    <?php
-                                                    $DEPARTMENT_MASTER = new DepartmentMaster(NULL);
-                                                    foreach ($DEPARTMENT_MASTER->getActiveDepartment() as $department_master) {
-                                                        ?>
-                                                        <option value="<?php echo $department_master['id']; ?>">
-                                                            <?php echo $department_master['name']; ?>
-                                                        </option>
-                                                    <?php } ?>
-                                                </select>
-                                            </div>
-
 
                                             <div class="col-md-2">
-                                                <label for="customerCode" class="form-label">Customer Code</label>
+                                                <label for="dag_company_id" class="form-label">Company Name</label>
                                                 <div class="input-group mb-3">
-                                                    <input id="customer_code" name="customer_code" type="text"
-                                                        class="form-control" readonly>
-                                                    <button class="btn btn-info" type="button" data-bs-toggle="modal"
-                                                        data-bs-target="#customerModal">
-                                                        <i class="uil uil-search me-1"></i>
-                                                    </button>
+                                                    <select name="dag_company_id" id="dag_company_id"
+                                                        class="form-control">
+                                                        <option value="0">-- Select Company --</option>
+                                                        <?php
+                                                        $DAG_COMPANY = new DagCompany(null);
+                                                        foreach ($DAG_COMPANY->getActiveDagCompany() as $dag_company) {
+                                                            ?>
+                                                            <option value="<?php echo $dag_company['id'] ?>">
+                                                                <?php echo $dag_company['name'] ?>
+                                                            </option>
+                                                        <?php } ?>
+                                                    </select>
                                                 </div>
                                             </div>
 
-                                            <!-- hidden send to customer id to table -->
-                                            <input type="hidden" id="customer_id" name="customer_id">
-                                            <!-- hidden send to customer id to table -->
-
-                                            <div class="col-md-5">
-                                                <label for="customerName" class="form-label">Customer Name</label>
-                                                <div class="input-group mb-3">
-                                                    <input id="customer_name" name="customer_name" type="text"
-                                                        class="form-control" placeholder="Enter Customer Name" readonly>
-                                                </div>
-                                            </div>
                                             <div class="col-md-2">
-                                                <label for="vehicle_no" class="form-label">Vehicle No</label>
+                                                <label for="receipt_no" class="form-label">Company Receipt No</label>
                                                 <div class="input-group mb-3">
-                                                    <input id="vehicle_no" name="vehicle_no" type="text"
-                                                        class="form-control" placeholder="Vehicle No">
+                                                    <input id="receipt_no" name="receipt_no" type="text"
+                                                        placeholder="Receipt No" class="form-control">
                                                 </div>
                                             </div>
 
-
                                             <div class="col-md-2">
-                                                <label for="customer_issue_date" class="form-label">Customer Issue
+                                                <label for="company_issued_date" class="form-label">Company Issued
                                                     Date</label>
                                                 <div class="input-group">
                                                     <input type="text" class="form-control date-picker-date"
-                                                        id="customer_issue_date" name="customer_issue_date"
-                                                        placeholder="Select Issue Date"> <span
-                                                        class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                                        id="company_issued_date" name="company_issued_date"
+                                                        placeholder="Select Issued Date">
+                                                    <span class="input-group-text"><i
+                                                            class="mdi mdi-calendar"></i></span>
                                                 </div>
                                             </div>
+
 
                                             <div class="col-md-2">
-                                                <label for="name" class="form-label">Dag Received Date</label>
-                                                <div class="input-group">
-
-                                                    <input type="text" class="form-control date-picker-date"
-                                                        id="received_date" name="received_date"
-                                                        placeholder="Select Recived Date"> <span
-                                                        class="input-group-text"><i class="mdi mdi-calendar"></i></span>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-2 hidden">
-                                                <label for="name" class="form-label">Dag Delivery Date</label>
-                                                <div class="input-group">
-
-                                                    <input type="text" class="form-control date-picker-date"
-                                                        id="delivery_date" name="delivery_date"
-                                                        placeholder="Select Delivery Date"> <span
-                                                        class="input-group-text"><i class="mdi mdi-calendar"></i></span>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <label for="name" class="form-label">Customer Request Date</label>
-                                                <div class="input-group">
-
-                                                    <input type="text" class="form-control date-picker-date"
-                                                        id="customer_request_date" name="customer_request_date"
-                                                        placeholder="Select Request Date"> <span
-                                                        class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                                <label for="company_status" class="form-label">Company Status</label>
+                                                <div class="input-group mb-3">
+                                                    <select name="company_status" id="company_status"
+                                                        class="form-control">
+                                                        <option value="pending">Pending</option>
+                                                        <option value="assigned">Assigned to Company</option>
+                                                        <option value="received">Received</option>
+                                                    </select>
                                                 </div>
                                             </div>
 
@@ -235,96 +185,65 @@ $dag_id = 'DC/00/' . ($lastId + 1);
 
                                             <h5 class="mb-3">Add Dag Items</h5>
 
-                                            <!-- Company Fields Row -->
+                                            <!-- Item Fields Row -->
                                             <div class="row mt-3">
                                                 <div class="col-md-2">
-                                                    <label for="dag_company_id" class="form-label">Assaign Company
-                                                        required</label>
+                                                    <label for="my_number" class="form-label">My Number</label>
                                                     <div class="input-group mb-3">
-                                                        <select name="dag_company_id" id="dag_company_id"
-                                                            class="text_purchase3 col-sm-9 form-control">
-                                                            <option value="0">-- Select Company --</option>
-                                                            <?php
-                                                            $DAG_COMPANY = new DagCompany(null);
-                                                            foreach ($DAG_COMPANY->getActiveDagCompany() as $dag_company) {
-
-                                                                ?>
-                                                                <option value="<?php echo $dag_company['id'] ?>">
-                                                                    <?php echo $dag_company['name'] ?>
-                                                                </option>
-                                                            <?php } ?>
-                                                        </select>
+                                                        <input id="my_number" name="my_number" type="text"
+                                                            class="form-control" placeholder="My Number">
                                                     </div>
                                                 </div>
 
                                                 <div class="col-md-2">
-                                                    <label for="company_issued_date" class="form-label">Company Issued
+                                                    <label for="received_date" class="form-label">DAG Received
                                                         Date</label>
-                                                    <div class="input-group" id="company_issued_date_group">
-                                                        <input type="text" class="form-control date-picker"
-                                                            id="company_issued_date" name="company_issued_date"
-                                                            placeholder="Select Issued Date" data-provide="datepicker"
-                                                            data-date-autoclose="true" data-date-format="yyyy-mm-dd">
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control date-picker-date"
+                                                            id="received_date" name="received_date"
+                                                            placeholder="Select Received Date">
                                                         <span class="input-group-text"><i
                                                                 class="mdi mdi-calendar"></i></span>
                                                     </div>
                                                 </div>
 
                                                 <div class="col-md-2">
-                                                    <label for="company_delivery_date" class="form-label">Company
-                                                        Delivery Date</label>
-                                                    <div class="input-group" id="delivery_date">
-
+                                                    <label for="customer_issue_date" class="form-label">Customer Issue
+                                                        Date</label>
+                                                    <div class="input-group">
                                                         <input type="text" class="form-control date-picker-date"
-                                                            id="company_delivery_date" name="company_delivery_date"
-                                                            placeholder="Select Delivery Date"> <span
-                                                            class="input-group-text"><i
+                                                            id="customer_issue_date" name="customer_issue_date"
+                                                            placeholder="Select Issue Date">
+                                                        <span class="input-group-text"><i
                                                                 class="mdi mdi-calendar"></i></span>
                                                     </div>
                                                 </div>
-                                                <div class="col-md-2">
-                                                    <label for="receipt_no" class="form-label">Receipt No</label>
-                                                    <div class="input-group mb-3">
-                                                        <input id="receipt_no" name="receipt_no" type="text"
-                                                            placeholder="Receipt No" class="form-control">
-                                                    </div>
 
+                                                <div class="col-md-2">
+                                                    <label for="customer_request_date" class="form-label">Customer
+                                                        Request Date</label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control date-picker-date"
+                                                            id="customer_request_date" name="customer_request_date"
+                                                            placeholder="Select Request Date">
+                                                        <span class="input-group-text"><i
+                                                                class="mdi mdi-calendar"></i></span>
+                                                    </div>
                                                 </div>
 
                                                 <div class="col-md-2">
-                                                    <label for="brand_id" class="form-label">Brand</label>
-                                                    <div class="input-group mb-3">
-                                                        <select id="brand_id" name="brand_id" class="form-select">
-                                                            <option value="">-- Select Brand --</option>
+                                                    <label for="sizeDesign" class="form-label">Tyre Size</label>
+                                                    <div class="input-group">
+                                                        <select id="sizeDesign" name="size_design" class="form-select">
+                                                            <option value="">-- Select Size --</option>
                                                             <?php
-                                                            $BRAND = new Brand(NULL);
-                                                            foreach ($BRAND->activeBrands() as $brand) {
+                                                            $SIZE_MASTER = new Sizes(NULL);
+                                                            foreach ($SIZE_MASTER->all() as $size_master) {
                                                                 ?>
-                                                                <option value="<?= $brand['id']; ?>">
-                                                                    <?= htmlspecialchars($brand['name']); ?>
+                                                                <option value="<?= $size_master['id']; ?>">
+                                                                    <?= $size_master['name']; ?>
                                                                 </option>
                                                             <?php } ?>
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-md-2">
-                                                    <label class="form-label" for="job_number">Job Number </label>
-                                                    <input id="job_number" name="job_number" type="text"
-                                                        placeholder="Job Number" class="form-control">
-                                                </div>
-
-                                                <div class="col-md-2">
-                                                    <label for="dag_status" class="form-label">Dag Status</label>
-                                                    <div class="input-group mb-3">
-                                                        <select name="dag_status" id="dag_status"
-                                                            class="text_purchase3 col-sm-9 form-control">
-                                                            <option value="pending">Pending Dag</option>
-                                                            <option value="assigned">Assign Company</option>
-                                                            <option value="received">Received Dag</option>
-                                                            <option value="rejected_company">Rejected in Company
-                                                            </option>
-                                                            <option value="rejected_store">Rejected in Store</option>
                                                         </select>
                                                     </div>
                                                 </div>
@@ -347,85 +266,97 @@ $dag_id = 'DC/00/' . ($lastId + 1);
                                                 </div>
 
                                                 <div class="col-md-2">
-                                                    <label for="sizeDesign" class="form-label">Size</label>
-                                                    <div class="input-group">
-                                                        <select id="sizeDesign" name="size_design" class="form-select">
-                                                            <option value="">-- Select Size --</option>
-                                                            <?php
-                                                            $SIZE_MASTER = new Sizes(NULL);
-                                                            foreach ($SIZE_MASTER->all() as $size_master) {
-                                                                ?>
-                                                                <option value="<?= $size_master['id']; ?>">
-                                                                    <?= $size_master['name']; ?>
-                                                                </option>
-                                                            <?php } ?>
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-md-2">
                                                     <label class="form-label">Serial No</label>
                                                     <input type="text" id="serial_num1" class="form-control"
                                                         placeholder="Serial No">
                                                 </div>
 
                                                 <div class="col-md-2">
-                                                    <label class="form-label" for="uc">UC(Under Complaint)</label>
+                                                    <label for="customer_code" class="form-label">Customer Code</label>
+                                                    <div class="input-group mb-3">
+                                                        <input id="customer_code" name="customer_code" type="text"
+                                                            class="form-control" readonly>
+                                                        <button class="btn btn-info" type="button"
+                                                            data-bs-toggle="modal" data-bs-target="#customerModal">
+                                                            <i class="uil uil-search me-1"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <!-- hidden send to customer id to table -->
+                                                <input type="hidden" id="customer_id" name="customer_id">
+                                                <!-- hidden send to customer id to table -->
+
+                                                <div class="col-md-3">
+                                                    <label for="customer_name" class="form-label">Customer Name</label>
+                                                    <div class="input-group mb-3">
+                                                        <input id="customer_name" name="customer_name" type="text"
+                                                            class="form-control" placeholder="Enter Customer Name"
+                                                            readonly>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-2">
+                                                    <label for="vehicle_no" class="form-label">Vehicle No</label>
+                                                    <div class="input-group mb-3">
+                                                        <input id="vehicle_no" name="vehicle_no" type="text"
+                                                            class="form-control" placeholder="Vehicle No">
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-2">
+                                                    <label class="form-label" for="job_number">Job Number</label>
+                                                    <input id="job_number" name="job_number" type="text"
+                                                        placeholder="Job Number" class="form-control">
+                                                </div>
+
+                                                <div class="col-md-2">
+                                                    <label for="dag_status" class="form-label">DAG Status</label>
+                                                    <div class="input-group mb-3">
+                                                        <select name="dag_status" id="dag_status" class="form-control">
+                                                            <option value="pending">Pending DAG</option>
+                                                            <option value="assigned">Assign Company</option>
+                                                            <option value="received">Received DAG</option>
+                                                            <option value="rejected_company">Rejected in Company
+                                                            </option>
+                                                            <option value="rejected_store">Rejected in Store</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-2">
+                                                    <label class="form-label" for="uc">UC (Under Complaint)</label>
                                                     <input id="uc" name="uc" type="text" placeholder="UC"
                                                         class="form-control">
                                                 </div>
 
                                                 <div class="col-md-2">
-                                                    <label class="form-label">Previous Customer</label>
-                                                    <div class="form-check" style="margin-top: 10px;">
-                                                        <input class="form-check-input" type="checkbox"
-                                                            id="has_previous_customer" name="has_previous_customer">
-                                                        <label class="form-check-label" for="has_previous_customer">
-                                                            Enable
-                                                        </label>
+                                                    <label for="brand_id" class="form-label">Brand</label>
+                                                    <div class="input-group mb-3">
+                                                        <select id="brand_id" name="brand_id" class="form-select">
+                                                            <option value="">-- Select Brand --</option>
+                                                            <?php
+                                                            $BRAND = new Brand(NULL);
+                                                            foreach ($BRAND->activeBrands() as $brand) {
+                                                                ?>
+                                                                <option value="<?= $brand['id']; ?>">
+                                                                    <?= htmlspecialchars($brand['name']); ?>
+                                                                </option>
+                                                            <?php } ?>
+                                                        </select>
                                                     </div>
                                                 </div>
 
-                                                <div class="col-md-2" id="item_customer_code_section"
-                                                    style="display: none;">
-                                                    <label for="item_customer_code" class="form-label">Customer
-                                                        Code</label>
-                                                    <div class="input-group mb-3">
-                                                        <input id="item_customer_code" name="item_customer_code"
-                                                            type="text" class="form-control" readonly>
-                                                        <button class="btn btn-info" type="button"
-                                                            data-bs-toggle="modal" data-bs-target="#customerModal"
-                                                            title="Search Customer">
-                                                            <i class="uil uil-search"></i>
-                                                        </button>
-                                                        <?php
-                                                        $hasAddCustomerPermission = false;
-                                                        if (isset($_SESSION['id'])) {
-                                                            $specialPermission = new SpecialUserPermission();
-                                                            $hasAddCustomerPermission = $specialPermission->hasAccess($_SESSION['id'], 'add_customer');
-                                                        }
-                                                        ?>
-                                                        <button class="btn btn-danger" type="button"
-                                                            title="Add New Customer" data-bs-toggle="modal"
-                                                            data-bs-target="#customerAddModal"
-                                                            style="display: <?php echo $hasAddCustomerPermission ? 'inline-block' : 'none'; ?>">
-                                                            <i class="uil uil-plus"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
 
-                                                <!-- hidden send to customer id to table -->
-                                                <input type="hidden" id="item_customer_id" name="item_customer_id">
-                                                <!-- hidden send to customer id to table -->
-
-                                                <div class="col-md-3" id="item_customer_name_section"
-                                                    style="display: none;">
-                                                    <label for="item_customer_name" class="form-label">Customer
-                                                        Name</label>
-                                                    <div class="input-group mb-3">
-                                                        <input id="item_customer_name" name="item_customer_name"
-                                                            type="text" class="form-control"
-                                                            placeholder="Enter Customer Name" readonly>
+                                                <div class="col-md-2">
+                                                    <label for="company_delivery_date" class="form-label">Company
+                                                        Delivery Date</label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control date-picker-date"
+                                                            id="company_delivery_date" name="company_delivery_date"
+                                                            placeholder="Delivery Date">
+                                                        <span class="input-group-text"><i
+                                                                class="mdi mdi-calendar"></i></span>
                                                     </div>
                                                 </div>
 
@@ -441,24 +372,26 @@ $dag_id = 'DC/00/' . ($lastId + 1);
                                                 <table class="table table-bordered">
                                                     <thead class="table-light">
                                                         <tr>
-                                                            <th>Belt Design</th>
+                                                            <th>My Number</th>
+                                                            <th>Received Date</th>
+                                                            <th>Issue Date</th>
+                                                            <th>Request Date</th>
                                                             <th>Size</th>
+                                                            <th>Belt Design</th>
                                                             <th>Serial No</th>
-                                                            <th>Company</th>
-                                                            <th>Issued Date</th>
-                                                            <th>Delivery Date</th>
-                                                            <th>Receipt No</th>
-                                                            <th>Brand</th>
+                                                            <th>Customer</th>
+                                                            <th>Vehicle No</th>
                                                             <th>Job Number</th>
                                                             <th>Status</th>
                                                             <th>UC</th>
-                                                            <th>Previous Customer</th>
+                                                            <th>Brand</th>
+                                                            <th>Delivery Date</th>
                                                             <th>Action</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id="dagItemsBody">
                                                         <tr id="noDagItemRow">
-                                                            <td colspan="12" class="text-center text-muted">No items
+                                                            <td colspan="16" class="text-center text-muted">No items
                                                                 added</td>
                                                         </tr>
                                                     </tbody>

@@ -1,93 +1,5 @@
 jQuery(document).ready(function () {
 
-  // Toggle Previous Customer fields
-  $("#has_previous_customer").change(function () {
-    if ($(this).is(":checked")) {
-      $("#item_customer_code_section").show();
-      $("#item_customer_name_section").show();
-    } else {
-      $("#item_customer_code_section").hide();
-      $("#item_customer_name_section").hide();
-      $("#item_customer_code").val("");
-      $("#item_customer_name").val("");
-      $("#item_customer_id").val("");
-    }
-  });
-
-  // Store DAG-level customer values before modal opens when Previous Customer is enabled
-  let dagCustomerBackup = { id: '', code: '', name: '' };
-  let isItemCustomerSelection = false;
-
-  // Handle new customer creation - also populate item fields if checkbox is checked
-  $('#customerAddModal').on('hidden.bs.modal', function () {
-    if ($("#has_previous_customer").is(":checked")) {
-      // Small delay to ensure customer-master.js has populated the fields
-      setTimeout(function () {
-        const customerCode = $("#customer_code").val();
-        const customerName = $("#customer_name").val();
-
-        // If customer fields were just populated, copy to item fields
-        if (customerCode && !dagCustomerBackup.code) {
-          $("#item_customer_code").val(customerCode);
-          $("#item_customer_name").val(customerName);
-          // Customer ID might not be available from the form, so keep the one from response
-        }
-      }, 100);
-    }
-  });
-
-  $('#customerModal').on('show.bs.modal', function () {
-    // Check if Previous Customer checkbox is checked
-    isItemCustomerSelection = $("#has_previous_customer").is(":checked");
-
-    if (isItemCustomerSelection) {
-      // Backup current DAG customer values
-      dagCustomerBackup = {
-        id: $("#customer_id").val() || '',
-        code: $("#customer_code").val() || '',
-        name: $("#customer_name").val() || ''
-      };
-    }
-  });
-
-  // Handle customer selection for item-level customer
-  // This needs to run AFTER common.js handler, so we use a slight delay
-  $('#customerModal').on('hidden.bs.modal', function () {
-    // If this was an item customer selection
-    if (isItemCustomerSelection && $("#item_customer_id").val()) {
-      // Restore DAG-level customer fields to their original values
-      setTimeout(function () {
-        $("#customer_id").val(dagCustomerBackup.id);
-        $("#customer_code").val(dagCustomerBackup.code);
-        $("#customer_name").val(dagCustomerBackup.name);
-      }, 50);
-    }
-    isItemCustomerSelection = false;
-  });
-
-  // Intercept customer table click when Previous Customer checkbox is checked
-  $(document).on("click", "#customerTable tbody tr", function (e) {
-    // Only process if Previous Customer checkbox is checked
-    if ($("#has_previous_customer").is(":checked")) {
-      try {
-        var table = $("#customerTable").DataTable();
-        if (table) {
-          var data = table.row(this).data();
-
-          if (data) {
-            // Set item-level customer fields
-            $("#item_customer_id").val(data.id);
-            $("#item_customer_code").val(data.code);
-            $("#item_customer_name").val(data.name);
-          }
-        }
-      } catch (error) {
-        console.log("Error selecting customer:", error);
-      }
-    }
-    // Don't prevent default - let common.js handler run too
-  });
-
   function loadDagItemsToTable(items) {
     $("#dagItemsBodyInvoice").empty();
 
@@ -151,12 +63,20 @@ jQuery(document).ready(function () {
     $("#sizeDesign").val("").trigger("change");
     $("#brand_id").val("").trigger("change");
     $("#serial_num1").val("");
-    $("#has_previous_customer").prop("checked", false).trigger("change");
-    $("#item_customer_code").val("");
-    $("#item_customer_name").val("");
-    $("#item_customer_name").val("");
-    $("#item_customer_id").val("");
+    $("#customer_code").val("");
+    $("#customer_name").val("");
+    $("#customer_id").val("");
     $("#uc").val("");
+    // Reset new item-level fields
+    $("#my_number").val("");
+    $("#received_date").val("");
+    $("#customer_issue_date").val("");
+    $("#customer_request_date").val("");
+    $("#vehicle_no").val("");
+    $("#job_number").val("");
+    $("#dag_status").val("pending").trigger("change");
+    // Reset company delivery date
+    $("#company_delivery_date").val("");
   }
 
   function resetDagForm() {
@@ -164,7 +84,7 @@ jQuery(document).ready(function () {
     $("#form-data")[0].reset();
 
     // Reset select2 dropdowns
-    $("#department_id, #customer_id, #dag_company_id, #brand_id").val("").trigger("change");
+    $("#customer_id, #dag_company_id, #brand_id").val("").trigger("change");
 
     // Reset date inputs
     $("#received_date, #delivery_date, #customer_request_date, #company_issued_date, #company_delivery_date, #customer_issue_date").val("");
@@ -226,10 +146,7 @@ jQuery(document).ready(function () {
           swal("Error!", "Please select a Company.", "error");
           return;
         }
-        if (!$("#company_delivery_date").val()) {
-          swal("Error!", "Please select Company Delivery Date.", "error");
-          return;
-        }
+
         if (!$("#receipt_no").val()) {
           swal("Error!", "Please enter Receipt Number.", "error");
           return;
@@ -267,26 +184,34 @@ jQuery(document).ready(function () {
       const ucElement = $("#uc");
       const ucValue = ucElement.length ? (ucElement.val() || "") : "";
 
-      // Get customer info if checkbox is checked
-      const hasPreviousCustomer = $("#has_previous_customer").is(":checked");
-      const itemCustomerId = hasPreviousCustomer ? $("#item_customer_id").val() : "";
-      const itemCustomerCode = hasPreviousCustomer ? $("#item_customer_code").val() : "";
-      const itemCustomerName = hasPreviousCustomer ? $("#item_customer_name").val() : "";
+      // Get customer info
+      const customerId = $("#customer_id").val() || "";
+      const customerCode = $("#customer_code").val() || "";
+      const customerName = $("#customer_name").val() || "";
+
+      // New item-level fields
+      const myNumber = $("#my_number").val() || "";
+      const receivedDate = $("#received_date").val() || "";
+      const customerIssueDate = $("#customer_issue_date").val() || "";
+      const customerRequestDate = $("#customer_request_date").val() || "";
+      const vehicleNo = $("#vehicle_no").val() || "";
 
       const newRow = $(`
         <tr class="dag-item-row">
-          <td>${beltDesignText}<input type="hidden" name="belt_design_id[]" class="belt_id" value="${beltDesignId}"></td>
-          <td>${sizeDesignText}<input type="hidden" name="size_design_id[]" class="size_id" value="${sizeDesignId}"></td>
-          <td>${serialNum1}<input type="hidden" name="serial_num1[]" class="serial_num1" value="${serialNum1}"></td>
-          <td>${companyText}<input type="hidden" name="dag_company_id[]" value="${companyId}"></td>
-          <td>${issuedDate}<input type="hidden" name="company_issued_date[]" value="${issuedDate}"></td>
-          <td>${deliveryDate}<input type="hidden" name="company_delivery_date[]" value="${deliveryDate}"></td>
-          <td>${receiptNo}<input type="hidden" name="receipt_no[]" value="${receiptNo}"></td>
-          <td>${brandText}<input type="hidden" name="brand_id[]" class="brand_id" value="${brandId}"></td>
-          <td>${jobNumber}<input type="hidden" name="job_number[]" value="${jobNumber}"></td>
-          <td>${statusText}<input type="hidden" name="status[]" value="${statusValue}"></td>
-          <td>${ucValue}<input type="hidden" name="uc[]" class="uc" value="${ucValue}"></td>
-          <td>${itemCustomerName || ''}<input type="hidden" name="item_customer_id[]" class="item_customer_id" value="${itemCustomerId}"></td>
+          <td>${myNumber || '<span class="text-muted">N/A</span>'}<input type="hidden" name="my_number[]" class="my_number" value="${myNumber}"></td>
+          <td>${receivedDate || '<span class="text-muted">N/A</span>'}<input type="hidden" name="received_date[]" class="received_date" value="${receivedDate}"></td>
+          <td>${customerIssueDate || '<span class="text-muted">N/A</span>'}<input type="hidden" name="customer_issue_date[]" class="customer_issue_date" value="${customerIssueDate}"></td>
+          <td>${customerRequestDate || '<span class="text-muted">N/A</span>'}<input type="hidden" name="customer_request_date[]" class="customer_request_date" value="${customerRequestDate}"></td>
+          <td>${sizeDesignText || '<span class="text-muted">N/A</span>'}<input type="hidden" name="size_design_id[]" class="size_id" value="${sizeDesignId}"></td>
+          <td>${beltDesignText || '<span class="text-muted">N/A</span>'}<input type="hidden" name="belt_design_id[]" class="belt_id" value="${beltDesignId}"></td>
+          <td>${serialNum1 || '<span class="text-muted">N/A</span>'}<input type="hidden" name="serial_num1[]" class="serial_num1" value="${serialNum1}"></td>
+          <td>${customerCode || '<span class="text-muted">N/A</span>'}<input type="hidden" name="item_customer_id[]" class="item_customer_id" value="${customerId}"><input type="hidden" name="customer_name[]" class="customer_name" value="${customerName}"></td>
+          <td>${vehicleNo || '<span class="text-muted">N/A</span>'}<input type="hidden" name="vehicle_no[]" class="vehicle_no" value="${vehicleNo}"></td>
+          <td>${jobNumber || '<span class="text-muted">N/A</span>'}<input type="hidden" name="job_number[]" value="${jobNumber}"></td>
+          <td>${statusText || '<span class="text-muted">N/A</span>'}<input type="hidden" name="status[]" value="${statusValue}"></td>
+          <td>${ucValue || '<span class="text-muted">N/A</span>'}<input type="hidden" name="uc[]" class="uc" value="${ucValue}"></td>
+          <td>${brandText || '<span class="text-muted">N/A</span>'}<input type="hidden" name="brand_id[]" class="brand_id" value="${brandId}"></td>
+          <td>${deliveryDate || '<span class="text-muted">N/A</span>'}<input type="hidden" name="company_delivery_date[]" class="company_delivery_date" value="${deliveryDate}"></td>
           <td>
             <button type="button" class="btn btn-warning btn-sm edit-item">Edit</button>
             <button type="button" class="btn btn-danger btn-sm remove-item">Remove</button>
@@ -356,43 +281,24 @@ jQuery(document).ready(function () {
       return;
     }
 
-    if (!$("#received_date").val().trim()) {
-      swal({
-        title: "Error!",
-        text: "Please enter the Received Date to continue.",
-        type: "error",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-      return;
-    }
-
-    if (!$("#customer_request_date").val().trim()) {
-      swal({
-        title: "Error!",
-        text: "Customer Request Date is needed for scheduling.",
-        type: "error",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-      return;
-    }
-
     let dagItems = [];
     $(".dag-item-row").each(function () {
       dagItems.push({
         belt_id: $(this).find("input[name='belt_design_id[]']").val(),
         size_id: $(this).find("input[name='size_design_id[]']").val(),
         serial_num1: $(this).find("input[name='serial_num1[]']").val(),
-        dag_company_id: $(this).find("input[name='dag_company_id[]']").val(),
-        company_issued_date: $(this).find("input[name='company_issued_date[]']").val(),
         company_delivery_date: $(this).find("input[name='company_delivery_date[]']").val(),
-        receipt_no: $(this).find("input[name='receipt_no[]']").val(),
         brand_id: $(this).find("input[name='brand_id[]']").val(),
         job_number: $(this).find("input[name='job_number[]']").val(),
         status: $(this).find("input[name='status[]']").val(),
         uc: $(this).find("input[name='uc[]']").val(),
-        customer_id: $(this).find("input[name='item_customer_id[]']").val() || null
+        customer_id: $(this).find("input[name='item_customer_id[]']").val() || null,
+        // New item-level fields
+        my_number: $(this).find("input[name='my_number[]']").val(),
+        received_date: $(this).find("input[name='received_date[]']").val(),
+        customer_issue_date: $(this).find("input[name='customer_issue_date[]']").val(),
+        customer_request_date: $(this).find("input[name='customer_request_date[]']").val(),
+        vehicle_no: $(this).find("input[name='vehicle_no[]']").val()
       });
     });
 
@@ -480,29 +386,6 @@ jQuery(document).ready(function () {
       return;
     }
 
-    if (!$("#received_date").val().trim()) {
-      swal({
-        title: "Error!",
-        text: "Please enter the Received Date to continue.",
-        type: "error",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-      return;
-    }
-
-
-
-    if (!$("#customer_request_date").val().trim()) {
-      swal({
-        title: "Error!",
-        text: "Customer Request Date is needed for scheduling.",
-        type: "error",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-      return;
-    }
 
     if (!$("#remark").val().trim()) {
       swal({
@@ -527,16 +410,18 @@ jQuery(document).ready(function () {
         belt_id: $(this).find("input[name='belt_design_id[]']").val(),
         size_id: $(this).find("input[name='size_design_id[]']").val(),
         serial_num1: $(this).find("input[name='serial_num1[]']").val(),
-        barcode: $(this).find(".barcode").val(),
-        dag_company_id: $(this).find("input[name='dag_company_id[]']").val(),
-        company_issued_date: $(this).find("input[name='company_issued_date[]']").val(),
         company_delivery_date: $(this).find("input[name='company_delivery_date[]']").val(),
-        receipt_no: $(this).find("input[name='receipt_no[]']").val(),
         brand_id: $(this).find("input[name='brand_id[]']").val(),
         job_number: $(this).find("input[name='job_number[]']").val(),
         status: $(this).find("input[name='status[]']").val(),
         uc: $(this).find("input[name='uc[]']").val(),
-        customer_id: $(this).find("input[name='item_customer_id[]']").val() || null
+        customer_id: $(this).find("input[name='item_customer_id[]']").val() || null,
+        // New item-level fields
+        my_number: $(this).find("input[name='my_number[]']").val(),
+        received_date: $(this).find("input[name='received_date[]']").val(),
+        customer_issue_date: $(this).find("input[name='customer_issue_date[]']").val(),
+        customer_request_date: $(this).find("input[name='customer_request_date[]']").val(),
+        vehicle_no: $(this).find("input[name='vehicle_no[]']").val()
       });
 
     });
@@ -567,41 +452,38 @@ jQuery(document).ready(function () {
   $(document).on("click", ".edit-item", function () {
     const row = $(this).closest("tr");
 
+    // Populate item-level fields
     $("#beltDesign").val(row.find(".belt_id").val()).trigger("change");
     $("#sizeDesign").val(row.find(".size_id").val()).trigger("change");
     $("#serial_num1").val(row.find(".serial_num1").val());
     $("#brand_id").val(row.find(".brand_id").val()).trigger("change");
     $("#uc").val(row.find(".uc").val());
-
-    // Populate missing fields
-    $("#dag_company_id").val(row.find("input[name='dag_company_id[]']").val()).trigger("change");
-    $("#company_issued_date").val(row.find("input[name='company_issued_date[]']").val());
-    $("#company_delivery_date").val(row.find("input[name='company_delivery_date[]']").val());
-    $("#receipt_no").val(row.find("input[name='receipt_no[]']").val());
     $("#job_number").val(row.find("input[name='job_number[]']").val());
     $("#dag_status").val(row.find("input[name='status[]']").val()).trigger("change");
+
+    // New item-level fields
+    $("#my_number").val(row.find(".my_number").val());
+    $("#received_date").val(row.find(".received_date").val());
+    $("#customer_issue_date").val(row.find(".customer_issue_date").val());
+    $("#customer_request_date").val(row.find(".customer_request_date").val());
+    $("#vehicle_no").val(row.find(".vehicle_no").val());
+
+    // Company Delivery Date
+    $("#company_delivery_date").val(row.find(".company_delivery_date").val());
 
     // Handle Customer Info
     const customerId = row.find("input[name='item_customer_id[]']").val();
     if (customerId) {
-      $("#has_previous_customer").prop("checked", true).trigger("change");
-      $("#item_customer_id").val(customerId);
-      // We might not have code/name easily available in hidden inputs unless we added them.
-      // The table shows name in the cell text, but hidden input is just ID.
-      // Ideally we should have stored code/name as hidden inputs too if we want to restore them perfectly.
-      // For now, let's at least set the ID. If the select logic relies on ID it might work.
-      // Or if we need name, we might need to fetch it or store it in hidden fields.
-
-      // Let's check if we have customer name in the cell text
-      // Cell index 11 (0-indexed) or find by class?
-      // In row template: <td>${itemCustomerName || ''}<input type="hidden" name="item_customer_id[]" ...></td>
-
-      // We can grab the text from the customer cell
+      $("#customer_id").val(customerId);
       const customerCell = row.find("input[name='item_customer_id[]']").closest("td");
-      const customerName = customerCell.text().trim();
-      $("#item_customer_name").val(customerName);
+      const customerCode = customerCell.text().trim();
+      $("#customer_code").val(customerCode);
+      const customerName = row.find(".customer_name").val() || "";
+      $("#customer_name").val(customerName);
     } else {
-      $("#has_previous_customer").prop("checked", false).trigger("change");
+      $("#customer_id").val("");
+      $("#customer_code").val("");
+      $("#customer_name").val("");
     }
 
     row.remove();
@@ -665,6 +547,13 @@ jQuery(document).ready(function () {
     $("#received_date").val(data.received_date);
     $("#delivery_date").val(data.delivery_date);
     $("#customer_request_date").val(data.customer_request_date);
+
+    // Company header fields
+    $("#dag_company_id").val(data.dag_company_id).trigger("change");
+    $("#receipt_no").val(data.receipt_no);
+    $("#company_issued_date").val(data.company_issued_date);
+    $("#company_status").val(data.company_status).trigger("change");
+
     $("#remark").val(data.remark);
 
     $("#create").hide();
@@ -709,18 +598,20 @@ jQuery(document).ready(function () {
             try {
               const row = `
   <tr class="dag-item-row">
-    <td>${item.belt_title}<input type="hidden" name="belt_design_id[]" class="belt_id" value="${item.belt_id}"></td>
-    <td>${item.size_name || ''}<input type="hidden" name="size_design_id[]" class="size_id" value="${item.size_id}"></td>
-    <td>${item.serial_number || ''}<input type="hidden" name="serial_num1[]" class="serial_num1" value="${item.serial_number}"></td>
-    <td>${item.dag_company_name || ''}<input type="hidden" name="dag_company_id[]" value="${item.dag_company_id}"></td>
-    <td>${item.company_issued_date || ''}<input type="hidden" name="company_issued_date[]" value="${item.company_issued_date}"></td>
-    <td>${item.company_delivery_date || ''}<input type="hidden" name="company_delivery_date[]" value="${item.company_delivery_date}"></td>
-    <td>${item.receipt_no || ''}<input type="hidden" name="receipt_no[]" value="${item.receipt_no}"></td>
-    <td>${item.brand_name || ''}<input type="hidden" name="brand_id[]" class="brand_id" value="${item.brand_id}"></td>
-    <td>${item.job_number || ''}<input type="hidden" name="job_number[]" value="${item.job_number}"></td>
-    <td>${item.status || ''}<input type="hidden" name="status[]" value="${item.status}"></td>
-    <td>${item.uc || ''}<input type="hidden" name="uc[]" class="uc" value="${item.uc}"></td>
-    <td>${item.customer_name || ''}<input type="hidden" name="item_customer_id[]" class="item_customer_id" value="${item.customer_id || ''}"></td>
+    <td>${item.my_number || '<span class="text-muted">N/A</span>'}<input type="hidden" name="my_number[]" class="my_number" value="${item.my_number || ''}"></td>
+    <td>${item.received_date || '<span class="text-muted">N/A</span>'}<input type="hidden" name="received_date[]" class="received_date" value="${item.received_date || ''}"></td>
+    <td>${item.customer_issue_date || '<span class="text-muted">N/A</span>'}<input type="hidden" name="customer_issue_date[]" class="customer_issue_date" value="${item.customer_issue_date || ''}"></td>
+    <td>${item.customer_request_date || '<span class="text-muted">N/A</span>'}<input type="hidden" name="customer_request_date[]" class="customer_request_date" value="${item.customer_request_date || ''}"></td>
+    <td>${item.size_name || '<span class="text-muted">N/A</span>'}<input type="hidden" name="size_design_id[]" class="size_id" value="${item.size_id}"></td>
+    <td>${item.belt_title || '<span class="text-muted">N/A</span>'}<input type="hidden" name="belt_design_id[]" class="belt_id" value="${item.belt_id}"></td>
+    <td>${item.serial_number || '<span class="text-muted">N/A</span>'}<input type="hidden" name="serial_num1[]" class="serial_num1" value="${item.serial_number}"></td>
+    <td>${item.customer_code || '<span class="text-muted">N/A</span>'}<input type="hidden" name="item_customer_id[]" class="item_customer_id" value="${item.customer_id || ''}"><input type="hidden" name="customer_name[]" class="customer_name" value="${item.customer_name || ''}"></td>
+    <td>${item.vehicle_no || '<span class="text-muted">N/A</span>'}<input type="hidden" name="vehicle_no[]" class="vehicle_no" value="${item.vehicle_no || ''}"></td>
+    <td>${item.job_number || '<span class="text-muted">N/A</span>'}<input type="hidden" name="job_number[]" value="${item.job_number}"></td>
+    <td>${item.status || '<span class="text-muted">N/A</span>'}<input type="hidden" name="status[]" value="${item.status}"></td>
+    <td>${item.uc || '<span class="text-muted">N/A</span>'}<input type="hidden" name="uc[]" class="uc" value="${item.uc}"></td>
+    <td>${item.brand_name || '<span class="text-muted">N/A</span>'}<input type="hidden" name="brand_id[]" class="brand_id" value="${item.brand_id}"></td>
+    <td>${item.company_delivery_date || '<span class="text-muted">N/A</span>'}<input type="hidden" name="company_delivery_date[]" class="company_delivery_date" value="${item.company_delivery_date || ''}"></td>
     <td>
       <button type="button" class="btn btn-warning btn-sm edit-item">Edit</button>
       <button type="button" class="btn btn-sm btn-danger remove-item">Remove</button>
