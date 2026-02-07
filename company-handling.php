@@ -34,6 +34,11 @@ include 'auth.php';
                             <a href="#" class="btn btn-primary" id="create">
                                 <i class="uil uil-save me-1"></i> Save
                             </a>
+                            <?php if ($PERMISSIONS['print_page']): ?>
+                                <a href="#" class="btn btn-info" id="print" style="display: none;">
+                                    <i class="uil uil-print me-1"></i> Print
+                                </a>
+                            <?php endif; ?>
                             <a href="#" class="btn btn-warning" id="update" style="display: none;">
                                 <i class="uil uil-edit me-1"></i> Update
                             </a>
@@ -150,8 +155,13 @@ include 'auth.php';
                                                     </div>
                                                     <div class="col-md-4">
                                                         <label class="form-label">Price Issued Date</label>
-                                                        <input type="date" class="form-control" id="price_issued_date"
-                                                            name="price_issued_date">
+                                                        <div class="input-group">
+                                                            <input type="text" class="form-control date-picker-date"
+                                                                id="price_issued_date" name="price_issued_date"
+                                                                placeholder="Select Date">
+                                                            <span class="input-group-text"><i
+                                                                    class="mdi mdi-calendar"></i></span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
