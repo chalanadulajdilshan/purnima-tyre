@@ -486,12 +486,14 @@ $dag_id = 'DC/00/' . ($lastId + 1);
                     <table id="maindagTable" class="table table-bordered table-hover dt-responsive nowrap w-100">
                         <thead>
                             <tr>
+                                <th style="width:30px;"></th>
                                 <th>#</th>
                                 <th>Ref No</th>
                                 <th>Company Name</th>
                                 <th>Company Receipt No</th>
                                 <th>Company Issued Date</th>
                                 <th>Company Status</th>
+                                <th>Items</th>
                             </tr>
                         </thead>
 

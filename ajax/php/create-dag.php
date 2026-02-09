@@ -179,7 +179,52 @@ if (isset($_POST['load_dags'])) {
         $key++;
         $DAG_COMPANY = new DagCompany($dag['dag_company_id']);
 
-        $html .= '<tr class="select-dag" data-id="' . $dag['id'] . '"
+        // Get item count and items for this DAG
+        $DAG_ITEM = new DagItem(null);
+        $dag_items = $DAG_ITEM->getByValuesDagId($dag['id']);
+        $item_count = count($dag_items);
+
+        // Build child items HTML for expandable row
+        $items_html = '';
+        if ($item_count > 0) {
+            $items_html = '<table class="table table-sm table-bordered mb-0" style="background-color: #f8f9fa;">
+                <thead class="table-light">
+                    <tr>
+                        <th>My Number</th>
+                        <th>Size</th>
+                        <th>Belt Design</th>
+                        <th>Serial No</th>
+                        <th>Vehicle No</th>
+                        <th>Job Number</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>';
+            foreach ($dag_items as $item) {
+                $my_number = !empty($item['my_number']) ? htmlspecialchars($item['my_number']) : '<span class="text-muted">N/A</span>';
+                $size_name = !empty($item['size_name']) ? htmlspecialchars($item['size_name']) : '<span class="text-muted">N/A</span>';
+                $belt_title = !empty($item['belt_title']) ? htmlspecialchars($item['belt_title']) : '<span class="text-muted">N/A</span>';
+                $serial = !empty($item['serial_number']) ? htmlspecialchars($item['serial_number']) : '<span class="text-muted">N/A</span>';
+                $vehicle = !empty($item['vehicle_no']) ? htmlspecialchars($item['vehicle_no']) : '<span class="text-muted">N/A</span>';
+                $job = !empty($item['job_number']) ? htmlspecialchars($item['job_number']) : '<span class="text-muted">N/A</span>';
+                $status = !empty($item['status']) ? htmlspecialchars(ucfirst($item['status'])) : '<span class="text-muted">N/A</span>';
+
+                $items_html .= '<tr>
+                    <td><strong>' . $my_number . '</strong></td>
+                    <td>' . $size_name . '</td>
+                    <td>' . $belt_title . '</td>
+                    <td>' . $serial . '</td>
+                    <td>' . $vehicle . '</td>
+                    <td>' . $job . '</td>
+                    <td>' . $status . '</td>
+                </tr>';
+            }
+            $items_html .= '</tbody></table>';
+        } else {
+            $items_html = '<div class="text-muted p-2">No items found</div>';
+        }
+
+        $html .= '<tr class="select-dag dag-parent-row" data-id="' . $dag['id'] . '"
                     data-ref_no="' . htmlspecialchars($dag['ref_no']) . '"
                     data-department_id="' . ($dag['department_id'] ?? '') . '"
                     data-customer_id="' . ($dag['customer_id'] ?? '') . '"
@@ -193,12 +238,19 @@ if (isset($_POST['load_dags'])) {
                     data-company_issued_date="' . ($dag['company_issued_date'] ?? '') . '"
                     data-company_status="' . ($dag['company_status'] ?? 'pending') . '"
                     data-remark="' . htmlspecialchars($dag['remark'] ?? '') . '">
+                    <td class="details-control" style="cursor: pointer;">
+                        <span class="mdi mdi-plus-circle-outline" style="font-size:18px;"></span>
+                    </td>
                     <td>' . $key . '</td>
                     <td>' . htmlspecialchars($dag['ref_no']) . '</td>
                     <td>' . htmlspecialchars($DAG_COMPANY->name ?? 'N/A') . '</td>
                     <td>' . htmlspecialchars($dag['receipt_no'] ?? 'N/A') . '</td>
                     <td>' . htmlspecialchars($dag['company_issued_date'] ?? 'N/A') . '</td>
                     <td>' . htmlspecialchars($dag['company_status'] ?? 'pending') . '</td>
+                    <td><span class="badge bg-info">' . $item_count . '</span></td>
+                </tr>
+                <tr class="dag-child-row" style="display: none;">
+                    <td colspan="8" style="padding: 0 15px 15px 40px;">' . $items_html . '</td>
                 </tr>';
     }
 
@@ -246,6 +298,62 @@ if (isset($_POST['get_next_ref_no'])) {
         'status' => 'success',
         'ref_no' => $dag_id
     ]);
+    exit;
+}
+
+// Reassign a rejected dag_item to a new DAG (instead of duplicating)
+if (isset($_POST['reassign_dag_item'])) {
+    $dag_item_id = isset($_POST['dag_item_id']) ? (int) $_POST['dag_item_id'] : 0;
+
+    if ($dag_item_id <= 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Invalid DAG Item ID']);
+        exit;
+    }
+
+    // Get the existing dag_item
+    $DAG_ITEM = new DagItem($dag_item_id);
+
+    if (!$DAG_ITEM->id) {
+        echo json_encode(['status' => 'error', 'message' => 'DAG Item not found']);
+        exit;
+    }
+
+    // Create a new DAG record
+    $DAG = new DAG(NULL);
+    $lastId = $DAG->getLastID();
+    $DAG->ref_no = 'DC/00/' . ($lastId + 1);
+    $DAG->remark = '';
+    $DAG->dag_company_id = null;
+    $DAG->receipt_no = null;
+    $DAG->company_issued_date = null;
+    $DAG->company_status = 'pending';
+
+    $new_dag_id = $DAG->create();
+
+    if (!$new_dag_id) {
+        echo json_encode(['status' => 'error', 'message' => 'Failed to create new DAG']);
+        exit;
+    }
+
+    // Update the existing dag_item to link to the new DAG
+    $DAG_ITEM->dag_id = $new_dag_id;
+    $DAG_ITEM->status = 'pending';
+    $DAG_ITEM->dag_company_id = null;
+    $DAG_ITEM->company_issued_date = null;
+    $DAG_ITEM->company_delivery_date = null;
+    $DAG_ITEM->receipt_no = null;
+    $DAG_ITEM->job_number = null;
+
+    if ($DAG_ITEM->update()) {
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Item reassigned to new DAG successfully',
+            'new_dag_id' => $new_dag_id,
+            'ref_no' => $DAG->ref_no
+        ]);
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'Failed to update DAG Item']);
+    }
     exit;
 }
 ?>
