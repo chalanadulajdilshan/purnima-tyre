@@ -58,6 +58,7 @@ include_once(dirname(__FILE__) . '/Dag.php');
 include_once(dirname(__FILE__) . '/DagItem.php');
 include_once(dirname(__FILE__) . '/StockItemTmp.php');
 include_once(dirname(__FILE__) . '/DagCompany.php');
+include_once(dirname(__FILE__) . '/CompanyMaster.php');
 include_once(dirname(__FILE__) . '/ArnQrGenaretor.php');
 include_once(dirname(__FILE__) . '/Expenses.php');
 include_once(dirname(__FILE__) . '/NonPermissionPage.php');

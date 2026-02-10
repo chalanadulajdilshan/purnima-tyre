@@ -26,6 +26,44 @@ $(document).ready(function () {
         $('#complaintModal').modal('show');
     });
 
+    // Load companies into the company modal table
+    function loadCompanies() {
+        $.ajax({
+            url: 'ajax/php/company-handling.php',
+            type: 'POST',
+            data: { load_companies: true },
+            dataType: 'json',
+            success: function (response) {
+                if (response.status === 'success') {
+                    $('#companyTableBody').html(response.html);
+                    if ($.fn.DataTable.isDataTable('#companyTable')) {
+                        $('#companyTable').DataTable().destroy();
+                    }
+                    $('#companyTable').DataTable();
+                }
+            }
+        });
+    }
+
+    // Open Company Modal
+    $('#searchCompanyBtn').click(function () {
+        loadCompanies();
+        $('#companyModal').modal('show');
+    });
+
+    // Select Company from modal
+    $(document).on('click', '.select-company', function () {
+        var id = $(this).data('id');
+        var code = $(this).data('code');
+        var name = $(this).data('name');
+
+        $('#company_id').val(id);
+        $('#company_name').val(name);
+        $('#company_number').val(code);
+
+        $('#companyModal').modal('hide');
+    });
+
     // Checkbox Logic: Allow multiple selections
     $('.status-checkbox').change(function () {
 
@@ -69,9 +107,11 @@ $(document).ready(function () {
         var price_issued_date = $(this).data('price_issued_date');
         var issued_invoice_number = $(this).data('issued_invoice_number');
         var rejection_reason = $(this).data('rejection_reason');
+        var rejection_date = $(this).data('rejection_date');
         var company_invoice_number = $(this).data('company_invoice_number');
         var received_invoice_number = $(this).data('received_invoice_number');
         var special_remark = $(this).data('special_remark');
+        var special_request_date = $(this).data('special_request_date');
         var status_remark = $(this).data('status_remark');
         var general_remark = $(this).data('general_remark');
 
@@ -88,15 +128,18 @@ $(document).ready(function () {
             $('#company_name').val(company_name);
             $('#sent_date').val(sent_date);
             $('#company_status').val(company_status);
+            $('#company_id').val($(this).data('company_id'));
 
             // Populate Specific Fields
             $('#price_amount').val(price_amount);
             $('#price_issued_date').val(price_issued_date);
             $('#issued_invoice_number').val(issued_invoice_number);
             $('#rejection_reason').val(rejection_reason);
+            $('#rejection_date').val(rejection_date);
             $('#company_invoice_number').val(company_invoice_number);
             $('#received_invoice_number').val(received_invoice_number);
             $('#special_remark').val(special_remark);
+            $('#special_request_date').val(special_request_date);
             $('#status_remark').val(status_remark);
             $('#general_remark').val(general_remark);
 
@@ -130,15 +173,18 @@ $(document).ready(function () {
             $('#company_name').val('');
             $('#sent_date').val('');
             $('#company_status').val('');
+            $('#company_id').val('');
 
             // Clear new fields
             $('#price_amount').val('');
             $('#price_issued_date').val('');
             $('#issued_invoice_number').val('');
             $('#rejection_reason').val('');
+            $('#rejection_date').val('');
             $('#company_invoice_number').val('');
             $('#received_invoice_number').val('');
             $('#special_remark').val('');
+            $('#special_request_date').val('');
             $('#status_remark').val('');
             $('#general_remark').val('');
 
@@ -186,9 +232,11 @@ $(document).ready(function () {
             price_issued_date: $('#price_issued_date').val(),
             issued_invoice_number: $('#issued_invoice_number').val(),
             rejection_reason: $('#rejection_reason').val(),
+            rejection_date: $('#rejection_date').val(),
             company_invoice_number: $('#company_invoice_number').val(),
             received_invoice_number: $('#received_invoice_number').val(),
             special_remark: $('#special_remark').val(),
+            special_request_date: $('#special_request_date').val(),
             status_remark: $('#status_remark').val(),
             general_remark: $('#general_remark').val()
         };

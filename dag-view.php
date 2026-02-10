@@ -79,7 +79,7 @@ $company_id = 'DV00' . ($lastId + 1);
                                                         foreach ($DEPARTMENT_MASTER->getActiveDepartment() as $departments) {
                                                             if ($US->type != 1) {
                                                                 if ($departments['id'] == $US->department_id) {
-                                                        ?>
+                                                                    ?>
                                                                     <option value="<?php echo $departments['id'] ?>">
                                                                         <?php echo $departments['name'] ?>
                                                                     </option>
@@ -89,7 +89,7 @@ $company_id = 'DV00' . ($lastId + 1);
                                                                 <option value="<?php echo $departments['id'] ?>">
                                                                     <?php echo $departments['name'] ?>
                                                                 </option>
-                                                        <?php
+                                                                <?php
                                                             }
                                                         } ?>
 
@@ -98,16 +98,16 @@ $company_id = 'DV00' . ($lastId + 1);
                                             </div>
 
                                             <div class="col-md-3">
-                                                <label for="company_id" class="form-label">DAG Company</label>
+                                                <label for="company_id" class="form-label">Company</label>
                                                 <div class="input-group mb-3">
                                                     <select id="company_id" name="company_id" class="form-select">
 
                                                         <?php
-                                                        $DAG_COMPANY = new DagCompany(NUll);
-                                                        foreach ($DAG_COMPANY->getActiveDagCompany() as $dag_company) {
+                                                        $DAG_COMPANY = new CompanyMaster(NUll);
+                                                        foreach ($DAG_COMPANY->getActiveCompany() as $dag_company) {
                                                             if ($US->type != 1) {
                                                                 if ($dag_company['id'] == $US->id) {  // Changed to == and using id instead of dag_company_id
-                                                        ?>
+                                                                    ?>
                                                                     <option value="<?php echo $dag_company['id'] ?>">
                                                                         <?php echo $dag_company['name'] ?>
                                                                     </option>
@@ -117,7 +117,7 @@ $company_id = 'DV00' . ($lastId + 1);
                                                                 <option value="<?php echo $dag_company['id'] ?>">
                                                                     <?php echo $dag_company['name'] ?>
                                                                 </option>
-                                                        <?php
+                                                                <?php
                                                             }
                                                         } ?>
 
@@ -150,14 +150,15 @@ $company_id = 'DV00' . ($lastId + 1);
 
                                             <div class="col-md-3">
                                                 <label for="invoice_no" class="form-label">Invoice No </label>
-                                                <input id="invoice_no" name="invoice_no" type="text" class="form-control"
-                                                    placeholder="Enter Invoice No">
+                                                <input id="invoice_no" name="invoice_no" type="text"
+                                                    class="form-control" placeholder="Enter Invoice No">
                                             </div>
 
                                             <div class="col-md-3">
                                                 <label for="dateInput" class="form-label">Date (YYYY-MM)</label>
                                                 <div class="input-group">
-                                                    <input type="month" class="form-control" id="dateInput" name="date" autocomplete="off">
+                                                    <input type="month" class="form-control" id="dateInput" name="date"
+                                                        autocomplete="off">
                                                 </div>
                                             </div>
 
@@ -179,8 +180,8 @@ $company_id = 'DV00' . ($lastId + 1);
 
 
     <!-- model open here -->
-    <div class="modal fade bs-example-modal-xl" id="beltModel" tabindex="-1" role="dialog" aria-labelledby="myExtraLargeModalLabel"
-        aria-hidden="true">
+    <div class="modal fade bs-example-modal-xl" id="beltModel" tabindex="-1" role="dialog"
+        aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
@@ -209,7 +210,7 @@ $company_id = 'DV00' . ($lastId + 1);
                                     $BELT = new BeltMaster(null);
                                     foreach ($BELT->all() as $key => $belt) {
                                         $key++;
-                                    ?>
+                                        ?>
                                         <tr class="select-belt" data-id="<?php echo $belt['id']; ?>"
                                             data-code="<?php echo htmlspecialchars($belt['code']); ?>"
                                             data-name="<?php echo htmlspecialchars($belt['name']); ?>"
@@ -247,14 +248,14 @@ $company_id = 'DV00' . ($lastId + 1);
     <script src="ajax/js/belt-master.js"></script>
 
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             // Set current month as default
             const now = new Date();
             const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
             $('#dateInput').val(currentMonth);
 
             // Clicking on the calendar icon should focus the input
-            $('.input-group-text').on('click', function() {
+            $('.input-group-text').on('click', function () {
                 $('#dateInput').focus();
             });
         });

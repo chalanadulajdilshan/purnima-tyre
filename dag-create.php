@@ -137,8 +137,8 @@ $dag_id = 'DC/00/' . ($lastId + 1);
                                                         class="form-control">
                                                         <option value="0">-- Select Company --</option>
                                                         <?php
-                                                        $DAG_COMPANY = new DagCompany(null);
-                                                        foreach ($DAG_COMPANY->getActiveDagCompany() as $dag_company) {
+                                                        $DAG_COMPANY = new CompanyMaster(null);
+                                                        foreach ($DAG_COMPANY->getActiveCompany() as $dag_company) {
                                                             ?>
                                                             <option value="<?php echo $dag_company['id'] ?>">
                                                                 <?php echo $dag_company['name'] ?>
@@ -402,8 +402,8 @@ $dag_id = 'DC/00/' . ($lastId + 1);
                                             <hr>
 
                                             <div class="col-md-5 mt-3">
-                                                <label for="remark" class="form-label">Remarks validate to
-                                                    update</label>
+                                                <label for="remark" class="form-label">Remarks</label>
+
                                                 <textarea id="remark" name="remark" class="form-control" rows="4"
                                                     placeholder="Enter any remarks or notes..."></textarea>
                                             </div>

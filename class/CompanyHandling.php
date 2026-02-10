@@ -12,9 +12,11 @@ class CompanyHandling
     public $price_issued_date;
     public $issued_invoice_number;
     public $rejection_reason;
+    public $rejection_date;
     public $company_invoice_number;
     public $received_invoice_number;
     public $special_remark;
+    public $special_request_date;
     public $status_remark;
     public $general_remark;
     public $created_at;
@@ -38,9 +40,11 @@ class CompanyHandling
                 $this->price_issued_date = $result['price_issued_date'];
                 $this->issued_invoice_number = $result['issued_invoice_number'];
                 $this->rejection_reason = $result['rejection_reason'];
+                $this->rejection_date = $result['rejection_date'];
                 $this->company_invoice_number = $result['company_invoice_number'];
                 $this->received_invoice_number = $result['received_invoice_number'];
                 $this->special_remark = $result['special_remark'];
+                $this->special_request_date = $result['special_request_date'];
                 $this->status_remark = $result['status_remark'];
                 $this->general_remark = $result['general_remark'];
                 $this->created_at = $result['created_at'];
@@ -62,21 +66,23 @@ class CompanyHandling
         $this->price_issued_date = empty($this->price_issued_date) ? 'NULL' : "'" . mysqli_real_escape_string($db->DB_CON, $this->price_issued_date) . "'";
         $this->issued_invoice_number = mysqli_real_escape_string($db->DB_CON, $this->issued_invoice_number);
         $this->rejection_reason = mysqli_real_escape_string($db->DB_CON, $this->rejection_reason);
+        $this->rejection_date = empty($this->rejection_date) ? 'NULL' : "'" . mysqli_real_escape_string($db->DB_CON, $this->rejection_date) . "'";
         $this->company_invoice_number = mysqli_real_escape_string($db->DB_CON, $this->company_invoice_number);
         $this->received_invoice_number = mysqli_real_escape_string($db->DB_CON, $this->received_invoice_number);
         $this->special_remark = mysqli_real_escape_string($db->DB_CON, $this->special_remark);
+        $this->special_request_date = empty($this->special_request_date) ? 'NULL' : "'" . mysqli_real_escape_string($db->DB_CON, $this->special_request_date) . "'";
         $this->status_remark = mysqli_real_escape_string($db->DB_CON, $this->status_remark);
         $this->general_remark = mysqli_real_escape_string($db->DB_CON, $this->general_remark);
 
         $query = "INSERT INTO `company_handling` (
             `complaint_id`, `company_number`, `company_name`, `sent_date`, `company_status`,
-            `price_amount`, `price_issued_date`, `issued_invoice_number`, `rejection_reason`,
-            `company_invoice_number`, `received_invoice_number`, `special_remark`,
+            `price_amount`, `price_issued_date`, `issued_invoice_number`, `rejection_reason`, `rejection_date`,
+            `company_invoice_number`, `received_invoice_number`, `special_remark`, `special_request_date`,
             `status_remark`, `general_remark`
         ) VALUES (
             '{$this->complaint_id}', '{$this->company_number}', '{$this->company_name}', '{$this->sent_date}', '{$this->company_status}',
-            $this->price_amount, $this->price_issued_date, '{$this->issued_invoice_number}', '{$this->rejection_reason}',
-            '{$this->company_invoice_number}', '{$this->received_invoice_number}', '{$this->special_remark}',
+            $this->price_amount, $this->price_issued_date, '{$this->issued_invoice_number}', '{$this->rejection_reason}', $this->rejection_date,
+            '{$this->company_invoice_number}', '{$this->received_invoice_number}', '{$this->special_remark}', $this->special_request_date,
             '{$this->status_remark}', '{$this->general_remark}'
         )";
 
@@ -100,9 +106,11 @@ class CompanyHandling
         $this->price_issued_date = empty($this->price_issued_date) ? 'NULL' : "'" . mysqli_real_escape_string($db->DB_CON, $this->price_issued_date) . "'";
         $this->issued_invoice_number = mysqli_real_escape_string($db->DB_CON, $this->issued_invoice_number);
         $this->rejection_reason = mysqli_real_escape_string($db->DB_CON, $this->rejection_reason);
+        $this->rejection_date = empty($this->rejection_date) ? 'NULL' : "'" . mysqli_real_escape_string($db->DB_CON, $this->rejection_date) . "'";
         $this->company_invoice_number = mysqli_real_escape_string($db->DB_CON, $this->company_invoice_number);
         $this->received_invoice_number = mysqli_real_escape_string($db->DB_CON, $this->received_invoice_number);
         $this->special_remark = mysqli_real_escape_string($db->DB_CON, $this->special_remark);
+        $this->special_request_date = empty($this->special_request_date) ? 'NULL' : "'" . mysqli_real_escape_string($db->DB_CON, $this->special_request_date) . "'";
         $this->status_remark = mysqli_real_escape_string($db->DB_CON, $this->status_remark);
         $this->general_remark = mysqli_real_escape_string($db->DB_CON, $this->general_remark);
 
@@ -116,9 +124,11 @@ class CompanyHandling
             `price_issued_date` = $this->price_issued_date,
             `issued_invoice_number` = '{$this->issued_invoice_number}',
             `rejection_reason` = '{$this->rejection_reason}',
+            `rejection_date` = $this->rejection_date,
             `company_invoice_number` = '{$this->company_invoice_number}',
             `received_invoice_number` = '{$this->received_invoice_number}',
             `special_remark` = '{$this->special_remark}',
+            `special_request_date` = $this->special_request_date,
             `status_remark` = '{$this->status_remark}',
             `general_remark` = '{$this->general_remark}'
             WHERE `id` = '{$this->id}'";

@@ -229,7 +229,7 @@ jQuery(document).ready(function () {
           <td>
             <button type="button" class="btn btn-warning btn-sm edit-item">Edit</button>
             <button type="button" class="btn btn-danger btn-sm remove-item">Remove</button>
-            ${['rejected_company', 'rejected_store'].includes(statusValue) ? '<button type="button" class="btn btn-primary btn-sm re-dag-item">New DAG</button>' : ''}
+            
           </td>
         </tr>
       `);
@@ -402,16 +402,8 @@ jQuery(document).ready(function () {
     }
 
 
-    if (!$("#remark").val().trim()) {
-      swal({
-        title: "Error!",
-        text: "Dag Remark added.!",
-        type: "error",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-      return;
-    }
+    // Remark validation removed
+
 
 
     $(".someBlock").preloader();
@@ -519,7 +511,7 @@ jQuery(document).ready(function () {
 
     swal({
       title: "Confirm New DAG?",
-      text: "This will create a new DAG and reassign this item to it. The item will be removed from the current DAG.",
+      text: "This will create a new DAG and reassign this item to it. The item will remain here as a history record.",
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#34c38f",
@@ -537,17 +529,22 @@ jQuery(document).ready(function () {
         dataType: "json",
         success: function (res) {
           if (res.status === "success") {
-            // Remove the row from the current table
-            row.remove();
+            // Update the row in-place to show reassignment trail
+            const statusCell = row.find("td:eq(10)");
+            const actionCell = row.find("td:last");
 
-            // Check if there are any items left
-            if ($("#dagItemsBody .dag-item-row").length === 0) {
-              $("#dagItemsBody").html(`
-                <tr id="noDagItemRow">
-                  <td colspan="15" class="text-center text-muted">No items added</td>
-                </tr>
-              `);
-            }
+            // Update status to show trail
+            statusCell.html(
+              `<span class="badge bg-danger">${statusCell.find("input[name='status[]']").val()}</span>` +
+              `<br><span class="badge bg-info mt-1">→ ${res.ref_no}</span>` +
+              `<input type="hidden" name="status[]" value="${statusCell.find("input[name='status[]']").val()}">`
+            );
+
+            // Replace action buttons with "Reassigned" badge
+            actionCell.html(
+              `<input type="hidden" name="dag_item_id[]" class="dag_item_id" value="${dagItemId}">` +
+              `<span class="badge bg-secondary">Reassigned</span>`
+            );
 
             swal({
               title: "Success!",
@@ -596,11 +593,25 @@ jQuery(document).ready(function () {
       data: { load_dags: true, search: searchTerm },
       dataType: "json",
       success: function (response) {
+        // Destroy existing DataTable if it exists
+        if ($.fn.DataTable.isDataTable('#maindagTable')) {
+          $('#maindagTable').DataTable().destroy();
+        }
+
         if (response.status === "success") {
           $("#mainDagTableBody").html(response.html);
         } else {
           $("#mainDagTableBody").html('<tr><td colspan="8" class="text-center text-muted">No DAGs found</td></tr>');
         }
+
+        // Re-initialize DataTable
+        $('#maindagTable').DataTable({
+          "ordering": false,
+          "pageLength": 10,
+          "bLengthChange": true,
+          "bInfo": true,
+          "bFilter": true // This enables the secondary search
+        });
       },
       error: function () {
         $("#mainDagTableBody").html('<tr><td colspan="8" class="text-center text-danger">Error loading DAGs</td></tr>');
@@ -700,12 +711,33 @@ jQuery(document).ready(function () {
             });
 
             try {
-              // Determine if this item has a rejected status
+              // Determine item status flags
               const isRejected = ['rejected_company', 'rejected_store'].includes(item.status);
+              const isReassigned = !!item.reassigned_to_ref_no;
               const rowClass = isRejected ? 'dag-item-row table-danger' : 'dag-item-row';
-              const statusDisplay = isRejected
-                ? `<span class="badge bg-danger">${item.status || 'N/A'}</span>`
-                : (item.status || '<span class="text-muted">N/A</span>');
+
+              // Build status display
+              let statusDisplay;
+              if (isReassigned) {
+                statusDisplay = `<span class="badge bg-danger">${item.status}</span><br><span class="badge bg-info mt-1">→ ${item.reassigned_to_ref_no}</span>`;
+              } else if (isRejected) {
+                statusDisplay = `<span class="badge bg-danger">${item.status || 'N/A'}</span>`;
+              } else {
+                statusDisplay = item.status || '<span class="text-muted">N/A</span>';
+              }
+
+              // Build action buttons
+              let actionButtons = `<input type="hidden" name="dag_item_id[]" class="dag_item_id" value="${item.id || ''}">`;
+              if (isReassigned) {
+                // Already reassigned - no edit/remove/new dag, just show info
+                actionButtons += `<span class="badge bg-secondary">Reassigned</span>`;
+              } else {
+                actionButtons += `<button type="button" class="btn btn-warning btn-sm edit-item">Edit</button>
+      <button type="button" class="btn btn-sm btn-danger remove-item">Remove</button>`;
+                if (isRejected) {
+                  actionButtons += ` <button type="button" class="btn btn-primary btn-sm re-dag-item" data-item-id="${item.id}">New DAG</button>`;
+                }
+              }
 
               const row = `
   <tr class="${rowClass}" data-dag-item-id="${item.id || ''}">
@@ -724,10 +756,7 @@ jQuery(document).ready(function () {
     <td>${item.brand_name || '<span class="text-muted">N/A</span>'}<input type="hidden" name="brand_id[]" class="brand_id" value="${item.brand_id}"></td>
     <td>${formatDateOrNA(item.company_delivery_date)}<input type="hidden" name="company_delivery_date[]" class="company_delivery_date" value="${item.company_delivery_date || ''}"></td>
     <td>
-      <input type="hidden" name="dag_item_id[]" class="dag_item_id" value="${item.id || ''}">
-      <button type="button" class="btn btn-warning btn-sm edit-item">Edit</button>
-      <button type="button" class="btn btn-sm btn-danger remove-item">Remove</button>
-      ${isRejected ? `<button type="button" class="btn btn-primary btn-sm re-dag-item" data-item-id="${item.id}">New DAG</button>` : ''}
+      ${actionButtons}
     </td>
   </tr>`;
 
