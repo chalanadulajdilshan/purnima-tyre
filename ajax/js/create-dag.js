@@ -1,5 +1,19 @@
 jQuery(document).ready(function () {
 
+  // Helper function to format date or return N/A for empty/invalid dates
+  function formatDateOrNA(dateValue) {
+    if (!dateValue || dateValue === '' || dateValue === '0000-00-00' || dateValue === null) {
+      return '<span class="text-muted">N/A</span>';
+    }
+    return dateValue;
+  }
+
+  // Helper function to get page_id from URL
+  function getPageId() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('page_id') || '';
+  }
+
   function loadDagItemsToTable(items) {
     $("#dagItemsBodyInvoice").empty();
 
@@ -494,80 +508,66 @@ jQuery(document).ready(function () {
 
 
   $(document).on("click", ".re-dag-item", function () {
-    const row = $(this).closest("tr");
+    const button = $(this);
+    const row = button.closest("tr");
+    const dagItemId = button.data("item-id") || row.data("dag-item-id");
 
-    // Extract details before resetting
-    const myNumber = row.find(".my_number").val();
-    const sizeDesignId = row.find(".size_id").val();
-    const sizeDesignText = row.closest("tr").find("td:eq(4)").text(); // Size Text
-    const beltDesignId = row.find(".belt_id").val();
-    const beltDesignText = row.closest("tr").find("td:eq(5)").text(); // Belt Text
-    const serialNum = row.find(".serial_num1").val();
-    const customerId = row.find(".item_customer_id").val();
-    const customerCode = row.closest("tr").find("td:eq(7)").contents().first().text().trim(); // Customer Code
-    const customerName = row.find(".customer_name").val();
-    const vehicleNo = row.find(".vehicle_no").val();
-    const brandId = row.find(".brand_id").val();
-    const brandText = row.closest("tr").find("td:eq(12)").text(); // Brand Text
-    const ucValue = row.find(".uc").val();
+    if (!dagItemId) {
+      swal("Error!", "Could not identify the item to reassign.", "error");
+      return;
+    }
 
     swal({
       title: "Confirm New DAG?",
-      text: "This will clear the current session and start a new DAG for this item.",
+      text: "This will create a new DAG and reassign this item to it. The item will be removed from the current DAG.",
       type: "warning",
       showCancelButton: true,
       confirmButtonColor: "#34c38f",
-      confirmButtonText: "Yes, Start New DAG!",
+      confirmButtonText: "Yes, Reassign to New DAG!",
       closeOnConfirm: false
     }, function () {
-      // 1. Reset form and session
-      resetDagForm();
-      $("#dagItemsBody").empty().append(`
-        <tr id="noDagItemRow">
-          <td colspan="15" class="text-center text-muted">No items added</td>
-        </tr>
-      `);
-
-      // 2. Fetch new Ref No
+      // Call the reassign endpoint
       $.ajax({
         url: "ajax/php/create-dag.php",
         type: "POST",
-        data: { get_next_ref_no: true },
+        data: {
+          reassign_dag_item: true,
+          dag_item_id: dagItemId
+        },
         dataType: "json",
         success: function (res) {
           if (res.status === "success") {
-            $("#ref_no").val(res.ref_no);
+            // Remove the row from the current table
+            row.remove();
 
-            // 3. Add the cloned item
-            const newRow = $(`
-                <tr class="dag-item-row">
-                  <td>${myNumber || '<span class="text-muted">N/A</span>'}<input type="hidden" name="my_number[]" class="my_number" value="${myNumber}"></td>
-                  <td><span class="text-muted">N/A</span><input type="hidden" name="received_date[]" class="received_date" value=""></td>
-                  <td><span class="text-muted">N/A</span><input type="hidden" name="customer_issue_date[]" class="customer_issue_date" value=""></td>
-                  <td><span class="text-muted">N/A</span><input type="hidden" name="customer_request_date[]" class="customer_request_date" value=""></td>
-                  <td>${sizeDesignText || '<span class="text-muted">N/A</span>'}<input type="hidden" name="size_design_id[]" class="size_id" value="${sizeDesignId}"></td>
-                  <td>${beltDesignText || '<span class="text-muted">N/A</span>'}<input type="hidden" name="belt_design_id[]" class="belt_id" value="${beltDesignId}"></td>
-                  <td>${serialNum || '<span class="text-muted">N/A</span>'}<input type="hidden" name="serial_num1[]" class="serial_num1" value="${serialNum}"></td>
-                  <td>${customerCode || '<span class="text-muted">N/A</span>'}<input type="hidden" name="item_customer_id[]" class="item_customer_id" value="${customerId}"><input type="hidden" name="customer_name[]" class="customer_name" value="${customerName}"></td>
-                  <td>${vehicleNo || '<span class="text-muted">N/A</span>'}<input type="hidden" name="vehicle_no[]" class="vehicle_no" value="${vehicleNo}"></td>
-                  <td><span class="text-muted">N/A</span><input type="hidden" name="job_number[]" value=""></td>
-                  <td>Pending DAG<input type="hidden" name="status[]" value="pending"></td>
-                  <td>${ucValue || '<span class="text-muted">N/A</span>'}<input type="hidden" name="uc[]" class="uc" value="${ucValue}"></td>
-                  <td>${brandText || '<span class="text-muted">N/A</span>'}<input type="hidden" name="brand_id[]" class="brand_id" value="${brandId}"></td>
-                  <td><span class="text-muted">N/A</span><input type="hidden" name="company_delivery_date[]" class="company_delivery_date" value=""></td>
-                  <td>
-                    <button type="button" class="btn btn-warning btn-sm edit-item">Edit</button>
-                    <button type="button" class="btn btn-danger btn-sm remove-item">Remove</button>
-                  </td>
+            // Check if there are any items left
+            if ($("#dagItemsBody .dag-item-row").length === 0) {
+              $("#dagItemsBody").html(`
+                <tr id="noDagItemRow">
+                  <td colspan="15" class="text-center text-muted">No items added</td>
                 </tr>
               `);
+            }
 
-            $("#noDagItemRow").hide();
-            $("#dagItemsBody").append(newRow);
-            swal("Success!", "Started new DAG session with the rejected item.", "success");
+            swal({
+              title: "Success!",
+              text: `Item has been reassigned to new DAG: ${res.ref_no}. You can now assign a new company to it.`,
+              type: "success",
+              confirmButtonText: "Open New DAG",
+              showCancelButton: true,
+              cancelButtonText: "Stay Here"
+            }, function (confirmed) {
+              if (confirmed) {
+                // Redirect to the new DAG for editing
+                window.location.href = `dag-create.php?page_id=${getPageId()}&dag_id=${res.new_dag_id}`;
+              }
+            });
           } else {
-            swal("Error!", "Failed to fetch new Ref No.", "error");
+            swal("Error!", res.message || "Failed to reassign item.", "error");
           }
+        },
+        error: function () {
+          swal("Error!", "An error occurred while reassigning the item.", "error");
         }
       });
     });
@@ -599,16 +599,39 @@ jQuery(document).ready(function () {
         if (response.status === "success") {
           $("#mainDagTableBody").html(response.html);
         } else {
-          $("#mainDagTableBody").html('<tr><td colspan="7" class="text-center text-muted">No DAGs found</td></tr>');
+          $("#mainDagTableBody").html('<tr><td colspan="8" class="text-center text-muted">No DAGs found</td></tr>');
         }
       },
       error: function () {
-        $("#mainDagTableBody").html('<tr><td colspan="7" class="text-center text-danger">Error loading DAGs</td></tr>');
+        $("#mainDagTableBody").html('<tr><td colspan="8" class="text-center text-danger">Error loading DAGs</td></tr>');
       }
     });
   }
 
-  $(document).on("click", ".select-dag", function () {
+  // Expand/collapse DAG item details on plus icon click
+  $(document).on("click", ".details-control", function (e) {
+    e.stopPropagation(); // Prevent triggering the select-dag click
+
+    const parentRow = $(this).closest("tr.dag-parent-row");
+    const childRow = parentRow.next("tr.dag-child-row");
+    const icon = $(this).find("span.mdi");
+
+    if (childRow.is(":visible")) {
+      // Collapse
+      childRow.hide();
+      icon.removeClass("mdi-minus-circle-outline").addClass("mdi-plus-circle-outline");
+    } else {
+      // Expand
+      childRow.show();
+      icon.removeClass("mdi-plus-circle-outline").addClass("mdi-minus-circle-outline");
+    }
+  });
+
+  $(document).on("click", ".select-dag", function (e) {
+    // Don't trigger if clicking on the expand button
+    if ($(e.target).closest(".details-control").length > 0) {
+      return;
+    }
     const data = $(this).data();
 
     $("#id").val(data.id);
@@ -677,26 +700,34 @@ jQuery(document).ready(function () {
             });
 
             try {
+              // Determine if this item has a rejected status
+              const isRejected = ['rejected_company', 'rejected_store'].includes(item.status);
+              const rowClass = isRejected ? 'dag-item-row table-danger' : 'dag-item-row';
+              const statusDisplay = isRejected
+                ? `<span class="badge bg-danger">${item.status || 'N/A'}</span>`
+                : (item.status || '<span class="text-muted">N/A</span>');
+
               const row = `
-  <tr class="dag-item-row">
+  <tr class="${rowClass}" data-dag-item-id="${item.id || ''}">
     <td>${item.my_number || '<span class="text-muted">N/A</span>'}<input type="hidden" name="my_number[]" class="my_number" value="${item.my_number || ''}"></td>
-    <td>${item.received_date || '<span class="text-muted">N/A</span>'}<input type="hidden" name="received_date[]" class="received_date" value="${item.received_date || ''}"></td>
-    <td>${item.customer_issue_date || '<span class="text-muted">N/A</span>'}<input type="hidden" name="customer_issue_date[]" class="customer_issue_date" value="${item.customer_issue_date || ''}"></td>
-    <td>${item.customer_request_date || '<span class="text-muted">N/A</span>'}<input type="hidden" name="customer_request_date[]" class="customer_request_date" value="${item.customer_request_date || ''}"></td>
+    <td>${formatDateOrNA(item.received_date)}<input type="hidden" name="received_date[]" class="received_date" value="${item.received_date || ''}"></td>
+    <td>${formatDateOrNA(item.customer_issue_date)}<input type="hidden" name="customer_issue_date[]" class="customer_issue_date" value="${item.customer_issue_date || ''}"></td>
+    <td>${formatDateOrNA(item.customer_request_date)}<input type="hidden" name="customer_request_date[]" class="customer_request_date" value="${item.customer_request_date || ''}"></td>
     <td>${item.size_name || '<span class="text-muted">N/A</span>'}<input type="hidden" name="size_design_id[]" class="size_id" value="${item.size_id}"></td>
     <td>${item.belt_title || '<span class="text-muted">N/A</span>'}<input type="hidden" name="belt_design_id[]" class="belt_id" value="${item.belt_id}"></td>
     <td>${item.serial_number || '<span class="text-muted">N/A</span>'}<input type="hidden" name="serial_num1[]" class="serial_num1" value="${item.serial_number}"></td>
     <td>${item.customer_code || '<span class="text-muted">N/A</span>'}<input type="hidden" name="item_customer_id[]" class="item_customer_id" value="${item.customer_id || ''}"><input type="hidden" name="customer_name[]" class="customer_name" value="${item.customer_name || ''}"></td>
     <td>${item.vehicle_no || '<span class="text-muted">N/A</span>'}<input type="hidden" name="vehicle_no[]" class="vehicle_no" value="${item.vehicle_no || ''}"></td>
     <td>${item.job_number || '<span class="text-muted">N/A</span>'}<input type="hidden" name="job_number[]" value="${item.job_number}"></td>
-    <td>${item.status || '<span class="text-muted">N/A</span>'}<input type="hidden" name="status[]" value="${item.status}"></td>
+    <td>${statusDisplay}<input type="hidden" name="status[]" value="${item.status}"></td>
     <td>${item.uc || '<span class="text-muted">N/A</span>'}<input type="hidden" name="uc[]" class="uc" value="${item.uc}"></td>
     <td>${item.brand_name || '<span class="text-muted">N/A</span>'}<input type="hidden" name="brand_id[]" class="brand_id" value="${item.brand_id}"></td>
-    <td>${item.company_delivery_date || '<span class="text-muted">N/A</span>'}<input type="hidden" name="company_delivery_date[]" class="company_delivery_date" value="${item.company_delivery_date || ''}"></td>
+    <td>${formatDateOrNA(item.company_delivery_date)}<input type="hidden" name="company_delivery_date[]" class="company_delivery_date" value="${item.company_delivery_date || ''}"></td>
     <td>
+      <input type="hidden" name="dag_item_id[]" class="dag_item_id" value="${item.id || ''}">
       <button type="button" class="btn btn-warning btn-sm edit-item">Edit</button>
       <button type="button" class="btn btn-sm btn-danger remove-item">Remove</button>
-      ${['rejected_company', 'rejected_store'].includes(item.status) ? '<button type="button" class="btn btn-primary btn-sm re-dag-item">New DAG</button>' : ''}
+      ${isRejected ? `<button type="button" class="btn btn-primary btn-sm re-dag-item" data-item-id="${item.id}">New DAG</button>` : ''}
     </td>
   </tr>`;
 
