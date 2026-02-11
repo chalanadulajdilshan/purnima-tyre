@@ -87,6 +87,21 @@ $(document).ready(function () {
         } else {
             $(sectionMap[id]).slideUp();
         }
+
+        // Dependency: Special Request requires Rejection
+        if (id === 'status_special_request' && this.checked) {
+            if (!$('#status_rejection').is(':checked')) {
+                $(this).prop('checked', false).trigger('change'); // Trigger to hide section too
+                swal("Warning", "Special Request can only be selected if Rejection is selected.", "warning");
+            }
+        }
+
+        // Dependency: Unchecking Rejection unchecks Special Request
+        if (id === 'status_rejection' && !this.checked) {
+            if ($('#status_special_request').is(':checked')) {
+                $('#status_special_request').prop('checked', false).trigger('change');
+            }
+        }
     });
 
     // Select Complaint
@@ -207,7 +222,7 @@ $(document).ready(function () {
         var company_number = $('#company_number').val();
         var company_name = $('#company_name').val();
         var sent_date = $('#sent_date').val();
-        var company_status = $('#company_status').val();
+        var company_status = $('#company_status').val() || 'Pending';
 
         if (!complaint_id) {
             swal("Error", "Please select a complaint.", "error");

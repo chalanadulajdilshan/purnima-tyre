@@ -118,18 +118,34 @@ class CustomerComplaint
     }
 
     // Get filtered reports
-    public function getFilteredReports($from_date, $to_date, $category = '', $complaint_no = '')
+    public function getFilteredReports($from_date = '', $to_date = '', $category = '', $status = '', $company = '')
     {
-        $query = "SELECT cc.*, cm.name as customer_name, cm.code as customer_code 
+        $query = "SELECT cc.*, cm.name as customer_name, cm.code as customer_code,
+                         ch.id as handling_id, ch.company_name, ch.company_number, ch.company_status,
+                         ch.rejection_date, ch.rejection_reason,
+                         ch.special_request_date, ch.special_remark,
+                         ch.price_amount, ch.price_issued_date, ch.issued_invoice_number,
+                         ch.sent_date, ch.status_remark, ch.general_remark
                   FROM `customer_complaint` cc
                   LEFT JOIN `customer_master` cm ON cc.customer_id = cm.id
-                  WHERE cc.complaint_date BETWEEN '$from_date' AND '$to_date'";
+                  LEFT JOIN `company_handling` ch ON cc.id = ch.complaint_id
+                  WHERE 1=1";
 
+        if (!empty($from_date) && !empty($to_date)) {
+            $query .= " AND cc.complaint_date BETWEEN '$from_date' AND '$to_date'";
+        }
         if (!empty($category)) {
             $query .= " AND cc.complaint_category = '$category'";
         }
-        if (!empty($complaint_no)) {
-            $query .= " AND cc.complaint_no LIKE '%$complaint_no%'";
+        if (!empty($status)) {
+            $db_tmp = Database::getInstance();
+            $status = mysqli_real_escape_string($db_tmp->DB_CON, $status);
+            $query .= " AND ch.company_status = '$status'";
+        }
+        if (!empty($company)) {
+            $db_tmp = Database::getInstance();
+            $company = mysqli_real_escape_string($db_tmp->DB_CON, $company);
+            $query .= " AND ch.company_name = '$company'";
         }
 
         $query .= " ORDER BY cc.complaint_date DESC";
@@ -143,6 +159,23 @@ class CustomerComplaint
         }
 
         return $reports;
+    }
+
+    // Get distinct company names from company_handling
+    public function getDistinctCompanies()
+    {
+        $query = "SELECT DISTINCT ch.company_name 
+                  FROM `company_handling` ch 
+                  WHERE ch.company_name IS NOT NULL AND ch.company_name != ''
+                  ORDER BY ch.company_name ASC";
+        $db = Database::getInstance();
+        $result = $db->readQuery($query);
+
+        $companies = array();
+        while ($row = mysqli_fetch_assoc($result)) {
+            $companies[] = $row['company_name'];
+        }
+        return $companies;
     }
 
     // Search complaints by various fields
