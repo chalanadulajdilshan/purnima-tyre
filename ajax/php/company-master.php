@@ -6,20 +6,20 @@ header('Content-Type: application/json; charset=UTF8');
 // Create a new Company
 if (isset($_POST['create'])) {
 
-    $DAG = new DagCompany(NULL); // Create a new Company
+    $COMPANY = new CompanyMaster(NULL);
 
     // Set the Company details
-    $DAG->name = $_POST['name'];
-    $DAG->code = $_POST['code'];
-    $DAG->address = $_POST['address'];
-    $DAG->contact_person = $_POST['contact_person'];
-    $DAG->phone_number = $_POST['phone_number'];
-    $DAG->email = $_POST['email'];
-    $DAG->is_active = isset($_POST['is_active']) ? 1 : 0;
-    $DAG->remark = $_POST['remark'];
+    $COMPANY->name = $_POST['name'];
+    $COMPANY->code = $_POST['code'];
+    $COMPANY->address = $_POST['address'];
+    $COMPANY->contact_person = $_POST['contact_person'];
+    $COMPANY->phone_number = $_POST['phone_number'];
+    $COMPANY->email = $_POST['email'];
+    $COMPANY->is_active = isset($_POST['is_active']) ? 1 : 0;
+    $COMPANY->remark = $_POST['remark'];
 
     // Attempt to create the Company
-    $res = $DAG->create();
+    $res = $COMPANY->create();
 
     if ($res) {
         $result = [
@@ -39,20 +39,20 @@ if (isset($_POST['create'])) {
 // Update Company details
 if (isset($_POST['update'])) {
 
-    $DAG = new DagCompany($_POST['id']); // Retrieve Company by ID
+    $COMPANY = new CompanyMaster($_POST['id']);
 
     // Update Company details
-    $DAG->name = $_POST['name'];
-    $DAG->code = $_POST['code'];
-    $DAG->address = $_POST['address'];
-    $DAG->contact_person = $_POST['contact_person'];
-    $DAG->phone_number = $_POST['phone_number'];
-    $DAG->email = $_POST['email'];
-    $DAG->is_active = isset($_POST['is_active']) ? 1 : 0;
-    $DAG->remark = $_POST['remark'];
+    $COMPANY->name = $_POST['name'];
+    $COMPANY->code = $_POST['code'];
+    $COMPANY->address = $_POST['address'];
+    $COMPANY->contact_person = $_POST['contact_person'];
+    $COMPANY->phone_number = $_POST['phone_number'];
+    $COMPANY->email = $_POST['email'];
+    $COMPANY->is_active = isset($_POST['is_active']) ? 1 : 0;
+    $COMPANY->remark = $_POST['remark'];
 
     // Attempt to update the Company
-    $result = $DAG->update();
+    $result = $COMPANY->update();
 
     if ($result) {
         $result = [
@@ -70,8 +70,8 @@ if (isset($_POST['update'])) {
 }
 
 if (isset($_POST['delete']) && isset($_POST['id'])) {
-    $dag = new DagCompany($_POST['id']);
-    $result = $dag->delete(); // Make sure this method exists
+    $company = new CompanyMaster($_POST['id']);
+    $result = $company->delete();
 
     if ($result) {
         echo json_encode(['status' => 'success']);

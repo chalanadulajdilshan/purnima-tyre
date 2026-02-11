@@ -91,15 +91,24 @@ include 'auth.php';
                                             <!-- Manual Company Entry -->
                                             <div class="col-md-3">
                                                 <label class="form-label">Company Number</label>
-                                                <input id="company_number" name="company_number" type="text"
-                                                    class="form-control" placeholder="Enter Company Number">
+                                                <div class="input-group mb-3">
+                                                    <input id="company_number" name="company_number" type="text"
+                                                        class="form-control" placeholder="Enter Company Number">
+                                                    <button class="btn btn-info" type="button" id="searchCompanyBtn">
+                                                        <i class="uil uil-search"></i>
+                                                    </button>
+                                                </div>
                                             </div>
 
                                             <div class="col-md-3">
                                                 <label class="form-label">Company Name <span
                                                         class="text-danger">*</span></label>
-                                                <input id="company_name" name="company_name" type="text"
-                                                    class="form-control" placeholder="Enter Company Name">
+                                                <div class="input-group mb-3">
+                                                    <input id="company_name" name="company_name" type="text"
+                                                        class="form-control" placeholder="Select Company" readonly>
+
+                                                </div>
+                                                <input type="hidden" id="company_id" name="company_id">
                                             </div>
 
                                             <div class="col-md-3">
@@ -171,10 +180,20 @@ include 'auth.php';
                                                 style="display:none; background: #fff5f5; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
                                                 <h6 class="text-danger">Rejection Details</h6>
                                                 <div class="row">
-                                                    <div class="col-md-8">
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Rejection Date</label>
+                                                        <div class="input-group">
+                                                            <input type="text" class="form-control date-picker-date"
+                                                                id="rejection_date" name="rejection_date"
+                                                                placeholder="Select Date">
+                                                            <span class="input-group-text"><i
+                                                                    class="mdi mdi-calendar"></i></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-4">
                                                         <label class="form-label">Rejection Reason</label>
                                                         <textarea class="form-control" id="rejection_reason"
-                                                            name="rejection_reason" rows="2"
+                                                            name="rejection_reason" rows="1"
                                                             placeholder="Enter reason..."></textarea>
                                                     </div>
                                                     <div class="col-md-4">
@@ -190,17 +209,27 @@ include 'auth.php';
                                                 style="display:none; background: #fff8e1; padding: 15px; border-radius: 5px; margin-bottom: 15px;">
                                                 <h6 class="text-warning">Special Request Details</h6>
                                                 <div class="row">
-                                                    <div class="col-md-4">
+                                                    <div class="col-md-3">
+                                                        <label class="form-label">Special Request Date</label>
+                                                        <div class="input-group">
+                                                            <input type="text" class="form-control date-picker-date"
+                                                                id="special_request_date" name="special_request_date"
+                                                                placeholder="Select Date">
+                                                            <span class="input-group-text"><i
+                                                                    class="mdi mdi-calendar"></i></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-3">
                                                         <label class="form-label">Company Invoice Number</label>
                                                         <input type="text" class="form-control"
                                                             id="company_invoice_number" name="company_invoice_number">
                                                     </div>
-                                                    <div class="col-md-4">
+                                                    <div class="col-md-3">
                                                         <label class="form-label">Remark</label>
                                                         <textarea class="form-control" id="special_remark"
                                                             name="special_remark" rows="1"></textarea>
                                                     </div>
-                                                    <div class="col-md-4">
+                                                    <div class="col-md-3">
                                                         <label class="form-label">Issued Invoice Number</label>
                                                         <input type="text" class="form-control"
                                                             id="issued_invoice_number" name="issued_invoice_number"
@@ -228,6 +257,36 @@ include 'auth.php';
                 </div> <!-- container-fluid -->
             </div>
             <?php include 'footer.php' ?>
+        </div>
+    </div>
+
+    <!-- Company Search Modal -->
+    <div class="modal fade" id="companyModal" tabindex="-1" aria-labelledby="companyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="companyModalLabel">Select Company</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table id="companyTable" class="table table-bordered table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Code</th>
+                                    <th>Company Name</th>
+                                    <th>Contact Person</th>
+                                    <th>Phone</th>
+                                </tr>
+                            </thead>
+                            <tbody id="companyTableBody">
+                                <!-- Loaded via AJAX -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

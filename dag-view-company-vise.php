@@ -5,12 +5,12 @@ include 'auth.php';
 $companyId = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 if (!$companyId) {
-    header("Location: dag-company.php");
+    header("Location: company-master.php");
     exit();
 }
 
 // Fetch company details
-$DAG_COMPANY = new DagCompany($companyId);
+$DAG_COMPANY = new CompanyMaster($companyId);
 $companyName = $DAG_COMPANY->name;
 
 // Fetch DAGs by company

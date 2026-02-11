@@ -59,7 +59,8 @@ include './auth.php';
                                         </div>
                                         <div class="flex-grow-1 overflow-hidden">
                                             <h5 class="font-size-16 mb-1">Serial Number Wise DAG Profit Report</h5>
-                                            <p class="text-muted text-truncate mb-0">Generate detailed profit report for DAG items by serial number</p>
+                                            <p class="text-muted text-truncate mb-0">Generate detailed profit report for
+                                                DAG items by serial number</p>
                                         </div>
                                         <div class="flex-shrink-0">
                                             <i class="mdi mdi-chevron-up accor-down-icon font-size-24"></i>
@@ -74,16 +75,18 @@ include './auth.php';
                                                     <div class="input-group" id="datepicker1">
                                                         <input type="text" class="form-control date-picker"
                                                             id="from_date" name="from_date">
-                                                        <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                                        <span class="input-group-text"><i
+                                                                class="mdi mdi-calendar"></i></span>
                                                     </div>
                                                 </div>
 
                                                 <div class="col-md-3">
                                                     <label for="to_date" class="form-label">To Date</label>
                                                     <div class="input-group" id="datepicker2">
-                                                        <input type="text" class="form-control date-picker"
-                                                            id="to_date" name="to_date">
-                                                        <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                                        <input type="text" class="form-control date-picker" id="to_date"
+                                                            name="to_date">
+                                                        <span class="input-group-text"><i
+                                                                class="mdi mdi-calendar"></i></span>
                                                     </div>
                                                 </div>
 
@@ -95,7 +98,7 @@ include './auth.php';
                                                             <?php
                                                             $CUSTOMER = new CustomerMaster();
                                                             foreach ($CUSTOMER->all() as $customer) {
-                                                            ?>
+                                                                ?>
                                                                 <option value="<?php echo $customer['id'] ?>">
                                                                     <?php echo $customer['name'] ?>
                                                                 </option>
@@ -110,9 +113,9 @@ include './auth.php';
                                                         <select id="company_id" name="company_id" class="form-select">
                                                             <option value="">-- All Companies --</option>
                                                             <?php
-                                                            $DAG_COMPANY = new DagCompany();
+                                                            $DAG_COMPANY = new CompanyMaster();
                                                             foreach ($DAG_COMPANY->all() as $company) {
-                                                            ?>
+                                                                ?>
                                                                 <option value="<?php echo $company['id'] ?>">
                                                                     <?php echo $company['name'] ?>
                                                                 </option>
@@ -124,16 +127,16 @@ include './auth.php';
                                                 <div class="col-md-3">
                                                     <label for="serial_number" class="form-label">Serial Number</label>
                                                     <div class="input-group mb-3">
-                                                        <input type="text" class="form-control" id="serial_number" 
-                                                               name="serial_number" placeholder="Enter serial number">
+                                                        <input type="text" class="form-control" id="serial_number"
+                                                            name="serial_number" placeholder="Enter serial number">
                                                     </div>
                                                 </div>
 
                                                 <div class="col-md-3">
                                                     <label for="job_number" class="form-label">Job Number</label>
                                                     <div class="input-group mb-3">
-                                                        <input type="text" class="form-control" id="job_number" 
-                                                               name="job_number" placeholder="Enter job number">
+                                                        <input type="text" class="form-control" id="job_number"
+                                                            name="job_number" placeholder="Enter job number">
                                                     </div>
                                                 </div>
                                             </div>
@@ -164,7 +167,8 @@ include './auth.php';
                                                 </thead>
                                                 <tbody>
                                                     <tr>
-                                                        <td colspan="12" class="text-center text-muted">Click "Generate Report" to view data</td>
+                                                        <td colspan="12" class="text-center text-muted">Click "Generate
+                                                            Report" to view data</td>
                                                     </tr>
                                                 </tbody>
                                                 <tfoot class="table-light">
@@ -193,7 +197,7 @@ include './auth.php';
     <!-- JAVASCRIPT -->
     <script src="assets/libs/jquery/jquery.min.js"></script>
     <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
-    
+
     <!-- DataTables -->
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
@@ -213,9 +217,9 @@ include './auth.php';
 
     <!-- App js -->
     <script src="assets/js/app.js"></script>
-    
+
     <script>
-        $(function() {
+        $(function () {
             // Initialize the datepicker
             $(".date-picker").datepicker({
                 dateFormat: 'yy-mm-dd'

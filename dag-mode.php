@@ -28,7 +28,7 @@
                             $key++;
                             $DEPARTMENT = new DepartmentMaster($dag['department_id']);
                             $CUSTOMER = new CustomerMaster($dag['customer_id']);
-                            $DAG_COMPANY = new DagCompany($dag['dag_company_id'] ?? null); // adjust if class name is different
+                            $DAG_COMPANY = new CompanyMaster($dag['dag_company_id'] ?? null); // adjust if class name is different
                         
                             ?>
 
@@ -45,7 +45,8 @@
                                 data-company_issued_date="<?= $dag['company_issued_date'] ?? '' ?>"
                                 data-company_delivery_date="<?= $dag['company_delivery_date'] ?? '' ?>"
                                 data-receipt_no="<?= $dag['receipt_no'] ?? '' ?>"
-                                data-remark="<?= htmlspecialchars($dag['remark'] ?? '') ?>" data-status="<?= $dag['status'] ?? '' ?>">
+                                data-remark="<?= htmlspecialchars($dag['remark'] ?? '') ?>"
+                                data-status="<?= $dag['status'] ?? '' ?>">
 
 
                                 <td><?= $key ?></td>

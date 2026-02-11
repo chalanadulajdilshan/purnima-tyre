@@ -17,7 +17,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
-function getDagProfitReport() {
+function getDagProfitReport()
+{
     try {
         $from_date = $_POST['from_date'] ?? '';
         $to_date = $_POST['to_date'] ?? '';
@@ -27,11 +28,11 @@ function getDagProfitReport() {
         $job_number = $_POST['job_number'] ?? '';
 
         $db = Database::getInstance();
-        
+
         // First check if there are any dag_item records
         $checkQuery = "SELECT COUNT(*) as total_records FROM dag_item WHERE serial_number IS NOT NULL AND serial_number != ''";
         $checkResult = mysqli_fetch_assoc($db->readQuery($checkQuery));
-        
+
         if ($checkResult['total_records'] == 0) {
             // No dag_item records found
             $response = [
@@ -48,7 +49,7 @@ function getDagProfitReport() {
             echo json_encode($response);
             return;
         }
-        
+
         // Build the query with joins to get all required data
         $query = "SELECT 
                     di.serial_number,
@@ -70,7 +71,7 @@ function getDagProfitReport() {
                 LEFT JOIN dag d ON di.dag_id = d.id
                 LEFT JOIN customer_master cm ON d.customer_id = cm.id
                 LEFT JOIN customer_master pcm ON di.customer_id = pcm.id
-                LEFT JOIN dag_company dc ON di.dag_company_id = dc.id
+                LEFT JOIN company_master dc ON di.dag_company_id = dc.id
                 LEFT JOIN size_master sm ON di.size_id = sm.id
                 LEFT JOIN belt_master bm ON di.belt_id = bm.id
                 LEFT JOIN brands br ON di.brand_id = br.id
@@ -104,7 +105,7 @@ function getDagProfitReport() {
         $query .= " ORDER BY d.received_date DESC, di.serial_number ASC";
 
         $result = $db->readQuery($query);
-        
+
         $data = [];
         $total_casing_cost = 0;
         $total_amount = 0;
@@ -162,7 +163,8 @@ function getDagProfitReport() {
     }
 }
 
-function exportDagProfitReport() {
+function exportDagProfitReport()
+{
     try {
         $from_date = $_POST['from_date'] ?? '';
         $to_date = $_POST['to_date'] ?? '';
@@ -172,7 +174,7 @@ function exportDagProfitReport() {
         $job_number = $_POST['job_number'] ?? '';
 
         $db = Database::getInstance();
-        
+
         // Same query as above
         $query = "SELECT 
                     di.serial_number,
@@ -194,7 +196,7 @@ function exportDagProfitReport() {
                 LEFT JOIN dag d ON di.dag_id = d.id
                 LEFT JOIN customer_master cm ON d.customer_id = cm.id
                 LEFT JOIN customer_master pcm ON di.customer_id = pcm.id
-                LEFT JOIN dag_company dc ON di.dag_company_id = dc.id
+                LEFT JOIN company_master dc ON di.dag_company_id = dc.id
                 LEFT JOIN size_master sm ON di.size_id = sm.id
                 LEFT JOIN belt_master bm ON di.belt_id = bm.id
                 LEFT JOIN brands br ON di.brand_id = br.id

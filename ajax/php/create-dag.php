@@ -177,7 +177,7 @@ if (isset($_POST['load_dags'])) {
     $html = '';
     foreach ($dags as $key => $dag) {
         $key++;
-        $DAG_COMPANY = new DagCompany($dag['dag_company_id']);
+        $DAG_COMPANY = new CompanyMaster($dag['dag_company_id']);
 
         // Get item count and items for this DAG
         $DAG_ITEM = new DagItem(null);
@@ -301,7 +301,7 @@ if (isset($_POST['get_next_ref_no'])) {
     exit;
 }
 
-// Reassign a rejected dag_item to a new DAG (instead of duplicating)
+// Reassign a rejected dag_item to a new DAG (keep history in old DAG)
 if (isset($_POST['reassign_dag_item'])) {
     $dag_item_id = isset($_POST['dag_item_id']) ? (int) $_POST['dag_item_id'] : 0;
 
@@ -311,9 +311,9 @@ if (isset($_POST['reassign_dag_item'])) {
     }
 
     // Get the existing dag_item
-    $DAG_ITEM = new DagItem($dag_item_id);
+    $OLD_ITEM = new DagItem($dag_item_id);
 
-    if (!$DAG_ITEM->id) {
+    if (!$OLD_ITEM->id) {
         echo json_encode(['status' => 'error', 'message' => 'DAG Item not found']);
         exit;
     }
@@ -335,25 +335,49 @@ if (isset($_POST['reassign_dag_item'])) {
         exit;
     }
 
-    // Update the existing dag_item to link to the new DAG
-    $DAG_ITEM->dag_id = $new_dag_id;
-    $DAG_ITEM->status = 'pending';
-    $DAG_ITEM->dag_company_id = null;
-    $DAG_ITEM->company_issued_date = null;
-    $DAG_ITEM->company_delivery_date = null;
-    $DAG_ITEM->receipt_no = null;
-    $DAG_ITEM->job_number = null;
+    // Create a NEW dag_item in the new DAG (copy details from old item)
+    $NEW_ITEM = new DagItem(null);
+    $NEW_ITEM->dag_id = $new_dag_id;
+    $NEW_ITEM->belt_id = $OLD_ITEM->belt_id;
+    $NEW_ITEM->size_id = $OLD_ITEM->size_id;
+    $NEW_ITEM->serial_number = $OLD_ITEM->serial_number;
+    $NEW_ITEM->is_invoiced = 0;
+    $NEW_ITEM->casing_cost = $OLD_ITEM->casing_cost;
+    $NEW_ITEM->qty = $OLD_ITEM->qty;
+    $NEW_ITEM->total_amount = $OLD_ITEM->total_amount;
+    $NEW_ITEM->dag_company_id = null;
+    $NEW_ITEM->company_issued_date = null;
+    $NEW_ITEM->company_delivery_date = null;
+    $NEW_ITEM->receipt_no = null;
+    $NEW_ITEM->brand_id = $OLD_ITEM->brand_id;
+    $NEW_ITEM->job_number = null;
+    $NEW_ITEM->status = 'pending';
+    $NEW_ITEM->uc = $OLD_ITEM->uc;
+    $NEW_ITEM->customer_id = $OLD_ITEM->customer_id;
+    $NEW_ITEM->my_number = $OLD_ITEM->my_number;
+    $NEW_ITEM->received_date = $OLD_ITEM->received_date;
+    $NEW_ITEM->customer_issue_date = $OLD_ITEM->customer_issue_date;
+    $NEW_ITEM->customer_request_date = $OLD_ITEM->customer_request_date;
+    $NEW_ITEM->vehicle_no = $OLD_ITEM->vehicle_no;
+    $NEW_ITEM->reassigned_to_dag_id = null;
 
-    if ($DAG_ITEM->update()) {
-        echo json_encode([
-            'status' => 'success',
-            'message' => 'Item reassigned to new DAG successfully',
-            'new_dag_id' => $new_dag_id,
-            'ref_no' => $DAG->ref_no
-        ]);
-    } else {
-        echo json_encode(['status' => 'error', 'message' => 'Failed to update DAG Item']);
+    $new_item_id = $NEW_ITEM->create();
+
+    if (!$new_item_id) {
+        echo json_encode(['status' => 'error', 'message' => 'Failed to create new DAG Item']);
+        exit;
     }
+
+    // Update the OLD dag_item to record where it was reassigned to
+    $OLD_ITEM->reassigned_to_dag_id = $new_dag_id;
+    $OLD_ITEM->update();
+
+    echo json_encode([
+        'status' => 'success',
+        'message' => 'Item reassigned to new DAG successfully',
+        'new_dag_id' => $new_dag_id,
+        'ref_no' => $DAG->ref_no
+    ]);
     exit;
 }
 ?>

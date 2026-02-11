@@ -25,6 +25,7 @@ class DagItem
     public $customer_issue_date;
     public $customer_request_date;
     public $vehicle_no;
+    public $reassigned_to_dag_id;
 
     // Constructor to fetch data by ID
     public function __construct($id = null)
@@ -58,6 +59,7 @@ class DagItem
                 $this->customer_issue_date = isset($result['customer_issue_date']) ? $result['customer_issue_date'] : null;
                 $this->customer_request_date = isset($result['customer_request_date']) ? $result['customer_request_date'] : null;
                 $this->vehicle_no = isset($result['vehicle_no']) ? $result['vehicle_no'] : null;
+                $this->reassigned_to_dag_id = isset($result['reassigned_to_dag_id']) ? $result['reassigned_to_dag_id'] : null;
             }
         }
     }
@@ -65,10 +67,11 @@ class DagItem
     // Create a new record
     public function create()
     {
-        $query = "INSERT INTO `dag_item` (`dag_id`, `belt_id`, `size_id`, `serial_number`, `is_invoiced`, `casing_cost`, `qty`, `total_amount`, `dag_company_id`, `company_issued_date`, `company_delivery_date`, `receipt_no`, `brand_id`, `job_number`, `status`, `uc`, `customer_id`, `my_number`, `received_date`, `customer_issue_date`, `customer_request_date`, `vehicle_no`)
+        $reassigned = $this->reassigned_to_dag_id ? "'{$this->reassigned_to_dag_id}'" : "NULL";
+        $query = "INSERT INTO `dag_item` (`dag_id`, `belt_id`, `size_id`, `serial_number`, `is_invoiced`, `casing_cost`, `qty`, `total_amount`, `dag_company_id`, `company_issued_date`, `company_delivery_date`, `receipt_no`, `brand_id`, `job_number`, `status`, `uc`, `customer_id`, `my_number`, `received_date`, `customer_issue_date`, `customer_request_date`, `vehicle_no`, `reassigned_to_dag_id`)
                   VALUES (
                     '{$this->dag_id}', '{$this->belt_id}', '{$this->size_id}', '{$this->serial_number}', '{$this->is_invoiced}', '{$this->casing_cost}',
-                    '{$this->qty}', '{$this->total_amount}', '{$this->dag_company_id}', '{$this->company_issued_date}', '{$this->company_delivery_date}', '{$this->receipt_no}', '{$this->brand_id}', '{$this->job_number}', '{$this->status}', '{$this->uc}', '{$this->customer_id}', '{$this->my_number}', '{$this->received_date}', '{$this->customer_issue_date}', '{$this->customer_request_date}', '{$this->vehicle_no}'
+                    '{$this->qty}', '{$this->total_amount}', '{$this->dag_company_id}', '{$this->company_issued_date}', '{$this->company_delivery_date}', '{$this->receipt_no}', '{$this->brand_id}', '{$this->job_number}', '{$this->status}', '{$this->uc}', '{$this->customer_id}', '{$this->my_number}', '{$this->received_date}', '{$this->customer_issue_date}', '{$this->customer_request_date}', '{$this->vehicle_no}', {$reassigned}
                   )";
 
         $db = Database::getInstance();
@@ -104,7 +107,8 @@ class DagItem
                   `received_date` = '{$this->received_date}',
                   `customer_issue_date` = '{$this->customer_issue_date}',
                   `customer_request_date` = '{$this->customer_request_date}',
-                  `vehicle_no` = '{$this->vehicle_no}'
+                  `vehicle_no` = '{$this->vehicle_no}',
+                  `reassigned_to_dag_id` = " . ($this->reassigned_to_dag_id ? "'{$this->reassigned_to_dag_id}'" : "NULL") . "
                   WHERE `id` = '{$this->id}'";
 
         $db = Database::getInstance();
@@ -159,14 +163,15 @@ class DagItem
 
     public function getByValuesDagId($dag_id)
     {
-        $query = "SELECT di.*, bm.name AS belt_title, sm.name AS size_name, dc.name AS dag_company_name, br.name AS brand_name, di.vehicle_no AS vehicle_no, cm.name AS customer_name, cm.code AS customer_code
+        $query = "SELECT di.*, bm.name AS belt_title, sm.name AS size_name, dc.name AS dag_company_name, br.name AS brand_name, di.vehicle_no AS vehicle_no, cm.name AS customer_name, cm.code AS customer_code, reassigned_dag.ref_no AS reassigned_to_ref_no
               FROM `dag_item` di 
               LEFT JOIN `belt_master` bm ON di.belt_id = bm.id 
               LEFT JOIN `size_master` sm ON di.size_id = sm.id 
-              LEFT JOIN `dag_company` dc ON di.dag_company_id = dc.id
+              LEFT JOIN `company_master` dc ON di.dag_company_id = dc.id
               LEFT JOIN `brands` br ON di.brand_id = br.id
               LEFT JOIN `dag` d ON di.dag_id = d.id
               LEFT JOIN `customer_master` cm ON di.customer_id = cm.id
+              LEFT JOIN `dag` reassigned_dag ON di.reassigned_to_dag_id = reassigned_dag.id
               WHERE di.dag_id = '{$dag_id}' 
               ORDER BY di.id ASC";
 
@@ -223,7 +228,7 @@ class DagItem
                   FROM `dag_item` di 
                   LEFT JOIN `belt_master` bm ON di.belt_id = bm.id 
                   LEFT JOIN `size_master` sm ON di.size_id = sm.id 
-                  LEFT JOIN `dag_company` dc ON di.dag_company_id = dc.id
+                  LEFT JOIN `company_master` dc ON di.dag_company_id = dc.id
                   LEFT JOIN `brands` br ON di.brand_id = br.id
                   LEFT JOIN `dag` d ON di.dag_id = d.id
                   WHERE di.dag_id = '{$dag_id}' AND (di.is_invoiced = 0 OR di.is_invoiced IS NULL)

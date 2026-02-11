@@ -3,11 +3,7 @@
 include 'class/include.php';
 include 'auth.php';
 
-$DAG_COMPANY = new DagCompany();
-
-// Get the last inserted package id
-$lastId = $DAG_COMPANY->getLastID();
-$company_id = 'DC00' . ($lastId + 1);
+$COMPANY_MASTER = new CompanyMaster();
 
 ?>
 <html lang="en">
@@ -15,7 +11,9 @@ $company_id = 'DC00' . ($lastId + 1);
 <head>
 
     <meta charset="utf-8" />
-    <title>Company Master | <?php echo $COMPANY_PROFILE_DETAILS->name ?> </title>
+    <title>Company Master |
+        <?php echo $COMPANY_PROFILE_DETAILS->name ?>
+    </title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="<?php echo $COMPANY_PROFILE_DETAILS->name ?>" name="author" />
@@ -58,7 +56,7 @@ $company_id = 'DC00' . ($lastId + 1);
                             <?php endif; ?>
 
                             <?php if ($PERMISSIONS['delete_page']): ?>
-                                <a href="#" class="btn btn-danger delete-dag-company">
+                                <a href="#" class="btn btn-danger delete-company-master">
                                     <i class="uil uil-trash-alt me-1"></i> Delete
                                 </a>
                             <?php endif; ?>
@@ -108,13 +106,13 @@ $company_id = 'DC00' . ($lastId + 1);
                                         <div class="row">
 
                                             <div class="col-md-2">
-                                                <label class="form-label" for="code">Ref No </label>
+                                                <label class="form-label" for="code">Company Number <span
+                                                        class="text-danger">*</span></label>
                                                 <div class="input-group mb-3">
                                                     <input id="code" name="code" type="text"
-                                                        value="<?php echo $company_id; ?>" placeholder="Ref No"
-                                                        class="form-control" readonly>
+                                                        placeholder="Enter Company Number" class="form-control">
                                                     <button class="btn btn-info" type="button" data-bs-toggle="modal"
-                                                        data-bs-target="#dagCompanyModel">
+                                                        data-bs-target="#companyMasterModel">
                                                         <i class="uil uil-search me-1"></i>
                                                     </button>
                                                 </div>
@@ -190,7 +188,7 @@ $company_id = 'DC00' . ($lastId + 1);
 
 
     <!-- model open here -->
-    <div class="modal fade bs-example-modal-xl" id="dagCompanyModel" tabindex="-1" role="dialog"
+    <div class="modal fade bs-example-modal-xl" id="companyMasterModel" tabindex="-1" role="dialog"
         aria-labelledby="myExtraLargeModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
@@ -204,62 +202,65 @@ $company_id = 'DC00' . ($lastId + 1);
                         <div class="col-12">
 
 
-                            <table id="dagCompany" class="table table-bordered dt-responsive nowrap"
+                            <table id="companyMasterTable" class="table table-bordered dt-responsive nowrap"
                                 style="border-collapse: collapse; border-spacing: 0; width: 100%;">
                                 <thead>
                                     <tr>
                                         <th>#</th>
                                         <th>Name</th>
-                                        <th>Ref No</th>
+                                        <th>Company Number</th>
                                         <th>Address</th>
                                         <th>Contact Person</th>
                                         <th>Phone Number</th>
-                                        <th>Email</th>
                                         <th>Is Active</th>
-                                        <th>Action</th>
+
                                     </tr>
                                 </thead>
 
 
                                 <tbody>
                                     <?php
-                                    $DAG = new DagCompany(null);
-                                    foreach ($DAG->all() as $key => $dag) {
+                                    $COMPANY = new CompanyMaster(null);
+                                    foreach ($COMPANY->all() as $key => $company) {
                                         $key++;
                                         ?>
-                                        <tr class="select-dagcompany" data-id="<?php echo $dag['id']; ?>"
-                                            data-name="<?php echo htmlspecialchars($dag['name']); ?>"
-                                            data-code="<?php echo htmlspecialchars($dag['code']); ?>"
-                                            data-address="<?php echo htmlspecialchars($dag['address']); ?>"
-                                            data-contact_person="<?php echo htmlspecialchars($dag['contact_person']); ?>"
-                                            data-phone_number="<?php echo htmlspecialchars($dag['phone_number']); ?>"
-                                            data-email="<?php echo htmlspecialchars($dag['email']); ?>"
-                                            data-is_active="<?php echo htmlspecialchars($dag['is_active']); ?>"
-                                            data-remark="<?php echo htmlspecialchars($dag['remark']); ?>">
+                                        <tr class="select-company-master" data-id="<?php echo $company['id']; ?>"
+                                            data-name="<?php echo htmlspecialchars($company['name']); ?>"
+                                            data-code="<?php echo htmlspecialchars($company['code']); ?>"
+                                            data-address="<?php echo htmlspecialchars($company['address']); ?>"
+                                            data-contact_person="<?php echo htmlspecialchars($company['contact_person']); ?>"
+                                            data-phone_number="<?php echo htmlspecialchars($company['phone_number']); ?>"
+                                            data-email="<?php echo htmlspecialchars($company['email']); ?>"
+                                            data-is_active="<?php echo htmlspecialchars($company['is_active']); ?>"
+                                            data-remark="<?php echo htmlspecialchars($company['remark']); ?>">
 
-                                            <td><?php echo $key; ?></td>
-                                            <td><?php echo htmlspecialchars($dag['name']); ?></td>
-                                            <td><?php echo htmlspecialchars($dag['code']); ?></td>
-                                            <td><?php echo htmlspecialchars($dag['address']); ?></td>
-                                            <td><?php echo htmlspecialchars($dag['contact_person']); ?></td>
-                                            <td><?php echo htmlspecialchars($dag['phone_number']); ?></td>
-                                            <td><?php echo htmlspecialchars($dag['email']); ?></td>
                                             <td>
-                                                <?php if ($dag['is_active'] == 1): ?>
+                                                <?php echo $key; ?>
+                                            </td>
+                                            <td>
+                                                <?php echo htmlspecialchars($company['name']); ?>
+                                            </td>
+                                            <td>
+                                                <?php echo htmlspecialchars($company['code']); ?>
+                                            </td>
+                                            <td>
+                                                <?php echo htmlspecialchars($company['address']); ?>
+                                            </td>
+                                            <td>
+                                                <?php echo htmlspecialchars($company['contact_person']); ?>
+                                            </td>
+                                            <td>
+                                                <?php echo htmlspecialchars($company['phone_number']); ?>
+                                            </td>
+
+                                            <td>
+                                                <?php if ($company['is_active'] == 1): ?>
                                                     <span class="badge bg-soft-success font-size-12">Active</span>
                                                 <?php else: ?>
                                                     <span class="badge bg-soft-danger font-size-12">Inactive</span>
                                                 <?php endif; ?>
                                             </td>
-                                            <td>
-                                                <a
-                                                    href="dag-view-company-vise.php?page_id=53&id= <?php echo $dag['id']; ?>">
 
-                                                    <div class="badge bg-pill bg-soft-success font-size-14"><i
-                                                            class="fas fa-eye p-1"></i></div>
-                                                </a>
-
-                                            </td>
                                         </tr>
 
                                     <?php } ?>
@@ -279,13 +280,13 @@ $company_id = 'DC00' . ($lastId + 1);
     <!-- JAVASCRIPT -->
     <script src="assets/libs/jquery/jquery.min.js"></script>
     <!-- /////////////////////////// -->
-    <script src="ajax/js/dag-company.js"></script>
+    <script src="ajax/js/company-master.js"></script>
 
 
     <!-- include main js  -->
     <?php include 'main-js.php' ?>
     <script>
-        $('#dagCompany').DataTable();
+        $('#companyMasterTable').DataTable();
     </script>
 </body>
 

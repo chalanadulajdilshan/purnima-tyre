@@ -70,7 +70,7 @@ jQuery(document).ready(function () {
           if (result.status === "success") {
             swal({
               title: "Success!",
-              text: "DAG Company added Successfully!",
+              text: "Company added Successfully!",
               type: "success",
               timer: 2000,
               showConfirmButton: false,
@@ -166,7 +166,7 @@ jQuery(document).ready(function () {
           if (result.status == "success") {
             swal({
               title: "Success!",
-              text: "DAG Company updated Successfully!",
+              text: "Company updated Successfully!",
               type: "success",
               timer: 2500,
               showConfirmButton: false,
@@ -190,7 +190,7 @@ jQuery(document).ready(function () {
     return false;
   });
 
-  // Delete DAG Company
+  // Delete Company
   $(document).on("click", ".delete-dag-company", function (e) {
     e.preventDefault();
 
@@ -200,7 +200,7 @@ jQuery(document).ready(function () {
     if (!name || name === "") {
       swal({
         title: "Error!",
-        text: "Please select a DAG Company first.",
+        text: "Please select a Company first.",
         type: "error",
         timer: 2000,
         showConfirmButton: false,
@@ -211,7 +211,7 @@ jQuery(document).ready(function () {
     swal(
       {
         title: "Are you sure?",
-        text: "Do you want to delete '" + name + "' DAG Company?",
+        text: "Do you want to delete '" + name + "' Company?",
         type: "warning",
         showCancelButton: true,
         confirmButtonColor: "#d33",
@@ -238,7 +238,7 @@ jQuery(document).ready(function () {
               if (response.status === "success") {
                 swal({
                   title: "Deleted!",
-                  text: "DAG Company has been deleted.",
+                  text: "Company has been deleted.",
                   type: "success",
                   timer: 2000,
                   showConfirmButton: false,

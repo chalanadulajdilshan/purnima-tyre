@@ -180,7 +180,7 @@ class Dag
               LEFT JOIN customer_master c ON d.customer_id = c.id
               LEFT JOIN department_master dept ON d.department_id = dept.id
               LEFT JOIN dag_item di ON d.id = di.dag_id
-              LEFT JOIN dag_company dc ON di.dag_company_id = dc.id
+              LEFT JOIN company_master dc ON di.dag_company_id = dc.id
               LEFT JOIN belt_master b ON di.belt_id = b.id
               LEFT JOIN size_master s ON di.size_id = s.id
               WHERE 1=1";
@@ -225,7 +225,7 @@ class Dag
         $query = "SELECT DISTINCT d.*
                   FROM dag d
                   LEFT JOIN dag_item di ON d.id = di.dag_id
-                  WHERE di.job_number LIKE '%$search_term%' OR di.serial_number LIKE '%$search_term%' OR d.my_number LIKE '%$search_term%'
+                  WHERE di.job_number LIKE '%$search_term%' OR di.serial_number LIKE '%$search_term%' OR di.my_number LIKE '%$search_term%' OR d.my_number LIKE '%$search_term%'
                   ORDER BY d.id DESC";
 
         $db = Database::getInstance();

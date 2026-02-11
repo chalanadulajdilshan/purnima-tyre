@@ -17,9 +17,11 @@ if (isset($_POST['create'])) {
     $COMPANY_HANDLING->price_issued_date = $_POST['price_issued_date'];
     $COMPANY_HANDLING->issued_invoice_number = $_POST['issued_invoice_number'];
     $COMPANY_HANDLING->rejection_reason = $_POST['rejection_reason'];
+    $COMPANY_HANDLING->rejection_date = $_POST['rejection_date'];
     $COMPANY_HANDLING->company_invoice_number = $_POST['company_invoice_number'];
     $COMPANY_HANDLING->received_invoice_number = $_POST['received_invoice_number'];
     $COMPANY_HANDLING->special_remark = $_POST['special_remark'];
+    $COMPANY_HANDLING->special_request_date = $_POST['special_request_date'];
     $COMPANY_HANDLING->status_remark = $_POST['status_remark'];
     $COMPANY_HANDLING->general_remark = $_POST['general_remark'];
 
@@ -48,9 +50,11 @@ if (isset($_POST['update'])) {
     $COMPANY_HANDLING->price_issued_date = $_POST['price_issued_date'];
     $COMPANY_HANDLING->issued_invoice_number = $_POST['issued_invoice_number'];
     $COMPANY_HANDLING->rejection_reason = $_POST['rejection_reason'];
+    $COMPANY_HANDLING->rejection_date = $_POST['rejection_date'];
     $COMPANY_HANDLING->company_invoice_number = $_POST['company_invoice_number'];
     $COMPANY_HANDLING->received_invoice_number = $_POST['received_invoice_number'];
     $COMPANY_HANDLING->special_remark = $_POST['special_remark'];
+    $COMPANY_HANDLING->special_request_date = $_POST['special_request_date'];
     $COMPANY_HANDLING->status_remark = $_POST['status_remark'];
     $COMPANY_HANDLING->general_remark = $_POST['general_remark'];
 
@@ -115,9 +119,11 @@ if (isset($_POST['load_complaints'])) {
             $raw_price_issued_date = isset($complaint['price_issued_date']) ? $complaint['price_issued_date'] : '';
             $raw_issued_invoice_number = isset($complaint['issued_invoice_number']) ? $complaint['issued_invoice_number'] : '';
             $raw_rejection_reason = isset($complaint['rejection_reason']) ? $complaint['rejection_reason'] : '';
+            $raw_rejection_date = isset($complaint['rejection_date']) ? $complaint['rejection_date'] : '';
             $raw_company_invoice_number = isset($complaint['company_invoice_number']) ? $complaint['company_invoice_number'] : '';
             $raw_received_invoice_number = isset($complaint['received_invoice_number']) ? $complaint['received_invoice_number'] : '';
             $raw_special_remark = isset($complaint['special_remark']) ? $complaint['special_remark'] : '';
+            $raw_special_request_date = isset($complaint['special_request_date']) ? $complaint['special_request_date'] : '';
             $raw_status_remark = isset($complaint['status_remark']) ? $complaint['status_remark'] : '';
             $raw_general_remark = isset($complaint['general_remark']) ? $complaint['general_remark'] : '';
 
@@ -149,9 +155,11 @@ if (isset($_POST['load_complaints'])) {
                         data-price_issued_date="' . $raw_price_issued_date . '"
                         data-issued_invoice_number="' . $raw_issued_invoice_number . '"
                         data-rejection_reason="' . $raw_rejection_reason . '"
+                        data-rejection_date="' . $raw_rejection_date . '"
                         data-company_invoice_number="' . $raw_company_invoice_number . '"
                         data-received_invoice_number="' . $raw_received_invoice_number . '"
                         data-special_remark="' . $raw_special_remark . '"
+                        data-special_request_date="' . $raw_special_request_date . '"
                         data-status_remark="' . $raw_status_remark . '"
                         data-general_remark="' . $raw_general_remark . '"
                     >';
@@ -171,6 +179,35 @@ if (isset($_POST['load_complaints'])) {
         }
     } else {
         $html .= '<tr><td colspan="6" class="text-center">No complaints found</td></tr>';
+    }
+
+    echo json_encode(array("status" => "success", "html" => $html));
+}
+
+// Load companies for company selection modal
+if (isset($_POST['load_companies'])) {
+    $DAG_COMPANY = new CompanyMaster(null);
+    $companies = $DAG_COMPANY->getActiveCompany();
+
+    $html = '';
+    if (!empty($companies)) {
+        foreach ($companies as $key => $company) {
+            $key++;
+            $html .= '<tr class="select-company" style="cursor: pointer;"
+                        data-id="' . $company['id'] . '"
+                        data-code="' . htmlspecialchars($company['code']) . '"
+                        data-name="' . htmlspecialchars($company['name']) . '"
+                        data-contact_person="' . htmlspecialchars($company['contact_person'] ?? '') . '"
+                        data-phone="' . htmlspecialchars($company['phone_number'] ?? '') . '">';
+            $html .= '<td>' . $key . '</td>';
+            $html .= '<td>' . htmlspecialchars($company['code']) . '</td>';
+            $html .= '<td>' . htmlspecialchars($company['name']) . '</td>';
+            $html .= '<td>' . htmlspecialchars($company['contact_person'] ?? '-') . '</td>';
+            $html .= '<td>' . htmlspecialchars($company['phone_number'] ?? '-') . '</td>';
+            $html .= '</tr>';
+        }
+    } else {
+        $html .= '<tr><td colspan="5" class="text-center">No companies found</td></tr>';
     }
 
     echo json_encode(array("status" => "success", "html" => $html));
