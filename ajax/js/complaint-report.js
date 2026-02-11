@@ -124,7 +124,7 @@ function updateComplaintReportTable(reports) {
 
     if (reports.length > 0) {
         $.each(reports, function (index, report) {
-            var status = report.company_status || '';
+            var status = report.company_status || 'Pending';
             var statusClass = getComplaintStatusClass(status);
 
             var rowNode = complaintReportTable.row.add([
@@ -132,7 +132,7 @@ function updateComplaintReportTable(reports) {
                 report.complaint_no || '',
                 report.uc_number || '',
                 report.customer_name || '',
-                report.company_name || '',
+                report.company_name || '<span class="text-muted">Not Assigned</span>',
                 report.tyre_serial_number || '',
                 report.fault_description || '',
                 (report.complaint_date && report.complaint_date !== '0000-00-00') ? formatComplaintDate(report.complaint_date) : '-',
