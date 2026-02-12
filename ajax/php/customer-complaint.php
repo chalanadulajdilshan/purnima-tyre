@@ -117,4 +117,22 @@ if (isset($_POST['delete'])) {
     }
     exit();
 }
+
+// Filter report (for complaint-report.php AJAX)
+if (isset($_POST['action']) && $_POST['action'] === 'filter_report') {
+    $from_date = isset($_POST['from_date']) ? trim($_POST['from_date']) : '';
+    $to_date = isset($_POST['to_date']) ? trim($_POST['to_date']) : '';
+    $category = isset($_POST['category']) ? trim($_POST['category']) : '';
+    $status = isset($_POST['status']) ? trim($_POST['status']) : '';
+    $company = isset($_POST['company']) ? trim($_POST['company']) : '';
+
+    $COMPLAINT = new CustomerComplaint(null);
+    $reports = $COMPLAINT->getFilteredReports($from_date, $to_date, $category, $status, $company);
+
+    echo json_encode([
+        'status' => 'success',
+        'reports' => $reports
+    ]);
+    exit;
+}
 ?>

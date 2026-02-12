@@ -74,40 +74,37 @@ if ($COMPANY_HANDLING->complaint_id) {
             }
 
             @page {
-                size: A4 landscape;
+                size: auto;
                 margin: 10mm;
             }
         }
 
-        /* Table styling with proper padding */
-        #invoice-content .table-items {
+        /* Remove padding and spacing in invoice table */
+        #invoice-content table,
+        #invoice-content th,
+        #invoice-content td {
+            padding: 2px !important;
+            margin: 0 !important;
+            border-spacing: 0 !important;
+            border-collapse: collapse !important;
+        }
+
+        #invoice-content th,
+        #invoice-content td {
+            vertical-align: middle !important;
+        }
+
+        #invoice-content .table {
             width: 100%;
-            border-collapse: collapse;
+            border-top-width: 0 !important;
+            border-style: none !important;
         }
-
-        #invoice-content .table-items th {
-            padding: 10px 15px !important;
-            background: #f8f9fa;
-            border-bottom: 2px solid #dee2e6;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        #invoice-content .table-items td {
-            padding: 10px 15px !important;
-            border-bottom: 1px solid #eee;
-            font-size: 13px;
-            vertical-align: middle;
-        }
-
-        #invoice-content .table-items .total-row td {
-            border-bottom: none;
-            padding: 8px 15px !important;
-        }
-
-        #invoice-content .table-items .signature-row td {
-            padding-top: 40px !important;
-            border-bottom: none;
+        
+        .company-logo {
+            max-height: 100px;
+            width: auto;
+            object-fit: contain;
+            margin-bottom: 10px;
         }
     </style>
 
@@ -126,7 +123,7 @@ if ($COMPANY_HANDLING->complaint_id) {
         </div>
 
         <div class="card" id="invoice-content">
-            <div class="card-body" style="padding: 25px;">
+            <div class="card-body">
                 <!-- Company & Customer Info -->
                 <div class="invoice-title">
                     <div class="row mb-4">
@@ -141,6 +138,7 @@ if ($COMPANY_HANDLING->complaint_id) {
                         }
                         ?>
                         <div class="col-md-5 text-muted">
+                            <img src="./uploads/company-logos/<?php echo $COMPANY_PROFILE->image_name ?>" class="company-logo" alt="logo">
                             <p class="mb-1" style="font-weight:bold;font-size:18px;">
                                 <?php echo $COMPANY_PROFILE->name ?>
                             </p>
@@ -154,10 +152,10 @@ if ($COMPANY_HANDLING->complaint_id) {
                             </p>
                         </div>
                         <div class="col-md-4 text-sm-start text-md-start">
-                            <h3 style="font-weight:bold;font-size:18px;">BILL</h3>
-                            <p class="mb-1 text-muted" style="font-size:14px;"><strong>Customer Name:</strong>
+                            <h3 style="font-weight:bold;font-size:18px;">COMPLAINT BILL</h3>
+                            <p class="mb-1 text-muted" style="font-size:14px;"><strong>Name:</strong>
                                 <?php echo htmlspecialchars($COMPLAINT['customer_name'] ?? ''); ?></p>
-                            <p class="mb-1 text-muted" style="font-size:14px;"><strong>Customer Mobile:</strong>
+                            <p class="mb-1 text-muted" style="font-size:14px;"><strong>Contact:</strong>
                                 <?php echo !empty($COMPLAINT['customer_address']) ? htmlspecialchars($COMPLAINT['customer_address']) : '' ?>
                                 -
                                 <?php echo !empty($COMPLAINT['customer_mobile']) ? htmlspecialchars($COMPLAINT['customer_mobile']) : '.................................'; ?>
@@ -169,81 +167,90 @@ if ($COMPANY_HANDLING->complaint_id) {
                                 <?php echo htmlspecialchars($COMPLAINT['complaint_no'] ?? 'N/A'); ?></p>
                             <p class="mb-1" style="font-size:14px;"><strong>UC No:</strong>
                                 <?php echo htmlspecialchars($COMPLAINT['uc_number'] ?? 'N/A'); ?></p>
+                            <?php if (!empty($COMPANY_HANDLING->issued_invoice_number)): ?>
+                                <p class="mb-1" style="font-size:14px;"><strong>Invoice No:</strong>
+                                    <?php echo htmlspecialchars($COMPANY_HANDLING->issued_invoice_number); ?></p>
+                            <?php endif; ?>
                             <p class="mb-1" style="font-size:14px;"><strong>Date:</strong>
-                                <?php echo date('d M, Y'); ?></p>
+                                <?php
+                                if (!empty($COMPANY_HANDLING->price_issued_date) && $COMPANY_HANDLING->price_issued_date != '0000-00-00') {
+                                    echo date('d M, Y', strtotime($COMPANY_HANDLING->price_issued_date));
+                                } else {
+                                    echo date('d M, Y');
+                                }
+                                ?>
+                            </p>
                         </div>
                     </div>
 
                     <!-- ITEM TABLE -->
                     <div class="table-responsive">
-                        <table class="table-items">
+                        <table class="table table-centered">
                             <thead>
                                 <tr>
-                                    <th style="width: 50px;">No.</th>
-                                    <th>Description</th>
-                                    <th style="width: 150px;">Company</th>
-                                    <th style="width: 120px;">Status</th>
-                                    <th style="width: 120px; text-align: right;">Amount</th>
+                                    <th>No.</th>
+                                    <th colspan="2">Description</th>
+                                    <th>Company</th>
+                                    <th>Tyre Serial</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Amount</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody style="font-size:13px;" class="font-bold">
                                 <tr>
                                     <td>01</td>
-                                    <td><?php echo htmlspecialchars($COMPLAINT['fault_description'] ?? 'Service Charge'); ?>
+                                    <td colspan="2">
+                                        <?php echo htmlspecialchars($COMPLAINT['fault_description'] ?? 'Service Charge'); ?>
+                                        <?php if (!empty($COMPLAINT['complaint_category'])): ?>
+                                            <br><small class="text-muted">Category:
+                                                <?php echo htmlspecialchars($COMPLAINT['complaint_category']); ?></small>
+                                        <?php endif; ?>
                                     </td>
                                     <td><?php echo htmlspecialchars($COMPANY_HANDLING->company_name ?: 'N/A'); ?></td>
+                                    <td><?php echo htmlspecialchars($COMPLAINT['tyre_serial_number'] ?? 'N/A'); ?></td>
                                     <td><?php echo htmlspecialchars($COMPANY_HANDLING->company_status ?: 'N/A'); ?></td>
-                                    <td style="text-align: right;">
+                                    <td class="text-end">
                                         <?php echo $COMPANY_HANDLING->price_amount ? number_format($COMPANY_HANDLING->price_amount, 2) : '0.00'; ?>
                                     </td>
                                 </tr>
-                                <tr class="total-row">
-                                    <td colspan="3" rowspan="3"
-                                        style="vertical-align: top; padding-top: 15px !important;">
-                                        <h6 style="margin-bottom: 8px;"><strong>Terms & Conditions:</strong></h6>
-                                        <ul style="padding-left: 20px; margin-bottom: 0; color: #666;">
+
+                                <!-- Totals Section -->
+                                <tr>
+                                    <td colspan="4" rowspan="3" style="vertical-align:top;">
+                                        <h6 style="margin-top:8px;"><strong>Terms & Conditions:</strong></h6>
+                                        <ul style="padding-left:20px;margin-bottom:0;">
                                             <li>Payment is due upon receipt</li>
                                             <li>Please retain this bill for your records</li>
                                         </ul>
                                     </td>
-                                    <td style="text-align: right;"><strong>Sub Total:</strong></td>
-                                    <td style="text-align: right;">
+                                    <td colspan="2" class="text-end font-weight-bold"><strong>Gross Amount:-</strong>
+                                    </td>
+                                    <td class="text-end font-weight-bold">
                                         <strong><?php echo $COMPANY_HANDLING->price_amount ? number_format($COMPANY_HANDLING->price_amount, 2) : '0.00'; ?></strong>
                                     </td>
                                 </tr>
-                                <tr class="total-row">
-                                    <td style="text-align: right;"><strong>VAT:</strong></td>
-                                    <td style="text-align: right;"><strong>0.00</strong></td>
+                                <tr>
+                                    <td colspan="2" class="text-end font-weight-bold"><strong>Discount:-</strong></td>
+                                    <td class="text-end font-weight-bold">0.00</td>
                                 </tr>
-                                <tr class="total-row">
-                                    <td style="text-align: right; border-top: 1px solid #333;"><strong>Net
-                                            Amount:</strong></td>
-                                    <td style="text-align: right; border-top: 1px solid #333;">
+                                <tr>
+                                    <td colspan="2" class="text-end"><strong>Net Amount:-</strong></td>
+                                    <td class="text-end">
                                         <strong><?php echo $COMPANY_HANDLING->price_amount ? number_format($COMPANY_HANDLING->price_amount, 2) : '0.00'; ?></strong>
                                     </td>
                                 </tr>
-                                <tr class="signature-row">
-                                    <td colspan="5">
-                                        <table style="width: 100%; margin-top: 30px;">
+
+                                <!-- Signature Section -->
+                                <tr>
+                                    <td colspan="7" style="padding-top:50px !important;">
+                                        <table style="width:100%;">
                                             <tr>
-                                                <td style="text-align: center; width: 33%;">
-                                                    <div
-                                                        style="border-top: 1px solid #333; width: 150px; margin: 0 auto; padding-top: 8px;">
-                                                        <strong>Prepared By</strong>
-                                                    </div>
-                                                </td>
-                                                <td style="text-align: center; width: 33%;">
-                                                    <div
-                                                        style="border-top: 1px solid #333; width: 150px; margin: 0 auto; padding-top: 8px;">
-                                                        <strong>Approved By</strong>
-                                                    </div>
-                                                </td>
-                                                <td style="text-align: center; width: 33%;">
-                                                    <div
-                                                        style="border-top: 1px solid #333; width: 150px; margin: 0 auto; padding-top: 8px;">
-                                                        <strong>Received By</strong>
-                                                    </div>
-                                                </td>
+                                                <td style="text-align:center;">
+                                                    _________________________<br><strong>Prepared By</strong></td>
+                                                <td style="text-align:center;">
+                                                    _________________________<br><strong>Approved By</strong></td>
+                                                <td style="text-align:center;">
+                                                    _________________________<br><strong>Received By</strong></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -275,7 +282,7 @@ if ($COMPANY_HANDLING->complaint_id) {
                 jsPDF: {
                     unit: 'mm',
                     format: 'a4',
-                    orientation: 'landscape'
+                    orientation: 'portrait'
                 }
             };
             html2pdf().set(opt).from(element).save();
