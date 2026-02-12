@@ -385,7 +385,8 @@ $status = isset($handling_data['company_status']) ? $handling_data['company_stat
                         <div class="row mb-4">
                             <div class="col-12">
                                 <div class="alert alert-light border-dark">
-                                    <strong>Note:</strong> Rejected from this company and again did special request.
+                                    <strong>Note:</strong> This was rejected by the company and has been reassigned to the same
+                                    company with a special request.
                                 </div>
                             </div>
                         </div>

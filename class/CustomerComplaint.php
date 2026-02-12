@@ -140,7 +140,11 @@ class CustomerComplaint
         if (!empty($status)) {
             $db_tmp = Database::getInstance();
             $status = mysqli_real_escape_string($db_tmp->DB_CON, $status);
-            $query .= " AND ch.company_status = '$status'";
+            if ($status === 'Pending') {
+                $query .= " AND (ch.company_status IS NULL OR ch.company_status = '')";
+            } else {
+                $query .= " AND ch.company_status LIKE '%$status%'";
+            }
         }
         if (!empty($company)) {
             $db_tmp = Database::getInstance();

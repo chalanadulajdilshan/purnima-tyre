@@ -177,7 +177,7 @@ $reports = $COMPLAINT->getFilteredReports($from_date, $to_date, $category, $filt
                                                             <td><?php echo htmlspecialchars($report['complaint_no']); ?></td>
                                                             <td><?php echo htmlspecialchars($report['uc_number']); ?></td>
                                                             <td><?php echo htmlspecialchars($report['customer_name']); ?></td>
-                                                            <td><?php echo htmlspecialchars($report['company_name'] ?? ''); ?>
+                                                            <td><?php echo (!empty($report['company_name'])) ? htmlspecialchars($report['company_name']) : '<span class="text-muted">Not Assigned</span>'; ?>
                                                             </td>
                                                             <td><?php echo htmlspecialchars($report['tyre_serial_number']); ?>
                                                             </td>
