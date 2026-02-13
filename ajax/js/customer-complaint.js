@@ -101,14 +101,11 @@ $(document).ready(function () {
     }
 
     // Create complaint
-    $('#create').on('click', function (e) {
+    $('#create').off('click').on('click', function (e) {
         e.preventDefault();
         e.stopImmediatePropagation(); // Prevent customer-master.js from handling this
 
-        // Validate form
-        if (!validateForm()) {
-            return;
-        }
+        // Validation removed as per request
 
         const formData = {
             create: true,
@@ -162,13 +159,11 @@ $(document).ready(function () {
     });
 
     // Update complaint
-    $('#update').on('click', function (e) {
+    $('#update').off('click').on('click', function (e) {
         e.preventDefault();
         e.stopImmediatePropagation(); // Prevent customer-master.js from handling this
 
-        if (!validateForm()) {
-            return;
-        }
+        // Validation removed as per request
 
         const formData = {
             update: true,
@@ -295,47 +290,7 @@ $(document).ready(function () {
         });
     });
 
-    // Form validation
-    function validateForm() {
-        const customerId = $('#customer_id').val();
-        const complaintDate = $('#complaint_date').val();
-        const complaintCategory = $('#complaint_category').val();
 
-        if (!customerId) {
-            swal({
-                title: 'Validation Error!',
-                text: 'Please select a customer',
-                type: 'warning',
-                timer: 2000,
-                showConfirmButton: false
-            });
-            return false;
-        }
-
-        if (!complaintDate) {
-            swal({
-                title: 'Validation Error!',
-                text: 'Please select a complaint date',
-                type: 'warning',
-                timer: 2000,
-                showConfirmButton: false
-            });
-            return false;
-        }
-
-        if (!complaintCategory) {
-            swal({
-                title: 'Validation Error!',
-                text: 'Please select a complaint category',
-                type: 'warning',
-                timer: 2000,
-                showConfirmButton: false
-            });
-            return false;
-        }
-
-        return true;
-    }
 
     // Print functionality
     $('#print').on('click', function (e) {
