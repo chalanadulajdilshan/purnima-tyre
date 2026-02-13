@@ -413,8 +413,14 @@ include './auth.php';
                                                 </div>
                                                 <div class="col-md-1">
                                                     <label class="form-label">Serial No</label>
-                                                    <input type="text" id="itemSerialNo" class="form-control"
-                                                        placeholder="Serial No">
+                                                    <div class="input-group">
+                                                        <input type="text" id="itemSerialNo" class="form-control"
+                                                            placeholder="Serial No">
+                                                        <button class="btn btn-primary" type="button" id="addSerialNoBtn"
+                                                            style="display: none;" title="Add Multiple Serial Numbers">
+                                                            <i class="uil uil-plus"></i>
+                                                        </button>
+                                                    </div>
                                                 </div>
                                                 <div class="col-md-1">
                                                     <button type="button" class="btn btn-success w-100"
@@ -798,6 +804,29 @@ include './auth.php';
     <script src="ajax/js/sales-invoice.js"></script>
     <script src="ajax/js/common.js"></script>
     <script src="ajax/js/customer-master.js"></script>
+
+    <!-- Serial Number Modal -->
+    <div class="modal fade" id="serialNoModal" tabindex="-1" role="dialog" aria-labelledby="serialNoModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="serialNoModalLabel">Enter Serial Numbers</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">Please enter serial numbers for <span id="serialNoQtyDisplay"></span> items.</p>
+                    <div id="serialNoInputsContainer">
+                        <!-- Inputs will be generated here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveSerialNosBtn">Save Serial Numbers</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- include main js  -->
     <?php include 'main-js.php' ?>

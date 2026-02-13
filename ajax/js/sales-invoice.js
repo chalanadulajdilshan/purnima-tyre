@@ -2399,6 +2399,15 @@ jQuery(document).ready(function () {
     // Always recalc payment
     const total = (parseFloat($("#itemSalePrice").val()) || 0) * qty;
     $("#itemPayment").val(total.toFixed(2));
+
+    // Toggle Add Serial No Button
+    if (qty > 1) {
+      $("#addSerialNoBtn").show();
+      $("#itemSerialNo").prop("readonly", true);
+    } else {
+      $("#addSerialNoBtn").hide();
+      $("#itemSerialNo").prop("readonly", false);
+    }
   }
 
   // 🔗 Event bindings
@@ -2439,6 +2448,52 @@ jQuery(document).ready(function () {
 
     return arnIds;
   }
+
+  // --- MULTIPLE SERIAL NUMBER LOGIC ---
+
+  // Open Modal and Generate Inputs
+  $("#addSerialNoBtn").click(function () {
+    const qty = parseFloat($("#itemQty").val()) || 0;
+    if (qty <= 1) return;
+
+    $("#serialNoQtyDisplay").text(qty);
+    const container = $("#serialNoInputsContainer");
+    container.empty();
+
+    // Get existing serial numbers
+    const currentSerialNos = $("#itemSerialNo").val().split(",");
+
+    for (let i = 0; i < qty; i++) {
+      const val = currentSerialNos[i] ? currentSerialNos[i].trim() : "";
+      const inputHtml = `
+            <div class="form-group mb-2">
+                <label>Serial No ${i + 1}</label>
+                <input type="text" class="form-control serial-no-input" value="${val}" placeholder="Enter Serial No ${i + 1
+        }">
+            </div>
+        `;
+      container.append(inputHtml);
+    }
+
+    $("#serialNoModal").modal("show");
+  });
+
+  // Save Serial Numbers from Modal
+  $("#saveSerialNosBtn").click(function () {
+    const serialNos = [];
+    $(".serial-no-input").each(function () {
+      const val = $(this).val().trim();
+      if (val) {
+        serialNos.push(val);
+      }
+    });
+
+    // Join with comma
+    $("#itemSerialNo").val(serialNos.join(","));
+    $("#serialNoModal").modal("hide");
+  });
+
+  // --- END MULTIPLE SERIAL NUMBER LOGIC ---
 
   // CANCEL INVOICE FUNCTION
   $(document).on("click", ".cancel-invoice", function () {
