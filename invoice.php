@@ -154,7 +154,7 @@ if (!empty($customerMobile)) {
             <div class="card-body">
                 <!-- Company & Customer Info -->
                 <div class="invoice-title">
-                    <div class="row mb-4">
+                    <div class="row mb-2">
                         <?php
                         function formatPhone($number)
                         {
@@ -165,61 +165,99 @@ if (!empty($customerMobile)) {
                             return $number;
                         }
                         ?>
-                        <div class="col-md-5 text-muted">
-                            <p class="mb-1" style="font-weight:bold;font-size:18px;">
-                                <?php echo $COMPANY_PROFILE->name ?>
-                            </p>
-                            <p class="mb-1" style="font-size:13px;"><?php echo $COMPANY_PROFILE->address ?></p>
-                            <p class="mb-1" style="font-size:13px;">
-                                <?php echo formatPhone($COMPANY_PROFILE->mobile_number_1); ?>
-                                <?php echo $COMPANY_PROFILE->email ?>
-                            </p>
-                            <p class="mb-1" style="font-size:13px;">VAT Registration No:
-                                <?php echo $COMPANY_PROFILE->vat_number ?><br>
-                            </p>
-
-                        </div>
-                        <div class="col-md-4 text-sm-start text-md-start">
-                            <h3 style="font-weight:bold;font-size:18px;">
-                                <?php echo ($SALES_INVOICE->payment_type == 1) ? "CASH SALES INVOICE" : "CREDIT SALES INVOICE"; ?>
-                            </h3>
-                            <p class="mb-1 text-muted" style="font-size:14px;"><strong> Name:</strong>
-                                <?php echo $SALES_INVOICE->customer_name ?></p>
-                            <p class="mb-1 text-muted" style="font-size:14px;"><strong> Contact:</strong>
-                                <?php echo !empty($SALES_INVOICE->customer_address) ? $SALES_INVOICE->customer_address : '' ?>
-                                -
-                                <?php echo !empty($SALES_INVOICE->customer_mobile) ? $SALES_INVOICE->customer_mobile : '.................................' ?>
-                            </p>
-                            <div style="margin: 2px 0;">
-                                <p class="mb-1" style="font-size:13px;"> VAT No:
+                        <!-- Header: Logo + Company Info (Left), Invoice Meta (Right) -->
+                        <div class="col-12 d-flex justify-content-between align-items-start">
+                            <!-- Left: Logo & Company -->
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="flex-shrink-0">
                                     <?php
-                                    if (!empty($SALES_INVOICE->customer_id)) {
-                                        $CUSTOMER_MASTER = new CustomerMaster($SALES_INVOICE->customer_id);
-                                        echo !empty($CUSTOMER_MASTER->vat_no) ? $CUSTOMER_MASTER->vat_no : '.................................';
-                                    } else {
-                                        echo '.................................';
+                                    $logoPath = 'assets/images/logo.png'; // Default
+                                    if (!empty($COMPANY_PROFILE->image_name) && file_exists('uploads/company-logos/' . $COMPANY_PROFILE->image_name)) {
+                                        $logoPath = 'uploads/company-logos/' . $COMPANY_PROFILE->image_name;
+                                    } elseif (file_exists('assets/images/logo.jpg')) {
+                                        $logoPath = 'assets/images/logo.jpg';
                                     }
                                     ?>
-                                </p>
+                                    <img src="<?php echo $logoPath; ?>" alt="Logo"
+                                        style="max-height: 80px; max-width: 150px;">
+                                </div>
+                                <div>
+                                    <h4 class="mb-1 text-uppercase" style="font-weight:900;">
+                                        <?php echo $COMPANY_PROFILE->name ?>
+                                    </h4>
+                                    <p class="mb-1" style="font-size:13px;"><?php echo $COMPANY_PROFILE->address ?></p>
+                                    <p class="mb-1" style="font-size:13px;">
+                                        <?php echo formatPhone($COMPANY_PROFILE->mobile_number_1); ?>
+                                        <?php if (!empty($COMPANY_PROFILE->email))
+                                            echo ' | ' . $COMPANY_PROFILE->email; ?>
+                                    </p>
+                                    <?php if (!empty($COMPANY_PROFILE->vat_number)): ?>
+                                        <p class="mb-1" style="font-size:13px;">VAT Reg No:
+                                            <?php echo $COMPANY_PROFILE->vat_number ?>
+                                        </p>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+
+                            <!-- Right: Invoice Meta -->
+                            <div class="text-end">
+                                <p class="mb-1" style="font-size:14px;"><strong>Inv No:</strong>
+                                    <?php echo $SALES_INVOICE->invoice_no ?></p>
+                                <p class="mb-1" style="font-size:14px;"><strong>Inv Date:</strong>
+                                    <?php echo date('d M, Y', strtotime($SALES_INVOICE->invoice_date)); ?></p>
+                                <?php if (!empty($SALES_INVOICE->vehicle_no)): ?>
+                                    <p class="mb-1" style="font-size:14px;"><strong>Vehicle No:</strong>
+                                        <?php echo $SALES_INVOICE->vehicle_no ?></p>
+                                <?php endif; ?>
+                                <?php if ($SALES_INVOICE->payment_type == 2 && $SALES_INVOICE->credit_period): ?>
+                                    <?php $CP = new CreditPeriod($SALES_INVOICE->credit_period); ?>
+                                    <p class="mb-1" style="font-size:14px;"><strong>Credit Period:</strong>
+                                        <?php echo $CP->days ?> Days</p>
+                                    <p class="mb-1" style="font-size:14px;"><strong>Due Date:</strong>
+                                        <?php echo date('d M, Y', strtotime($SALES_INVOICE->due_date)); ?></p>
+                                <?php endif; ?>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="col-md-3 text-sm-start text-md-end  ">
-                            <p class="mb-1" style="font-size:14px;"><strong>Inv No:</strong>
-                                <?php echo $SALES_INVOICE->invoice_no ?></p>
-                            <p class="mb-1" style="font-size:14px;"><strong>Inv Date:</strong>
-                                <?php echo date('d M, Y', strtotime($SALES_INVOICE->invoice_date)); ?></p>
-                            <?php if (!empty($SALES_INVOICE->vehicle_no)): ?>
-                                <p class="mb-1" style="font-size:14px;"><strong>Vehicle No:</strong>
-                                    <?php echo $SALES_INVOICE->vehicle_no ?></p>
-                            <?php endif; ?>
-                            <?php if ($SALES_INVOICE->payment_type == 2 && $SALES_INVOICE->credit_period): ?>
-                                <?php $CP = new CreditPeriod($SALES_INVOICE->credit_period); ?>
-                                <p class="mb-1" style="font-size:14px;"><strong>Credit Period:</strong>
-                                    <?php echo $CP->days ?> Days</p>
-                                <p class="mb-1" style="font-size:14px;"><strong>Due Date:</strong>
-                                    <?php echo date('d M, Y', strtotime($SALES_INVOICE->due_date)); ?></p>
-                            <?php endif; ?>
+                    <hr class="my-2" style="border-top: 1px solid #ccc;">
+
+                    <!-- Title -->
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <h3 style="font-weight:bold;font-size:22px; margin-top: 10px; margin-bottom: 20px;">
+                                <?php echo ($SALES_INVOICE->invoice_type == 'DAG') ? "DAG INVOICE" : (($SALES_INVOICE->payment_type == 1) ? "CASH SALES INVOICE" : "CREDIT SALES INVOICE"); ?>
+                            </h3>
+                        </div>
+                    </div>
+
+                    <!-- Customer Details -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <p class="mb-1" style="font-size:14px;"><strong>Customer:</strong>
+                                <?php echo $SALES_INVOICE->customer_name ?></p>
+                            <p class="mb-1" style="font-size:14px;"><strong>Contact No:</strong>
+                                <?php
+                                $contactParts = [];
+                                if (!empty($SALES_INVOICE->customer_mobile)) {
+                                    $contactParts[] = $SALES_INVOICE->customer_mobile;
+                                }
+                                if (!empty($SALES_INVOICE->customer_address)) {
+                                    $contactParts[] = $SALES_INVOICE->customer_address;
+                                }
+                                echo !empty($contactParts) ? implode(' - ', $contactParts) : '.................................';
+                                ?>
+                            </p>
+                            <p class="mb-1" style="font-size:14px;"><strong>VAT No:</strong>
+                                <?php
+                                if (!empty($SALES_INVOICE->customer_id)) {
+                                    $CUSTOMER_MASTER = new CustomerMaster($SALES_INVOICE->customer_id);
+                                    echo !empty($CUSTOMER_MASTER->vat_no) ? $CUSTOMER_MASTER->vat_no : '.................................';
+                                } else {
+                                    echo '.................................';
+                                }
+                                ?>
+                            </p>
                         </div>
                     </div>
 
@@ -244,7 +282,7 @@ if (!empty($customerMobile)) {
                                         <th class="text-end">Total</th>
                                     </tr>
                                 </thead>
-                                <tbody style="font-size:13px;" class="font-bold">
+                                <tbody style="font-size:14px;" class="font-bold">
                                     <?php
                                     $TEMP_SALES_ITEM = new SalesInvoiceItem(null);
                                     $temp_items_list = $TEMP_SALES_ITEM->getItemsByInvoiceId($invoice_id);
@@ -281,8 +319,14 @@ if (!empty($customerMobile)) {
                                             <td class="text-end"><?php echo number_format($line_total, 2); ?></td>
                                         </tr>
                                     <?php } ?>
+                                    <?php
+                                    // Calculate rowspan based on visible rows + hidden discount row
+                                    // Cash: Gross, Discount(hidden), VAT, Net (4 rows)
+                                    // Credit: Gross, Paid, Payable, Discount(hidden), VAT, Net (6 rows)
+                                    $rowSpan = ($SALES_INVOICE->payment_type == 2) ? 6 : 4;
+                                    ?>
                                     <tr>
-                                        <td colspan="5" rowspan="5" style="vertical-align:top;  ">
+                                        <td colspan="4" rowspan="<?php echo $rowSpan; ?>" style="vertical-align:top;  ">
                                             <h6 style="margin-top:8px;"><strong>Terms & Conditions:</strong></h6>
                                             <ul style="padding-left:20px;margin-bottom:0;">
                                                 <?php
@@ -298,41 +342,44 @@ if (!empty($customerMobile)) {
                                                 ?>
                                             </ul>
                                         </td>
-                                        <td colspan="2" class="text-end font-weight-bold"><strong>Gross Amount:-</strong>
+                                        <td colspan="3" class="text-end font-weight-bold"><strong>Gross Amount:-</strong>
                                         </td>
-                                        <td colspan="2" class="text-end font-weight-bold">
-                                            <strong><?php echo number_format($subtotal, 2); ?></strong></td>
+                                        <td class="text-end font-weight-bold">
+                                            <strong><?php echo number_format($subtotal, 2); ?></strong>
+                                        </td>
                                     </tr>
                                     <?php if ($SALES_INVOICE->payment_type == 2): // Credit payment 
                                                 ?>
                                         <tr>
-                                            <td colspan="2" class="text-end font-weight-bold"><strong>Paid Amount:-</strong>
+                                            <td colspan="3" class="text-end font-weight-bold"><strong>Paid Amount:-</strong>
                                             </td>
-                                            <td colspan="2" class="text-end font-weight-bold">
+                                            <td class="text-end font-weight-bold">
                                                 <strong><?php echo number_format($SALES_INVOICE->outstanding_settle_amount, 2); ?></strong>
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td colspan="2" class="text-end font-weight-bold"><strong>Payable Amount:-</strong>
+                                            <td colspan="3" class="text-end font-weight-bold"><strong>Payable Amount:-</strong>
                                             </td>
-                                            <td colspan="2" class="text-end font-weight-bold">
+                                            <td class="text-end font-weight-bold">
                                                 <strong><?php echo number_format($SALES_INVOICE->grand_total - $SALES_INVOICE->outstanding_settle_amount, 2); ?></strong>
                                             </td>
                                         </tr>
                                     <?php endif; ?>
                                     <tr hidden>
-                                        <td colspan="2" class="text-end font-weight-bold">Discount:-</td>
-                                        <td colspan="2" class="text-end font-weight-bold">-
-                                            <?php echo number_format($total_discount, 2); ?></td>
+                                        <td colspan="3" class="text-end font-weight-bold">Discount:-</td>
+                                        <td class="text-end font-weight-bold">-
+                                            <?php echo number_format($total_discount, 2); ?>
+                                        </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="2" class="text-end font-weight-bold"><strong>VAT :-</strong></td>
+                                        <td colspan="3" class="text-end font-weight-bold"><strong>VAT :-</strong></td>
                                         <td class="text-end font-weight-bold">
-                                            <strong><?php echo number_format($SALES_INVOICE->tax, 2); ?></strong></td>
+                                            <strong><?php echo number_format($SALES_INVOICE->tax, 2); ?></strong>
+                                        </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="2" class="text-end"><strong>Net Amount:-</strong></td>
-                                        <td colspan="2" class="text-end">
+                                        <td colspan="3" class="text-end"><strong>Net Amount:-</strong></td>
+                                        <td class="text-end">
                                             <strong><?php echo number_format($subtotal + $SALES_INVOICE->tax, 2); ?></strong>
                                         </td>
                                     </tr>
@@ -450,8 +497,12 @@ if (!empty($customerMobile)) {
                                             <td class="text-end"><?php echo number_format($line_total, 2); ?></td>
                                         </tr>
                                     <?php } ?>
+                                    <?php
+                                    // Calculate rowspan for DAG: Cash (3 rows), Credit (5 rows)
+                                    $dagRowSpan = ($SALES_INVOICE->payment_type == 2) ? 5 : 3;
+                                    ?>
                                     <tr>
-                                        <td colspan="5" rowspan="5" style="vertical-align:top;">
+                                        <td colspan="4" rowspan="<?php echo $dagRowSpan; ?>" style="vertical-align:top;">
                                             <h6 style="margin-top:8px;"><strong>Terms & Conditions:</strong></h6>
                                             <ul style="padding-left:20px;margin-bottom:0;">
                                                 <?php
@@ -467,22 +518,23 @@ if (!empty($customerMobile)) {
                                                 ?>
                                             </ul>
                                         </td>
-                                        <td colspan="2" class="text-end font-weight-bold"><strong>Gross Amount:-</strong>
+                                        <td colspan="3" class="text-end font-weight-bold"><strong>Gross Amount:-</strong>
                                         </td>
                                         <td class="text-end font-weight-bold">
-                                            <strong><?php echo number_format($subtotal, 2); ?></strong></td>
+                                            <strong><?php echo number_format($subtotal, 2); ?></strong>
+                                        </td>
                                     </tr>
                                     <?php if ($SALES_INVOICE->payment_type == 2): // Credit payment 
                                                 ?>
                                         <tr>
-                                            <td colspan="2" class="text-end font-weight-bold"><strong>Paid Amount:-</strong>
+                                            <td colspan="3" class="text-end font-weight-bold"><strong>Paid Amount:-</strong>
                                             </td>
                                             <td class="text-end font-weight-bold">
                                                 <strong><?php echo number_format($SALES_INVOICE->outstanding_settle_amount, 2); ?></strong>
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td colspan="2" class="text-end font-weight-bold"><strong>Payable Amount:-</strong>
+                                            <td colspan="3" class="text-end font-weight-bold"><strong>Payable Amount:-</strong>
                                             </td>
                                             <td class="text-end font-weight-bold">
                                                 <strong><?php echo number_format($SALES_INVOICE->grand_total - $SALES_INVOICE->outstanding_settle_amount, 2); ?></strong>
@@ -490,12 +542,12 @@ if (!empty($customerMobile)) {
                                         </tr>
                                     <?php endif; ?>
                                     <tr>
-                                        <td colspan="2" class="text-end font-weight-bold">Total Cost:-</td>
+                                        <td colspan="3" class="text-end font-weight-bold">Total Cost:-</td>
                                         <td class="text-end font-weight-bold"><?php echo number_format($total_cost, 2); ?>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="2" class="text-end"><strong>Net Amount:-</strong></td>
+                                        <td colspan="3" class="text-end"><strong>Net Amount:-</strong></td>
                                         <td class="text-end"><strong><?php echo number_format($subtotal, 2); ?></strong>
                                         </td>
                                     </tr>
