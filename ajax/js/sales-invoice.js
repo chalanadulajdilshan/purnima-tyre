@@ -2275,12 +2275,12 @@ jQuery(document).ready(function () {
 
       console.log("Item - Qty:", qty, "Price:", price, "Discount:", discount);
 
-      // Calculate VAT only if VAT is applied
+      // Calculate VAT only if VAT is applied (Extract from inclusive price)
       if (isVatApplied && vatPercentage > 0) {
         const discountedItemTotal = itemTotal - itemDiscount;
-        itemTax = discountedItemTotal * (vatPercentage / 100);
+        itemTax = discountedItemTotal * (vatPercentage / (100 + vatPercentage));
         console.log(
-          "Item Tax:",
+          "Item Tax (Extracted):",
           itemTax,
           "for discounted total:",
           discountedItemTotal
@@ -2306,7 +2306,7 @@ jQuery(document).ready(function () {
       );
     });
 
-    const grandTotal = subTotal - discountTotal + taxTotal;
+    const grandTotal = subTotal - discountTotal; // Tax is already included in subTotal and discountTotal
     $("#subTotal").val(
       subTotal.toLocaleString("en-US", {
         minimumFractionDigits: 2,
