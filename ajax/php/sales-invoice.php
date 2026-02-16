@@ -208,12 +208,12 @@ if (isset($_POST['create'])) {
     if ($isVatInvoice) {
         $vat_percentage = $COMPANY_PROFILE->vat_percentage;
         if ($vat_percentage > 0) {
-            $tax = round(($netTotal * $vat_percentage) / 100, 2);
+            $tax = round(($netTotal * $vat_percentage) / (100 + $vat_percentage), 2);
         }
     }
 
-    // Grand total = net total + VAT
-    $grandTotal = $netTotal + $tax;
+    // Grand total = net total (VAT is already included in prices)
+    $grandTotal = $netTotal;
 
     // Create invoice
     $SALES_INVOICE = new SalesInvoice(NULL);
