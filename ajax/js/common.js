@@ -562,11 +562,21 @@ jQuery(document).ready(function () {
         tbody.empty();
 
         if (response && response.length > 0) {
+          const isVatApplied = $("#is_vat_invoice").is(":checked");
+          const vatPercentage = parseFloat($("#vat_percentage").val()) || 0;
+
           response.forEach((item) => {
             const discountValue = parseFloat(item.discount) || 0;
+            const totalValue = parseFloat(item.total) || 0;
+            let itemVatAmount = 0;
+
+            if (isVatApplied && vatPercentage > 0) {
+              itemVatAmount = totalValue * (vatPercentage / (100 + vatPercentage));
+            }
+
             let row = `
                             <tr>
-                                <td>${item.item_code || ''}</td>
+                                <td>${item.item_code || ""}</td>
                                 <td>${item.item_name}</td>
                                 <td>${parseFloat(
               item.list_price || item.price || 0
@@ -584,13 +594,15 @@ jQuery(document).ready(function () {
               }
             )}</td>  
                                 <td>${item.serial_no || ""}</td> 
-                                <td>${parseFloat(item.total).toLocaleString(
-              undefined,
-              {
+                                <td class="item-vat-amount vat-column" style="display: ${isVatApplied ? "" : "none"
+              }">${itemVatAmount.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
-              }
-            )}</td>
+              })}</td>
+                                <td>${totalValue.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}</td>
                                 <td>
                                     <button type="button" class="btn btn-sm btn-danger btn-remove-item" data-code="${item.item_code
               }" data-qty="${item.quantity
@@ -602,7 +614,7 @@ jQuery(document).ready(function () {
           });
         } else {
           tbody.html(`<tr id="noItemRow">
-                                    <td colspan="8" class="text-center text-muted">No items found</td>
+                                    <td colspan="10" class="text-center text-muted">No items found</td>
                                 </tr>`);
         }
       },
@@ -687,6 +699,13 @@ jQuery(document).ready(function () {
         };
         $("#is_vat_invoice").prop("checked", response.tax > 0);
         $("#remark").val(response.remark || "");
+
+        // Toggle visibility of VAT columns based on loaded checkbox state
+        if (response.tax > 0) {
+          $(".vat-column").show();
+        } else {
+          $(".vat-column").hide();
+        }
 
         // Handle payment section visibility and data for credit invoices
         if (response.payment_type == 2) {

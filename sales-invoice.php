@@ -498,6 +498,7 @@ include './auth.php';
                                                             <th>Serial No</th>
                                                             <th>Cost</th>
                                                             <th>Price</th>
+                                                            <th class="vat-column" style="display: none;">VAT</th>
                                                             <th>Action</th>
                                                         </tr>
                                                     </thead>
@@ -525,6 +526,7 @@ include './auth.php';
                                                             <th>Discount</th>
                                                             <th>Selling Price</th>
                                                             <th>Serial No</th>
+                                                            <th class="vat-column" style="display: none;">VAT</th>
                                                             <th>Total</th>
                                                             <th>Action</th>
                                                         </tr>
@@ -642,7 +644,7 @@ include './auth.php';
                                                             </div>
                                                         </div>
 
-                                                        <div class="row mb-2">
+                                                        <div class="row mb-2" id="tax_row" style="display: none;">
                                                             <div class="col-7">
                                                                 <input type="text" class="form-control text_purchase3"
                                                                     value="Tax Total:" disabled>

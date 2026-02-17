@@ -293,18 +293,35 @@ $CUSTOMER = new CustomerMaster($SALES_INVOICE->customer_id);
                                                             <th>Price</th>
                                                             <th>Qty</th>
                                                             <th>Discount</th>
+                                                            <th>Sell Price</th>
+                                                            <th>Serial No</th>
+                                                            <?php if ($SALES_INVOICE->tax > 0): ?>
+                                                                <th>VAT</th>
+                                                            <?php endif; ?>
                                                             <th>Total</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id="invoiceItemsBody">
-                                                        <?php foreach ($SALES_INVOICE_ITEMS->getItemsByInvoiceId($invoice_id) as $item) { ?>
+                                                        <?php
+                                                        $vat_percentage = VAT_PERCENTAGE;
+                                                        foreach ($SALES_INVOICE_ITEMS->getItemsByInvoiceId($invoice_id) as $item) {
+                                                            $item_vat = 0;
+                                                            if ($SALES_INVOICE->tax > 0) {
+                                                                $item_vat = $item['total'] * ($vat_percentage / (100 + $vat_percentage));
+                                                            }
+                                                        ?>
                                                             <tr>
                                                                 <td><?php echo $item['item_code_name'] ?></td>
                                                                 <td><?php echo $item['display_name'] ?></td>
-                                                                <td><?php echo $item['price'] ?></td>
+                                                                <td><?php echo number_format($item['list_price'] ?: $item['price'], 2) ?></td>
                                                                 <td><?php echo $item['quantity'] ?></td>
-                                                                <td><?php echo $item['discount'] ?></td>
-                                                                <td><?php echo $item['total'] ?></td>
+                                                                <td><?php echo number_format($item['discount'], 2) ?></td>
+                                                                <td><?php echo number_format($item['price'], 2) ?></td>
+                                                                <td><?php echo $item['serial_no'] ?></td>
+                                                                <?php if ($SALES_INVOICE->tax > 0): ?>
+                                                                    <td><?php echo number_format($item_vat, 2) ?></td>
+                                                                <?php endif; ?>
+                                                                <td><?php echo number_format($item['total'], 2) ?></td>
 
                                                             </tr>
                                                         <?php } ?>
