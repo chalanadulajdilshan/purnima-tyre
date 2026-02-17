@@ -33,6 +33,7 @@ if (!$SALES_INVOICE->id) {
     die('Invoice not found');
 }
 
+$COMPANY_PROFILE = new CompanyProfile($SALES_INVOICE->company_id);
 $CUSTOMER_MASTER = new CustomerMaster($SALES_INVOICE->customer_id);
 
 // Generate public PDF URL
@@ -279,6 +280,9 @@ if (!empty($customerMobile)) {
                                         <th>Serial No</th>
                                         <th>Selling Price</th>
                                         <th>Qty</th>
+                                        <?php if ($SALES_INVOICE->tax > 0): ?>
+                                            <th class="text-center">VAT</th>
+                                        <?php endif; ?>
                                         <th class="text-end">Total</th>
                                     </tr>
                                 </thead>
@@ -300,6 +304,13 @@ if (!empty($customerMobile)) {
                                         $subtotal += $price * $quantity;
                                         $total_discount += $discount_per_item * $quantity;
                                         ?>
+                                        <?php
+                                        $item_vat = 0;
+                                        if ($SALES_INVOICE->tax > 0) {
+                                            $vat_percentage = $COMPANY_PROFILE->vat_percentage;
+                                            $item_vat = $line_total * ($vat_percentage / (100 + $vat_percentage));
+                                        }
+                                        ?>
                                         <tr>
                                             <td>0<?php echo $key; ?></td>
                                             <td colspan="3">
@@ -316,14 +327,17 @@ if (!empty($customerMobile)) {
                                             </td>
                                             <td><?php echo number_format($price, 2); ?></td>
                                             <td><?php echo $quantity; ?></td>
+                                            <?php if ($SALES_INVOICE->tax > 0): ?>
+                                                <td class="text-center"><?php echo number_format($item_vat, 2); ?></td>
+                                            <?php endif; ?>
                                             <td class="text-end"><?php echo number_format($line_total, 2); ?></td>
                                         </tr>
                                     <?php } ?>
                                     <?php
                                     // Calculate rowspan based on visible rows + hidden discount row
-                                    // Cash: Gross, Discount(hidden), VAT, Net (4 rows)
-                                    // Credit: Gross, Paid, Payable, Discount(hidden), VAT, Net (6 rows)
-                                    $rowSpan = ($SALES_INVOICE->payment_type == 2) ? 6 : 4;
+                                    // Cash: Gross, Discount(hidden), Net (3 rows) - VAT is now hidden
+                                    // Credit: Gross, Paid, Payable, Discount(hidden), Net (5 rows) - VAT is now hidden
+                                    $rowSpan = ($SALES_INVOICE->payment_type == 2) ? 5 : 3;
                                     ?>
                                     <tr>
                                         <td colspan="4" rowspan="<?php echo $rowSpan; ?>" style="vertical-align:top;  ">
@@ -342,7 +356,7 @@ if (!empty($customerMobile)) {
                                                 ?>
                                             </ul>
                                         </td>
-                                        <td colspan="3" class="text-end font-weight-bold"><strong>Gross Amount:-</strong>
+                                        <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 4 : 3; ?>" class="text-end font-weight-bold"><strong>Gross Amount:-</strong>
                                         </td>
                                         <td class="text-end font-weight-bold">
                                             <strong><?php echo number_format($subtotal, 2); ?></strong>
@@ -351,14 +365,14 @@ if (!empty($customerMobile)) {
                                     <?php if ($SALES_INVOICE->payment_type == 2): // Credit payment 
                                                 ?>
                                         <tr>
-                                            <td colspan="3" class="text-end font-weight-bold"><strong>Paid Amount:-</strong>
+                                            <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 4 : 3; ?>" class="text-end font-weight-bold"><strong>Paid Amount:-</strong>
                                             </td>
                                             <td class="text-end font-weight-bold">
                                                 <strong><?php echo number_format($SALES_INVOICE->outstanding_settle_amount, 2); ?></strong>
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td colspan="3" class="text-end font-weight-bold"><strong>Payable Amount:-</strong>
+                                            <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 4 : 3; ?>" class="text-end font-weight-bold"><strong>Payable Amount:-</strong>
                                             </td>
                                             <td class="text-end font-weight-bold">
                                                 <strong><?php echo number_format($SALES_INVOICE->grand_total - $SALES_INVOICE->outstanding_settle_amount, 2); ?></strong>
@@ -366,21 +380,21 @@ if (!empty($customerMobile)) {
                                         </tr>
                                     <?php endif; ?>
                                     <tr hidden>
-                                        <td colspan="3" class="text-end font-weight-bold">Discount:-</td>
+                                        <td colspan="4" class="text-end font-weight-bold">Discount:-</td>
                                         <td class="text-end font-weight-bold">-
                                             <?php echo number_format($total_discount, 2); ?>
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td colspan="3" class="text-end font-weight-bold"><strong>VAT :-</strong></td>
+                                    <tr hidden>
+                                        <td colspan="4" class="text-end font-weight-bold"><strong>VAT :-</strong></td>
                                         <td class="text-end font-weight-bold">
                                             <strong><?php echo number_format($SALES_INVOICE->tax, 2); ?></strong>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3" class="text-end"><strong>Net Amount:-</strong></td>
+                                        <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 5 : 4; ?>" class="text-end"><strong>Net Amount:-</strong></td>
                                         <td class="text-end">
-                                            <strong><?php echo number_format($subtotal + $SALES_INVOICE->tax, 2); ?></strong>
+                                            <strong><?php echo number_format($subtotal, 2); ?></strong>
                                         </td>
                                     </tr>
                                     <tr>
@@ -450,6 +464,7 @@ if (!empty($customerMobile)) {
                                         <th>Serial No</th>
                                         <th>Price</th>
                                         <th>Cost</th>
+                                        <th class="text-center">VAT</th>
                                         <th class="text-end">Total</th>
                                     </tr>
                                 </thead>
@@ -486,6 +501,13 @@ if (!empty($customerMobile)) {
                                             }
                                         }
                                         ?>
+                                        <?php
+                                        $item_vat = 0;
+                                        if ($SALES_INVOICE->tax > 0) {
+                                            $vat_percentage = $COMPANY_PROFILE->vat_percentage;
+                                            $item_vat = $line_total * ($vat_percentage / (100 + $vat_percentage));
+                                        }
+                                        ?>
                                         <tr>
                                             <td>0<?php echo $key; ?></td>
                                             <td><?php echo $vehicle_no; ?></td>
@@ -494,15 +516,19 @@ if (!empty($customerMobile)) {
                                             <td><?php echo $serial_no; ?></td>
                                             <td><?php echo number_format($price, 2); ?></td>
                                             <td><?php echo number_format($cost, 2); ?></td>
+                                            <?php if ($SALES_INVOICE->tax > 0): ?>
+                                                <td class="text-center"><?php echo number_format($item_vat, 2); ?></td>
+                                            <?php endif; ?>
                                             <td class="text-end"><?php echo number_format($line_total, 2); ?></td>
                                         </tr>
                                     <?php } ?>
                                     <?php
                                     // Calculate rowspan for DAG: Cash (3 rows), Credit (5 rows)
+                                    // VAT is already included in subtotal
                                     $dagRowSpan = ($SALES_INVOICE->payment_type == 2) ? 5 : 3;
                                     ?>
                                     <tr>
-                                        <td colspan="4" rowspan="<?php echo $dagRowSpan; ?>" style="vertical-align:top;">
+                                        <td colspan="5" rowspan="<?php echo $dagRowSpan; ?>" style="vertical-align:top;">
                                             <h6 style="margin-top:8px;"><strong>Terms & Conditions:</strong></h6>
                                             <ul style="padding-left:20px;margin-bottom:0;">
                                                 <?php
@@ -518,7 +544,7 @@ if (!empty($customerMobile)) {
                                                 ?>
                                             </ul>
                                         </td>
-                                        <td colspan="3" class="text-end font-weight-bold"><strong>Gross Amount:-</strong>
+                                        <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 3 : 2; ?>" class="text-end font-weight-bold"><strong>Gross Amount:-</strong>
                                         </td>
                                         <td class="text-end font-weight-bold">
                                             <strong><?php echo number_format($subtotal, 2); ?></strong>
@@ -527,14 +553,14 @@ if (!empty($customerMobile)) {
                                     <?php if ($SALES_INVOICE->payment_type == 2): // Credit payment 
                                                 ?>
                                         <tr>
-                                            <td colspan="3" class="text-end font-weight-bold"><strong>Paid Amount:-</strong>
+                                            <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 3 : 2; ?>" class="text-end font-weight-bold"><strong>Paid Amount:-</strong>
                                             </td>
                                             <td class="text-end font-weight-bold">
                                                 <strong><?php echo number_format($SALES_INVOICE->outstanding_settle_amount, 2); ?></strong>
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td colspan="3" class="text-end font-weight-bold"><strong>Payable Amount:-</strong>
+                                            <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 3 : 2; ?>" class="text-end font-weight-bold"><strong>Payable Amount:-</strong>
                                             </td>
                                             <td class="text-end font-weight-bold">
                                                 <strong><?php echo number_format($SALES_INVOICE->grand_total - $SALES_INVOICE->outstanding_settle_amount, 2); ?></strong>
@@ -542,12 +568,12 @@ if (!empty($customerMobile)) {
                                         </tr>
                                     <?php endif; ?>
                                     <tr>
-                                        <td colspan="3" class="text-end font-weight-bold">Total Cost:-</td>
+                                        <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 4 : 3; ?>" class="text-end font-weight-bold">Total Cost:-</td>
                                         <td class="text-end font-weight-bold"><?php echo number_format($total_cost, 2); ?>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="3" class="text-end"><strong>Net Amount:-</strong></td>
+                                        <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 4 : 3; ?>" class="text-end"><strong>Net Amount:-</strong></td>
                                         <td class="text-end"><strong><?php echo number_format($subtotal, 2); ?></strong>
                                         </td>
                                     </tr>

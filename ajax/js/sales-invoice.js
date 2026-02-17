@@ -2048,8 +2048,17 @@ jQuery(document).ready(function () {
       const serviceArnId =
         arnAllocations.length > 0 ? arnAllocations[0].arnId : code;
 
+      // Extract VAT if applied
+      const isVatApplied = $("#is_vat_invoice").is(":checked");
+      const vatPercentage = parseFloat($("#vat_percentage").val()) || 0;
+
       // --- ROW 1: Service (SV/) ---
-      const serviceTotal = (price - discount) * qty;
+      const serviceNetTotal = (price - discount) * qty;
+      let serviceVatAmount = 0;
+      if (isVatApplied && vatPercentage > 0) {
+        serviceVatAmount = serviceNetTotal * (vatPercentage / (100 + vatPercentage));
+      }
+
       const serviceRow = `
             <tr>
                 <td>${code}
@@ -2071,7 +2080,11 @@ jQuery(document).ready(function () {
         2
       )}</td>
                 <td class="item-serial-no">${serialNo}</td>
-                <td>${serviceTotal.toLocaleString(undefined, {
+                <td class="item-vat-amount vat-column" style="display: ${isVatApplied ? "" : "none"}">${serviceVatAmount.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}</td>
+                <td>${serviceNetTotal.toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}</td>
@@ -2086,7 +2099,12 @@ jQuery(document).ready(function () {
       const serviceItemCode =
         "SI/" + selectedServiceItemId.toString().padStart(4, "0");
       const serviceItemName = $("#service_items option:selected").text().trim();
-      const serviceItemTotal = serviceSellingPrice * serviceQty;
+      const serviceItemNetTotal = serviceSellingPrice * serviceQty;
+      let serviceItemVatAmount = 0;
+      if (isVatApplied && vatPercentage > 0) {
+        serviceItemVatAmount = serviceItemNetTotal * (vatPercentage / (100 + vatPercentage));
+      }
+
       const serviceItemRow = `
             <tr>
                 <td>${serviceItemCode}
@@ -2108,7 +2126,11 @@ jQuery(document).ready(function () {
         2
       )}</td>
                 <td class="item-serial-no"></td>
-                <td>${serviceItemTotal.toLocaleString(undefined, {
+                <td class="item-vat-amount vat-column" style="display: ${isVatApplied ? "" : "none"}">${serviceItemVatAmount.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}</td>
+                <td>${serviceItemNetTotal.toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       })}</td>
@@ -2141,6 +2163,14 @@ jQuery(document).ready(function () {
           total = netUnitPrice * allocQty;
         }
 
+        // Extract VAT if applied
+        const isVatApplied = $("#is_vat_invoice").is(":checked");
+        const vatPercentage = parseFloat($("#vat_percentage").val()) || 0;
+        let itemVatAmount = 0;
+        if (isVatApplied && vatPercentage > 0) {
+          itemVatAmount = total * (vatPercentage / (100 + vatPercentage));
+        }
+
         const row = `
               <tr>
                   <td>${code}
@@ -2165,6 +2195,10 @@ jQuery(document).ready(function () {
             displayPrice - discount
           ).toFixed(2)}</td>
                   <td class="item-serial-no">${serialNo}</td>
+                  <td class="item-vat-amount vat-column" style="display: ${isVatApplied ? "" : "none"}">${itemVatAmount.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })}</td>
                   <td>${total.toLocaleString(undefined, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
@@ -2630,17 +2664,25 @@ jQuery(document).ready(function () {
 
               const row = `
                             <tr>
-                                <td>${item.item_code
-                }                                
-                                <input type="hidden" class="item-id" value="${item.item_id
-                }"></td>
+                                <td>${item.item_code}                                
+                                <input type="hidden" name="item_id[]" value="${item.item_id}">
+                                <input type="hidden" name="item_codes[]" value="${item.item_code}">
+                                <input type="hidden" name="arn_ids[]" value="${item.item_code}">
+                                <input type="hidden" name="arn_costs[]" value="${item.arn_cost || 0}">
+                                <input type="hidden" name="service_qty[]" value="0">
+                                <input type="hidden" name="vehicle_no[]" value="">
+                                <input type="hidden" name="current_km[]" value="">
+                                <input type="hidden" name="next_service_days[]" value="">
+                                <input type="hidden" name="serial_no[]" value="">
+                                </td>
                                 <td>${item.item_name}</td>
-                                <td><input type="number" class="item-price form-control form-control-sm price"   value="${price}"  ></td>
+                                <td><input type="number" class="item-price form-control form-control-sm price" value="${price.toFixed(2)}" readonly></td>
                                 <td><input type="number" class="item-qty form-control form-control-sm qty" value="${qty}"></td>
                                 <td><input type="number" class="item-discount form-control form-control-sm discount" value="${discount}"></td>
-                                <td><input type="text" class="item-total form-control form-control-sm totalPrice"  value="${total.toFixed(
-                  2
-                )}" readonly>
+                                <td class="item-sell-price">${(price - discount).toFixed(2)}</td>
+                                <td class="item-serial-no"></td>
+                                <td class="item-vat-amount vat-column" style="display: ${$("#is_vat_invoice").is(":checked") ? "" : "none"}">0.00</td>
+                                <td><input type="text" class="item-total form-control form-control-sm totalPrice" value="${total.toFixed(2)}" readonly></td>
                                 <td><button type="button" class="btn btn-sm btn-danger btn-remove-item" onclick="removeRow(this)">Remove</button></td>
                             </tr>
                             `;
@@ -2738,6 +2780,17 @@ jQuery(document).ready(function () {
           const items = response.data;
 
           items.forEach(function (item) {
+            const price = parseFloat(item.casing_cost) || 0;
+            const cost = parseFloat(item.total_amount) || 0;
+
+            // Extract VAT if applied
+            const isVatApplied = $("#is_vat_invoice").is(":checked");
+            const vatPercentage = parseFloat($("#vat_percentage").val()) || 0;
+            let itemVatAmount = 0;
+            if (isVatApplied && vatPercentage > 0) {
+              itemVatAmount = price * (vatPercentage / (100 + vatPercentage));
+            }
+
             const row = `
               <tr class="dag-item-row">
                 <td>${item.vehicle_no}</td>
@@ -2746,16 +2799,18 @@ jQuery(document).ready(function () {
                 <td>${item.serial_number || ""}</td>
                 <td>
                   <input type="number" class="form-control form-control-sm dag-cost" 
-                         value="${item.total_amount || "0.00"
-              }" step="0.01" min="0" 
+                         value="${cost.toFixed(2)}" step="0.01" min="0" 
                          data-dag-item-id="${item.id}">
                 </td>
                 <td>
                   <input type="number" class="form-control form-control-sm dag-price" 
-                         value="${item.casing_cost || "0.00"
-              }" step="0.01" min="0" 
+                         value="${price.toFixed(2)}" step="0.01" min="0" 
                          data-dag-item-id="${item.id}">
                 </td>
+                <td class="dag-vat-amount vat-column" style="display: ${isVatApplied ? "" : "none"}">${itemVatAmount.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}</td>
                 <td>
                   <button type="button" class="btn btn-sm btn-danger remove-dag-item" 
                           data-dag-item-id="${item.id}">
@@ -2845,9 +2900,27 @@ jQuery(document).ready(function () {
   function calculateDagTotals() {
     let subTotal = 0;
 
-    $("#dagItemsBodyInvoice .dag-price").each(function () {
-      const price = parseFloat($(this).val()) || 0;
+    // Extract VAT if applied
+    const isVatApplied = $("#is_vat_invoice").is(":checked");
+    const vatPercentage = parseFloat($("#vat_percentage").val()) || 0;
+
+    $("#dagItemsBodyInvoice .dag-item-row").each(function () {
+      const price = parseFloat($(this).find(".dag-price").val()) || 0;
       subTotal += price;
+
+      // Update item VAT display
+      let itemVatAmount = 0;
+      if (isVatApplied && vatPercentage > 0) {
+        itemVatAmount = price * (vatPercentage / (100 + vatPercentage));
+      }
+      $(this)
+        .find(".dag-vat-amount")
+        .text(
+          itemVatAmount.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })
+        );
     });
 
     // Update totals
@@ -2920,6 +2993,14 @@ jQuery(document).ready(function () {
               const serialNo = item.serial_no || "";
               const total = sellingPrice * qty;
 
+              // Extract VAT if applied
+              const isVatApplied = $("#is_vat_invoice").is(":checked");
+              const vatPercentage = parseFloat($("#vat_percentage").val()) || 0;
+              let itemVatAmount = 0;
+              if (isVatApplied && vatPercentage > 0) {
+                itemVatAmount = total * (vatPercentage / (100 + vatPercentage));
+              }
+
               const row = `
                 <tr>
                   <td>${code}
@@ -2939,6 +3020,10 @@ jQuery(document).ready(function () {
                   <td class="item-discount">${discount.toFixed(2)}</td>
                   <td class="item-sell-price">${sellingPrice.toFixed(2)}</td>
                   <td class="item-serial-no">${serialNo}</td>
+                  <td class="item-vat-amount">${itemVatAmount.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}</td>
                   <td>${total.toLocaleString(undefined, {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
@@ -3001,4 +3086,46 @@ jQuery(document).ready(function () {
   });
 
   // ---------------------- END QUOTATION SELECTION SECTION ---------------------- //
+
+  // Handle VAT checkbox toggle for dynamic column visibility and value updates
+  $("#is_vat_invoice").on("change", function () {
+    const isVatApplied = $(this).is(":checked");
+    const vatPercentage = parseFloat($("#vat_percentage").val()) || 0;
+
+    // Toggle visibility of VAT columns
+    if (isVatApplied) {
+      $(".vat-column").show();
+    } else {
+      $(".vat-column").hide();
+    }
+
+    // Update VAT amounts for regular items
+    $("#invoiceItemsBody tr").each(function () {
+      // Find the item VAT amount cell and update it
+      const totalText = $(this).find("td:last").prev().text().replace(/,/g, "");
+      const total = parseFloat(totalText) || 0;
+      let itemVatAmount = 0;
+
+      if (isVatApplied && vatPercentage > 0) {
+        itemVatAmount = total * (vatPercentage / (100 + vatPercentage));
+      }
+
+      $(this)
+        .find(".item-vat-amount")
+        .text(
+          itemVatAmount.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          })
+        );
+    });
+
+    // Update final total (which will handle the VAT row being hidden/shown if logic exists)
+    updateFinalTotal();
+
+    // If DAG table is visible, update DAG items too
+    if ($("#dagTableHide").is(":visible")) {
+      calculateDagTotals();
+    }
+  });
 });
