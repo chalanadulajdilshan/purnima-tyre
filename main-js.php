@@ -45,7 +45,7 @@
         $(".date-picker").val($.datepicker.formatDate('yy-mm-dd', new Date()));
 
         // Initialize datatables
-        $('#dagTable, #maindagTable, .datatable').DataTable();
+        $('.datatable').DataTable();
     });
 </script>
 

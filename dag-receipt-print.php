@@ -179,7 +179,7 @@ $DEPARTMENT_MASTER = new DepartmentMaster($DAG->department_id);
 
                             <p><?php echo $CUSTOMER_MASTER->name ?><br><?php echo $CUSTOMER_MASTER->address ?>
                                 <br><?php echo $CUSTOMER_MASTER->mobile_number ?><br>
-                                
+
                             </p>
                         </div>
                     </div>
@@ -207,15 +207,26 @@ $DEPARTMENT_MASTER = new DepartmentMaster($DAG->department_id);
                             <?php
                             $DAG_ITEM = new DagItem(null);
 
+                            $items = $DAG_ITEM->getByValuesDagId($dag_id);
+
+                            // Filter by specific item ID if provided in URL
+                            if (isset($_GET['item_id']) && !empty($_GET['item_id'])) {
+                                $filter_id = $_GET['item_id'];
+                                $items = array_filter($items, function ($item) use ($filter_id) {
+                                    return $item['id'] == $filter_id;
+                                });
+                            }
+
                             $subtotal = 0;
-                            foreach ($DAG_ITEM->getByValuesDagId($dag_id) as $key => $dag_item) {
-                                $key++;
+                            $display_key = 0;
+                            foreach ($items as $dag_item) {
+                                $display_key++;
 
                                 $subtotal += (float) $dag_item['total_amount'];
                                 ?>
 
                                 <tr>
-                                    <td>0<?php echo $key; ?></td>
+                                    <td>0<?php echo $display_key; ?></td>
                                     <td><?php echo $dag_item['vehicle_no']; ?></td>
                                     <td><?php echo $dag_item['belt_title']; ?></td>
                                     <td>

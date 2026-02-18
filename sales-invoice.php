@@ -790,10 +790,6 @@ include './auth.php';
     </div>
     <!-- model close here -->
 
-
-    <!-- DAG Modal -->
-    <?php include 'dag-mode.php' ?>
-
     <!-- Payment MOdelk Loard -->
     <?php include 'payment-model.php' ?>
 

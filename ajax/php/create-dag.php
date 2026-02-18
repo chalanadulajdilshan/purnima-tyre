@@ -169,7 +169,7 @@ if (isset($_POST['load_dags'])) {
 
     $DAG = new DAG(null);
     if (!empty($search_term)) {
-        $dags = $DAG->searchByItemFields($search_term);
+        $dags = $DAG->search($search_term);
     } else {
         $dags = $DAG->all();
     }
@@ -183,6 +183,13 @@ if (isset($_POST['load_dags'])) {
         $DAG_ITEM = new DagItem(null);
         $dag_items = $DAG_ITEM->getByValuesDagId($dag['id']);
         $item_count = count($dag_items);
+
+        // Get customer - DAG level customer_id is often 0, so fall back to item-level customer
+        $customer_id = !empty($dag['customer_id']) ? $dag['customer_id'] : null;
+        if (empty($customer_id) && $item_count > 0 && !empty($dag_items[0]['customer_id'])) {
+            $customer_id = $dag_items[0]['customer_id'];
+        }
+        $DAG_CUSTOMER = new CustomerMaster($customer_id);
 
         // Build child items HTML for expandable row
         $items_html = '';
@@ -227,7 +234,11 @@ if (isset($_POST['load_dags'])) {
         $html .= '<tr class="select-dag dag-parent-row" data-id="' . $dag['id'] . '"
                     data-ref_no="' . htmlspecialchars($dag['ref_no']) . '"
                     data-department_id="' . ($dag['department_id'] ?? '') . '"
-                    data-customer_id="' . ($dag['customer_id'] ?? '') . '"
+                    data-customer_id="' . ($customer_id ?? '') . '"
+                    data-customer_code="' . htmlspecialchars($DAG_CUSTOMER->code ?? '') . '"
+                    data-customer_name="' . htmlspecialchars($DAG_CUSTOMER->name ?? '') . '"
+                    data-customer_address="' . htmlspecialchars($DAG_CUSTOMER->address ?? '') . '"
+                    data-customer_mobile="' . htmlspecialchars($DAG_CUSTOMER->mobile_number ?? '') . '"
                     data-vehicle_no="' . htmlspecialchars($dag['vehicle_no'] ?? '') . '"
                     data-my_number="' . htmlspecialchars($dag['my_number'] ?? '') . '"
                     data-customer_issue_date="' . htmlspecialchars($dag['customer_issue_date'] ?? '') . '"
@@ -236,7 +247,7 @@ if (isset($_POST['load_dags'])) {
                     data-dag_company_id="' . ($dag['dag_company_id'] ?? '') . '"
                     data-receipt_no="' . htmlspecialchars($dag['receipt_no'] ?? '') . '"
                     data-company_issued_date="' . ($dag['company_issued_date'] ?? '') . '"
-                    data-company_status="' . ($dag['company_status'] ?? 'pending') . '"
+
                     data-remark="' . htmlspecialchars($dag['remark'] ?? '') . '">
                     <td class="details-control" style="cursor: pointer;">
                         <span class="mdi mdi-plus-circle-outline" style="font-size:18px;"></span>
@@ -246,11 +257,11 @@ if (isset($_POST['load_dags'])) {
                     <td>' . htmlspecialchars($DAG_COMPANY->name ?? 'N/A') . '</td>
                     <td>' . htmlspecialchars($dag['receipt_no'] ?? 'N/A') . '</td>
                     <td>' . htmlspecialchars($dag['company_issued_date'] ?? 'N/A') . '</td>
-                    <td>' . htmlspecialchars($dag['company_status'] ?? 'pending') . '</td>
+
                     <td><span class="badge bg-info">' . $item_count . '</span></td>
                 </tr>
                 <tr class="dag-child-row" style="display: none;">
-                    <td colspan="8" style="padding: 0 15px 15px 40px;">' . $items_html . '</td>
+                    <td colspan="7" style="padding: 0 15px 15px 40px;">' . $items_html . '</td>
                 </tr>';
     }
 

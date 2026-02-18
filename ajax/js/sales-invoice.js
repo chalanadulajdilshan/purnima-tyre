@@ -2736,8 +2736,92 @@ jQuery(document).ready(function () {
     }
   });
 
+  // ---------------------- DAG MODAL AJAX LOADING ---------------------- //
+
+  // Load DAGs via AJAX into the modal
+  function loadDagTable() {
+    const searchTerm = $("#dagSearchInput").val().trim();
+
+    $.ajax({
+      url: "ajax/php/create-dag.php",
+      type: "POST",
+      data: { load_dags: true, search: searchTerm },
+      dataType: "json",
+      success: function (response) {
+        // Safely destroy existing DataTable if it exists
+        if ($.fn.DataTable.isDataTable('#dagTable')) {
+          try {
+            $('#dagTable').DataTable().destroy();
+          } catch (e) {
+            console.warn("Error destroying DataTable instance: ", e);
+          }
+        }
+
+        if (response.status === "success") {
+          $("#dagTableBody").html(response.html);
+        } else {
+          $("#dagTableBody").html('<tr><td colspan="8" class="text-center text-muted">No DAGs found</td></tr>');
+        }
+
+        // Re-initialize DataTable
+        $('#dagTable').DataTable({
+          "destroy": true,
+          "ordering": false,
+          "pageLength": 10,
+          "bLengthChange": true,
+          "bInfo": true,
+          "bFilter": true
+        });
+      },
+      error: function () {
+        $("#dagTableBody").html('<tr><td colspan="8" class="text-center text-danger">Error loading DAGs</td></tr>');
+      }
+    });
+  }
+
+  // Load DAGs when modal is shown
+  $('#dagModel').on('shown.bs.modal', function () {
+    loadDagTable();
+  });
+
+  // Search button click
+  $(document).on("click", "#searchDagBtn", function () {
+    loadDagTable();
+  });
+
+  // Enter key in search input
+  $(document).on("keypress", "#dagSearchInput", function (e) {
+    if (e.which === 13) {
+      loadDagTable();
+    }
+  });
+
+  // Expand/collapse DAG item details on plus icon click
+  $(document).on("click", ".details-control", function (e) {
+    e.stopPropagation(); // Prevent triggering the select-dag click
+
+    const parentRow = $(this).closest("tr.dag-parent-row");
+    const childRow = parentRow.next("tr.dag-child-row");
+    const icon = $(this).find("span.mdi");
+
+    if (childRow.is(":visible")) {
+      childRow.hide();
+      icon.removeClass("mdi-minus-circle-outline").addClass("mdi-plus-circle-outline");
+    } else {
+      childRow.show();
+      icon.removeClass("mdi-plus-circle-outline").addClass("mdi-minus-circle-outline");
+    }
+  });
+
+  // ---------------------- END DAG MODAL AJAX LOADING ---------------------- //
+
   // DAG Selection Handler
-  $(document).on("click", ".select-dag", function () {
+  $(document).on("click", ".select-dag", function (e) {
+    // Don't trigger if clicking on the expand button
+    if ($(e.target).closest(".details-control").length > 0) {
+      return;
+    }
+
     const data = $(this).data();
 
     // Set DAG information
@@ -2748,6 +2832,8 @@ jQuery(document).ready(function () {
     $("#customer_code").val(data.customer_code);
     $("#customer_name").val(data.customer_name);
     $("#customer_id").val(data.customer_id);
+    $("#customer_address").val(data.customer_address);
+    $("#customer_mobile").val(data.customer_mobile);
     $("#department_id").val(data.department_id);
 
     // Close modal
@@ -2780,8 +2866,8 @@ jQuery(document).ready(function () {
           const items = response.data;
 
           items.forEach(function (item) {
-            const price = parseFloat(item.casing_cost) || 0;
-            const cost = parseFloat(item.total_amount) || 0;
+            const price = parseFloat(item.total_amount) || 0;
+            const cost = parseFloat(item.casing_cost) || 0;
 
             // Extract VAT if applied
             const isVatApplied = $("#is_vat_invoice").is(":checked");
