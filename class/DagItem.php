@@ -232,6 +232,7 @@ class DagItem
                   LEFT JOIN `brands` br ON di.brand_id = br.id
                   LEFT JOIN `dag` d ON di.dag_id = d.id
                   WHERE di.dag_id = '{$dag_id}' AND (di.is_invoiced = 0 OR di.is_invoiced IS NULL)
+                  AND (di.status NOT IN ('rejected_company', 'rejected_store') OR di.status IS NULL)
                   ORDER BY di.id ASC";
         } else {
             // Column doesn't exist, get all items
@@ -242,6 +243,7 @@ class DagItem
                   LEFT JOIN `brands` br ON di.brand_id = br.id
                   LEFT JOIN `dag` d ON di.dag_id = d.id
                   WHERE di.dag_id = '{$dag_id}'
+                  AND (di.status NOT IN ('rejected_company', 'rejected_store') OR di.status IS NULL)
                   ORDER BY di.id ASC";
         }
 

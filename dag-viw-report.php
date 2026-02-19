@@ -2,19 +2,12 @@
 include 'class/include.php';
 include 'auth.php';
 
-$DAG_REPORT = new Dag();
 
-// Get filter parameters - empty by default to fetch all records
-$from_date = isset($_GET['from_date']) ? $_GET['from_date'] : '';
-$to_date = isset($_GET['to_date']) ? $_GET['to_date'] : '';
-$status = isset($_GET['filter_status']) ? $_GET['filter_status'] : '';
-$dag_no = isset($_GET['dag_no']) ? $_GET['dag_no'] : '';
-$my_number = isset($_GET['my_number']) ? $_GET['my_number'] : '';
-$belt_id = isset($_GET['belt_id']) ? $_GET['belt_id'] : '';
-$size_id = isset($_GET['size_id']) ? $_GET['size_id'] : '';
-
-// Get filtered DAG reports
-$reports = $DAG_REPORT->getFilteredReports($from_date, $to_date, $status, $dag_no, $my_number, $belt_id, $size_id);
+$status = '';
+$dag_no = '';
+$my_number = '';
+$belt_id = '';
+$size_id = '';
 ?>
 <!doctype html>
 <html lang="en">
@@ -65,25 +58,7 @@ $reports = $DAG_REPORT->getFilteredReports($from_date, $to_date, $status, $dag_n
                             <div class="card">
                                 <div class="card-body">
                                     <div class="row g-2 align-items-end">
-                                        <div class="col-xxl-2 col-xl-3 col-lg-4 col-sm-6">
-                                            <label for="from_date" class="form-label">Date From</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text"><i
-                                                        class="uil uil-calendar-alt"></i></span>
-                                                <input type="text" class="form-control date-picker" id="from_date"
-                                                    name="from_date" value="<?php echo $from_date ?>"
-                                                    autocomplete="off">
-                                            </div>
-                                        </div>
-                                        <div class="col-xxl-2 col-xl-3 col-lg-4 col-sm-6">
-                                            <label for="to_date" class="form-label">Date To</label>
-                                            <div class="input-group">
-                                                <span class="input-group-text"><i
-                                                        class="uil uil-calendar-alt"></i></span>
-                                                <input type="text" class="form-control date-picker" id="to_date"
-                                                    name="to_date" value="<?php echo $to_date ?>" autocomplete="off">
-                                            </div>
-                                        </div>
+
                                         <div class="col-xxl-2 col-xl-3 col-lg-4 col-sm-6">
                                             <label class="form-label">Status</label>
                                             <select class="form-select" name="filter_status" id="filter_status">
@@ -155,6 +130,25 @@ $reports = $DAG_REPORT->getFilteredReports($from_date, $to_date, $status, $dag_n
                     <!-- End Filter Section -->
 
                     <!-- Report Table -->
+                    <style>
+                        #dag-report-table td.details-control {
+                            cursor: pointer;
+                            text-align: center;
+                        }
+
+                        #dag-report-table tr.shown {
+                            background-color: #f0f4ff !important;
+                        }
+
+                        .dag-items-table th {
+                            background-color: #e9ecef;
+                            font-size: 13px;
+                        }
+
+                        .dag-items-table td {
+                            font-size: 13px;
+                        }
+                    </style>
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
@@ -170,112 +164,21 @@ $reports = $DAG_REPORT->getFilteredReports($from_date, $to_date, $status, $dag_n
 
                                     <div class="table-responsive">
                                         <table id="dag-report-table"
-                                            class="table table-bordered dt-responsive nowrap w-100">
-                                            <thead>
+                                            class="table table-bordered dt-responsive nowrap w-100"
+                                            style="border-collapse: collapse; border-spacing: 0; width: 100%;">
+                                            <thead class="table-light">
                                                 <tr>
-                                                    <th>#</th>
+                                                    <th style="width:30px;"></th>
                                                     <th>Ref No</th>
-                                                    <th>My Number</th>
-                                                    <th>Dag Received Date</th>
-                                                    <th>Customer</th>
+                                                    <th>Company Issued Date</th>
                                                     <th>Company</th>
-                                                    <th>Department</th>
-                                                    <th>Belt Design</th>
-                                                    <th>Serial No</th>
-                                                    <th>Vehicle No</th>
-                                                    <th>Customer Issue Date</th>
+                                                    <th>Items</th>
                                                     <th>Total Amount</th>
-                                                    <th>Status</th>
                                                     <th>Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <?php if (!empty($reports)): ?>
-                                                    <?php $counter = 1; ?>
-                                                    <?php foreach ($reports as $report): ?>
-                                                        <tr>
-                                                            <td>
-                                                                <?php echo $counter++; ?>
-                                                            </td>
-                                                            <td>
-                                                                <?php echo htmlspecialchars($report['ref_no']); ?>
-                                                            </td>
-                                                            <td>
-                                                                <?php echo htmlspecialchars($report['my_number']); ?>
-                                                            </td>
-                                                            <td>
-                                                                <?php echo date('d/m/Y', strtotime($report['received_date'])); ?>
-                                                            </td>
-                                                            <td>
-                                                                <?php echo htmlspecialchars($report['customer_name']); ?>
-                                                            </td>
-                                                            <td>
-                                                                <?php echo htmlspecialchars($report['company_name']); ?>
-                                                            </td>
-                                                            <td>
-                                                                <?php echo htmlspecialchars($report['department_name']); ?>
-                                                            </td>
-                                                            <td>
-                                                                <?php echo htmlspecialchars($report['belt_design']); ?>
-                                                            </td>
-                                                            <td>
-                                                                <?php echo htmlspecialchars($report['serial_number']); ?>
-                                                            </td>
-                                                            <td>
-                                                                <?php echo htmlspecialchars($report['vehicle_no']); ?>
-                                                            </td>
-                                                            <td>
-                                                                <?php
-                                                                $c_date = $report['customer_issue_date'];
-                                                                if (!empty($c_date) && $c_date != '0000-00-00') {
-                                                                    echo date('d/m/Y', strtotime($c_date));
-                                                                } else {
-                                                                    echo '<span class="text-danger">Not Issued</span>';
-                                                                }
-                                                                ?>
-                                                            </td>
-                                                            <td class="text-end">
-                                                                <?php echo number_format($report['total_amount'], 2); ?>
-                                                            </td>
-                                                            <td>
-                                                                <?php
-                                                                $status = isset($report['status']) ? $report['status'] : 'Pending';
-                                                                $status_class = '';
-                                                                switch (strtolower($status)) {
-                                                                    case 'received':
-                                                                        $status_class = 'bg-success';
-                                                                        break;
-                                                                    case 'assigned':
-                                                                        $status_class = 'bg-primary';
-                                                                        break;
-                                                                    case 'approved':
-                                                                        $status_class = 'bg-info';
-                                                                        break;
-                                                                    case 'rejected_company':
-                                                                        $status_class = 'bg-danger';
-                                                                        break;
-                                                                    case 'pending':
-                                                                    default:
-                                                                        $status_class = 'bg-warning';
-                                                                }
-                                                                ?>
-                                                                <span class="badge <?php echo $status_class; ?> font-size-12">
-                                                                    <?php echo ucfirst($status); ?>
-                                                                </span>
-                                                            </td>
-                                                            <td>
-                                                                <a href="dag-receipt-print.php?id=<?php echo $report['id']; ?>"
-                                                                    target="_blank" class="btn btn-info btn-sm">
-                                                                    <i class="mdi mdi-printer"></i>
-                                                                </a>
-                                                            </td>
-                                                        </tr>
-                                                    <?php endforeach; ?>
-                                                <?php else: ?>
-                                                    <tr>
-                                                        <td colspan="12" class="text-center">No records found</td>
-                                                    </tr>
-                                                <?php endif; ?>
+                                                <!-- Data loaded via AJAX DataTables -->
                                             </tbody>
                                         </table>
                                     </div>

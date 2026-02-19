@@ -5,6 +5,7 @@ class Dag
     public $id;
     public $ref_no;
     public $customer_id;
+    public $department_id;
 
     public $received_date;
     public $delivery_date;
@@ -34,6 +35,7 @@ class Dag
                 $this->id = $result['id'];
                 $this->ref_no = $result['ref_no'];
                 $this->customer_id = $result['customer_id'];
+                $this->department_id = isset($result['department_id']) ? $result['department_id'] : null;
 
                 $this->received_date = $result['received_date'];
                 $this->delivery_date = $result['delivery_date'];
@@ -165,21 +167,30 @@ class Dag
     public function getFilteredReports($from_date = '', $to_date = '', $status = '', $dag_no = '', $my_number = '', $belt_id = '', $size_id = '')
     {
         $query = "SELECT 
-                     d.*, 
+                     d.id,
+                     d.ref_no,
+                     d.received_date,
+                     d.customer_issue_date as dag_customer_issue_date,
+                     d.department_id,
+                     d.dag_company_id,
+                     di.id as item_id,
+                     di.my_number,
+                     di.vehicle_no,
+                     di.serial_number,
+                     di.qty,
+                     di.casing_cost,
+                     di.total_amount,
+                     di.status,
+                     di.customer_issue_date,
                      c.name as customer_name,
                      dept.name as department_name,
                      dc.name as company_name,
                      b.name as belt_design,
-                     s.name as size_name,
-                     di.serial_number as serial_number,
-                     d.vehicle_no as item_vehicle_no,
-                     di.qty as qty,
-                     di.total_amount as total_amount,
-                     di.status as status
+                     s.name as size_name
               FROM dag d
-              LEFT JOIN customer_master c ON d.customer_id = c.id
-              LEFT JOIN department_master dept ON d.department_id = dept.id
               LEFT JOIN dag_item di ON d.id = di.dag_id
+              LEFT JOIN customer_master c ON di.customer_id = c.id
+              LEFT JOIN department_master dept ON d.department_id = dept.id
               LEFT JOIN company_master dc ON di.dag_company_id = dc.id
               LEFT JOIN belt_master b ON di.belt_id = b.id
               LEFT JOIN size_master s ON di.size_id = s.id
@@ -219,13 +230,92 @@ class Dag
         return $reports;
     }
 
+    // Get DAG-level data (one row per DAG) for the report parent rows
+    public function getFilteredDags($status = '', $dag_no = '', $my_number = '', $belt_id = '', $size_id = '')
+    {
+        $query = "SELECT 
+                     d.id,
+                     d.ref_no,
+                     d.received_date,
+                     d.customer_issue_date,
+                     d.company_issued_date,
+                     d.remark,
+                     dc.name as company_name,
+                     (SELECT c.name FROM dag_item di2 
+                      LEFT JOIN customer_master c ON di2.customer_id = c.id 
+                      WHERE di2.dag_id = d.id LIMIT 1) as customer_name,
+                     (SELECT COUNT(*) FROM dag_item di3 WHERE di3.dag_id = d.id) as item_count,
+                     (SELECT COALESCE(SUM(di4.total_amount), 0) FROM dag_item di4 WHERE di4.dag_id = d.id) as total_amount
+              FROM dag d
+              LEFT JOIN company_master dc ON d.dag_company_id = dc.id
+              WHERE 1=1";
+
+
+
+        if (!empty($dag_no)) {
+            $query .= " AND d.ref_no LIKE '%$dag_no%'";
+        }
+
+
+        // If item-level filters are provided, filter DAGs that have matching items
+        if (!empty($status) || !empty($belt_id) || !empty($size_id) || !empty($my_number)) {
+            $query .= " AND d.id IN (SELECT DISTINCT di_f.dag_id FROM dag_item di_f WHERE 1=1";
+            if (!empty($status)) {
+                $query .= " AND di_f.status = '$status'";
+            }
+            if (!empty($belt_id)) {
+                $query .= " AND di_f.belt_id = '$belt_id'";
+            }
+            if (!empty($size_id)) {
+                $query .= " AND di_f.size_id = '$size_id'";
+            }
+            if (!empty($my_number)) {
+                $query .= " AND di_f.my_number LIKE '%$my_number%'";
+            }
+            $query .= ")";
+        }
+
+        $query .= " ORDER BY d.received_date DESC";
+
+        $db = Database::getInstance();
+        $result = $db->readQuery($query);
+
+        $dags = array();
+        while ($row = mysqli_fetch_assoc($result)) {
+            $dags[] = $row;
+        }
+
+        return $dags;
+    }
+
     // Search DAGs by job_number or serial_number in dag_item
-    public function searchByItemFields($search_term)
+    // Search DAGs by job_number, serial_number, my_number, ref_no, or company_name
+    // Search DAGs by almost any field
+    public function search($search_term)
     {
         $query = "SELECT DISTINCT d.*
                   FROM dag d
                   LEFT JOIN dag_item di ON d.id = di.dag_id
-                  WHERE di.job_number LIKE '%$search_term%' OR di.serial_number LIKE '%$search_term%' OR di.my_number LIKE '%$search_term%' OR d.my_number LIKE '%$search_term%'
+                  LEFT JOIN company_master cm ON d.dag_company_id = cm.id
+                  LEFT JOIN customer_master c ON d.customer_id = c.id
+                  LEFT JOIN belt_master b ON di.belt_id = b.id
+                  LEFT JOIN size_master s ON di.size_id = s.id
+                  LEFT JOIN brands br ON di.brand_id = br.id
+                  WHERE di.job_number LIKE '%$search_term%' 
+                     OR di.serial_number LIKE '%$search_term%' 
+                     OR di.my_number LIKE '%$search_term%' 
+                     OR di.vehicle_no LIKE '%$search_term%'
+                     OR d.my_number LIKE '%$search_term%'
+                     OR d.ref_no LIKE '%$search_term%'
+                     OR d.receipt_no LIKE '%$search_term%'
+                     OR d.vehicle_no LIKE '%$search_term%'
+                     OR d.remark LIKE '%$search_term%'
+                     OR cm.name LIKE '%$search_term%'
+                     OR c.name LIKE '%$search_term%'
+                     OR c.mobile_number LIKE '%$search_term%'
+                     OR b.name LIKE '%$search_term%'
+                     OR s.name LIKE '%$search_term%'
+                     OR br.name LIKE '%$search_term%'
                   ORDER BY d.id DESC";
 
         $db = Database::getInstance();

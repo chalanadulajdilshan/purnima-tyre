@@ -1,5 +1,11 @@
 jQuery(document).ready(function () {
 
+  // New button - refresh the page
+  $("#new").click(function (e) {
+    e.preventDefault();
+    location.reload();
+  });
+
   // Helper function to format date or return N/A for empty/invalid dates
   function formatDateOrNA(dateValue) {
     if (!dateValue || dateValue === '' || dateValue === '0000-00-00' || dateValue === null) {
@@ -550,14 +556,10 @@ jQuery(document).ready(function () {
               title: "Success!",
               text: `Item has been reassigned to new DAG: ${res.ref_no}. You can now assign a new company to it.`,
               type: "success",
-              confirmButtonText: "Open New DAG",
-              showCancelButton: true,
-              cancelButtonText: "Stay Here"
-            }, function (confirmed) {
-              if (confirmed) {
-                // Redirect to the new DAG for editing
-                window.location.href = `dag-create.php?page_id=${getPageId()}&dag_id=${res.new_dag_id}`;
-              }
+              confirmButtonText: "Open New DAG"
+            }, function () {
+              // Redirect to the new DAG for editing
+              window.location.href = `dag-create.php?page_id=${getPageId()}&dag_id=${res.new_dag_id}`;
             });
           } else {
             swal("Error!", res.message || "Failed to reassign item.", "error");
@@ -570,20 +572,10 @@ jQuery(document).ready(function () {
     });
   });
 
-  $(document).on("click", "#searchDagBtn", function () {
-    loadDagTable();
-  });
 
-  $(document).on("keypress", "#dagSearchInput", function (e) {
-    if (e.which === 13) { // Enter key
-      loadDagTable();
-    }
-  });
+  // ---------------------- DAG MODAL AJAX LOADING ---------------------- //
 
-  $('#mainDagModel').on('shown.bs.modal', function () {
-    loadDagTable();
-  });
-
+  // Load DAGs via AJAX into the modal
   function loadDagTable() {
     const searchTerm = $("#dagSearchInput").val().trim();
 
@@ -593,31 +585,53 @@ jQuery(document).ready(function () {
       data: { load_dags: true, search: searchTerm },
       dataType: "json",
       success: function (response) {
-        // Destroy existing DataTable if it exists
-        if ($.fn.DataTable.isDataTable('#maindagTable')) {
-          $('#maindagTable').DataTable().destroy();
+        // Safely destroy existing DataTable if it exists
+        if ($.fn.DataTable.isDataTable('#dagTable')) {
+          try {
+            $('#dagTable').DataTable().destroy();
+          } catch (e) {
+            console.warn("Error destroying DataTable instance: ", e);
+          }
         }
 
         if (response.status === "success") {
-          $("#mainDagTableBody").html(response.html);
+          $("#dagTableBody").html(response.html);
         } else {
-          $("#mainDagTableBody").html('<tr><td colspan="8" class="text-center text-muted">No DAGs found</td></tr>');
+          $("#dagTableBody").html('<tr><td colspan="8" class="text-center text-muted">No DAGs found</td></tr>');
         }
 
         // Re-initialize DataTable
-        $('#maindagTable').DataTable({
+        $('#dagTable').DataTable({
+          "destroy": true,
           "ordering": false,
           "pageLength": 10,
           "bLengthChange": true,
           "bInfo": true,
-          "bFilter": true // This enables the secondary search
+          "bFilter": false
         });
       },
       error: function () {
-        $("#mainDagTableBody").html('<tr><td colspan="8" class="text-center text-danger">Error loading DAGs</td></tr>');
+        $("#dagTableBody").html('<tr><td colspan="8" class="text-center text-danger">Error loading DAGs</td></tr>');
       }
     });
   }
+
+  // Load DAGs when modal is shown
+  $('#dagModel').on('shown.bs.modal', function () {
+    loadDagTable();
+  });
+
+  // Search button click
+  $(document).on("click", "#searchDagBtn", function () {
+    loadDagTable();
+  });
+
+  // Enter key in search input
+  $(document).on("keypress", "#dagSearchInput", function (e) {
+    if (e.which === 13) {
+      loadDagTable();
+    }
+  });
 
   // Expand/collapse DAG item details on plus icon click
   $(document).on("click", ".details-control", function (e) {
@@ -628,15 +642,15 @@ jQuery(document).ready(function () {
     const icon = $(this).find("span.mdi");
 
     if (childRow.is(":visible")) {
-      // Collapse
       childRow.hide();
       icon.removeClass("mdi-minus-circle-outline").addClass("mdi-plus-circle-outline");
     } else {
-      // Expand
       childRow.show();
       icon.removeClass("mdi-plus-circle-outline").addClass("mdi-minus-circle-outline");
     }
   });
+
+  // ---------------------- END DAG MODAL AJAX LOADING ---------------------- //
 
   $(document).on("click", ".select-dag", function (e) {
     // Don't trigger if clicking on the expand button
@@ -667,13 +681,12 @@ jQuery(document).ready(function () {
     $("#dag_company_id").val(data.dag_company_id).trigger("change");
     $("#receipt_no").val(data.receipt_no);
     $("#company_issued_date").val(data.company_issued_date);
-    $("#company_status").val(data.company_status).trigger("change");
+
 
     $("#remark").val(data.remark);
 
     $("#create").hide();
     $("#dagModel").modal("hide");
-    $("#mainDagModel").modal("hide");
 
     $("#noDagItemRow").hide();
     $("#invoiceTable").hide();
