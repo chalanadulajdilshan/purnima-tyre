@@ -492,7 +492,7 @@ include './auth.php';
 
                                                     <thead class="table-light">
                                                         <tr>
-                                                            <th>Vehicle No</th>
+                                                            <th>My Number</th>
                                                             <th>Belt Design</th>
                                                             <th>Size</th>
                                                             <th>Serial No</th>

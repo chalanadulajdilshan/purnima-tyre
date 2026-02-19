@@ -2879,7 +2879,7 @@ jQuery(document).ready(function () {
 
             const row = `
               <tr class="dag-item-row">
-                <td>${item.vehicle_no}</td>
+                <td>${item.my_number || "N/A"}</td>
                 <td>${item.belt_title || ""}</td>
                 <td>${item.size_name || ""}</td>
                 <td>${item.serial_number || ""}</td>
