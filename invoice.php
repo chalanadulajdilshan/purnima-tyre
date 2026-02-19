@@ -227,7 +227,7 @@ if (!empty($customerMobile)) {
                     <div class="row">
                         <div class="col-12 text-center">
                             <h3 style="font-weight:bold;font-size:22px; margin-top: 10px; margin-bottom: 20px;">
-                                <?php echo ($SALES_INVOICE->invoice_type == 'DAG') ? "DAG INVOICE" : (($SALES_INVOICE->payment_type == 1) ? "CASH SALES INVOICE" : "CREDIT SALES INVOICE"); ?>
+
                             </h3>
                         </div>
                     </div>
@@ -356,7 +356,8 @@ if (!empty($customerMobile)) {
                                                 ?>
                                             </ul>
                                         </td>
-                                        <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 4 : 3; ?>" class="text-end font-weight-bold"><strong>Gross Amount:-</strong>
+                                        <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 4 : 3; ?>"
+                                            class="text-end font-weight-bold"><strong>Gross Amount:-</strong>
                                         </td>
                                         <td class="text-end font-weight-bold">
                                             <strong><?php echo number_format($subtotal, 2); ?></strong>
@@ -365,14 +366,16 @@ if (!empty($customerMobile)) {
                                     <?php if ($SALES_INVOICE->payment_type == 2): // Credit payment 
                                                 ?>
                                         <tr>
-                                            <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 4 : 3; ?>" class="text-end font-weight-bold"><strong>Paid Amount:-</strong>
+                                            <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 4 : 3; ?>"
+                                                class="text-end font-weight-bold"><strong>Paid Amount:-</strong>
                                             </td>
                                             <td class="text-end font-weight-bold">
                                                 <strong><?php echo number_format($SALES_INVOICE->outstanding_settle_amount, 2); ?></strong>
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 4 : 3; ?>" class="text-end font-weight-bold"><strong>Payable Amount:-</strong>
+                                            <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 4 : 3; ?>"
+                                                class="text-end font-weight-bold"><strong>Payable Amount:-</strong>
                                             </td>
                                             <td class="text-end font-weight-bold">
                                                 <strong><?php echo number_format($SALES_INVOICE->grand_total - $SALES_INVOICE->outstanding_settle_amount, 2); ?></strong>
@@ -392,7 +395,9 @@ if (!empty($customerMobile)) {
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 5 : 4; ?>" class="text-end"><strong>Net Amount:-</strong></td>
+                                        <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 5 : 4; ?>" class="text-end">
+                                            <strong>Net Amount:-</strong>
+                                        </td>
                                         <td class="text-end">
                                             <strong><?php echo number_format($subtotal, 2); ?></strong>
                                         </td>
@@ -416,185 +421,7 @@ if (!empty($customerMobile)) {
                         </div>
                     <?php } ?>
 
-                    <!-- DAG INVOICE PRINT -->
-                    <?php if ($SALES_INVOICE->invoice_type == 'DAG') { ?>
-                        <?php
-                        // Get DAG details if available
-                        $DAG = null;
-                        $dagJobNumber = '';
-                        if ($SALES_INVOICE->ref_id) {
-                            $DAG = new Dag($SALES_INVOICE->ref_id);
 
-                            if ($DAG && $DAG->id) {
-                                $dagItemModel = new DagItem(null);
-                                $dagItemsForJob = $dagItemModel->getByDagId($DAG->id);
-
-                                if (!empty($dagItemsForJob)) {
-                                    $firstDagItem = reset($dagItemsForJob);
-                                    if (!empty($firstDagItem['job_number'])) {
-                                        $dagJobNumber = $firstDagItem['job_number'];
-                                    }
-                                }
-                            }
-                        }
-                        ?>
-
-                        <!-- DAG Information -->
-                        <?php if ($DAG): ?>
-                            <div class="row mb-3">
-                                <div class="col-12">
-                                    <div class="alert alert-info">
-                                        <strong>DAG Details:</strong>
-                                        DAG Ref No: <?php echo htmlspecialchars($DAG->ref_no); ?> |
-                                        Job Number:
-                                        <?php echo $dagJobNumber !== '' ? htmlspecialchars($dagJobNumber) : 'N/A'; ?>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endif; ?>
-
-                        <div class="table-responsive">
-                            <table class="table table-centered">
-                                <thead>
-                                    <tr>
-                                        <th>No.</th>
-                                        <th>Vehicle No</th>
-                                        <th>Belt Design</th>
-                                        <th>Size</th>
-                                        <th>Serial No</th>
-                                        <th>Price</th>
-                                        <th>Cost</th>
-                                        <th class="text-center">VAT</th>
-                                        <th class="text-end">Total</th>
-                                    </tr>
-                                </thead>
-                                <tbody style="font-size:13px;" class="font-bold">
-                                    <?php
-                                    $TEMP_SALES_ITEM = new SalesInvoiceItem(null);
-                                    $temp_items_list = $TEMP_SALES_ITEM->getByInvoiceId($invoice_id);
-                                    $subtotal = 0;
-                                    $total_cost = 0;
-
-                                    foreach ($temp_items_list as $key => $temp_items) {
-                                        $key++;
-                                        $price = $temp_items['price'];
-                                        $cost = $temp_items['cost'];
-                                        $quantity = (int) $temp_items['quantity'];
-                                        $line_total = $price * $quantity;
-                                        $subtotal += $line_total;
-                                        $total_cost += $cost * $quantity;
-
-                                        // Parse item name to get individual components
-                                        $item_parts = explode(' - ', $temp_items['item_name']);
-                                        $vehicle_no = isset($item_parts[0]) ? $item_parts[0] : '';
-                                        $belt_design = isset($item_parts[1]) ? $item_parts[1] : '';
-                                        $size = isset($item_parts[2]) ? $item_parts[2] : '';
-                                        $serial_no = isset($item_parts[3]) ? $item_parts[3] : '';
-
-                                        // For DAG items, if size is not in item_name, try to get it from DAG item lookup
-                                        if (empty($size) && strpos($temp_items['item_code'], 'DAG-') === 0) {
-                                            $dag_item_id = str_replace('DAG-', '', $temp_items['item_code']);
-                                            $DAG_ITEM = new DagItem($dag_item_id);
-                                            if ($DAG_ITEM->id && $DAG_ITEM->size_id) {
-                                                $SIZE_MASTER = new Sizes($DAG_ITEM->size_id);
-                                                $size = $SIZE_MASTER->name ?: 'N/A';
-                                            }
-                                        }
-                                        ?>
-                                        <?php
-                                        $item_vat = 0;
-                                        if ($SALES_INVOICE->tax > 0) {
-                                            $vat_percentage = $COMPANY_PROFILE->vat_percentage;
-                                            $item_vat = $line_total * ($vat_percentage / (100 + $vat_percentage));
-                                        }
-                                        ?>
-                                        <tr>
-                                            <td>0<?php echo $key; ?></td>
-                                            <td><?php echo $vehicle_no; ?></td>
-                                            <td><?php echo $belt_design; ?></td>
-                                            <td><?php echo $size; ?></td>
-                                            <td><?php echo $serial_no; ?></td>
-                                            <td><?php echo number_format($price, 2); ?></td>
-                                            <td><?php echo number_format($cost, 2); ?></td>
-                                            <?php if ($SALES_INVOICE->tax > 0): ?>
-                                                <td class="text-center"><?php echo number_format($item_vat, 2); ?></td>
-                                            <?php endif; ?>
-                                            <td class="text-end"><?php echo number_format($line_total, 2); ?></td>
-                                        </tr>
-                                    <?php } ?>
-                                    <?php
-                                    // Calculate rowspan for DAG: Cash (3 rows), Credit (5 rows)
-                                    // VAT is already included in subtotal
-                                    $dagRowSpan = ($SALES_INVOICE->payment_type == 2) ? 5 : 3;
-                                    ?>
-                                    <tr>
-                                        <td colspan="5" rowspan="<?php echo $dagRowSpan; ?>" style="vertical-align:top;">
-                                            <h6 style="margin-top:8px;"><strong>Terms & Conditions:</strong></h6>
-                                            <ul style="padding-left:20px;margin-bottom:0;">
-                                                <?php
-                                                $invoiceRemark = new InvoiceRemark();
-                                                $paymentRemarks = $invoiceRemark->getRemarkByPaymentType($SALES_INVOICE->payment_type);
-                                                if (!empty($paymentRemarks)) {
-                                                    foreach ($paymentRemarks as $remark) {
-                                                        if (!empty($remark['remark'])) {
-                                                            echo '<li>' . htmlspecialchars($remark['remark']) . '</li>';
-                                                        }
-                                                    }
-                                                }
-                                                ?>
-                                            </ul>
-                                        </td>
-                                        <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 3 : 2; ?>" class="text-end font-weight-bold"><strong>Gross Amount:-</strong>
-                                        </td>
-                                        <td class="text-end font-weight-bold">
-                                            <strong><?php echo number_format($subtotal, 2); ?></strong>
-                                        </td>
-                                    </tr>
-                                    <?php if ($SALES_INVOICE->payment_type == 2): // Credit payment 
-                                                ?>
-                                        <tr>
-                                            <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 3 : 2; ?>" class="text-end font-weight-bold"><strong>Paid Amount:-</strong>
-                                            </td>
-                                            <td class="text-end font-weight-bold">
-                                                <strong><?php echo number_format($SALES_INVOICE->outstanding_settle_amount, 2); ?></strong>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 3 : 2; ?>" class="text-end font-weight-bold"><strong>Payable Amount:-</strong>
-                                            </td>
-                                            <td class="text-end font-weight-bold">
-                                                <strong><?php echo number_format($SALES_INVOICE->grand_total - $SALES_INVOICE->outstanding_settle_amount, 2); ?></strong>
-                                            </td>
-                                        </tr>
-                                    <?php endif; ?>
-                                    <tr>
-                                        <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 4 : 3; ?>" class="text-end font-weight-bold">Total Cost:-</td>
-                                        <td class="text-end font-weight-bold"><?php echo number_format($total_cost, 2); ?>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 4 : 3; ?>" class="text-end"><strong>Net Amount:-</strong></td>
-                                        <td class="text-end"><strong><?php echo number_format($subtotal, 2); ?></strong>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="8" style="padding-top:120px !important;">
-                                            <table style="width:100%;">
-                                                <tr>
-                                                    <td style="text-align:center;">
-                                                        _________________________<br><strong>Prepared By</strong></td>
-                                                    <td style="text-align:center;">
-                                                        _________________________<br><strong>Approved By</strong></td>
-                                                    <td style="text-align:center;">
-                                                        _________________________<br><strong>Received By</strong></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php } ?>
 
                 </div>
             </div>
