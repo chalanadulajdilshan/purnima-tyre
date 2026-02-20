@@ -309,19 +309,7 @@ include './auth.php';
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-3">
-                                                <label for="customerCode" class="form-label">Dag Ref No</label>
-                                                <div class="input-group mb-3">
-                                                    <input id="ref_no" name="ref_no" type="text" class="form-control"
-                                                        placeholder="Select Dag Ref No" readonly>
-                                                    <button class="btn btn-info" type="button" data-bs-toggle="modal"
-                                                        data-bs-target="#dagModel">
-                                                        <i class="uil uil-search me-1"></i>
-                                                    </button>
-                                                </div>
 
-                                                <input type="hidden" id="dag_id" name="dag_id" />
-                                            </div>
 
                                             <div class="col-md-3">
                                                 <label for="quotation_ref_no" class="form-label">Select Quotation</label>
@@ -484,32 +472,7 @@ include './auth.php';
 
 
 
-                                            <!-- dag item Table -->
-                                            <div class="table-responsive ">
 
-                                                <table class="table table-bordered" id="dagTableHide"
-                                                    style="display:none">
-
-                                                    <thead class="table-light">
-                                                        <tr>
-                                                            <th>My Number</th>
-                                                            <th>Belt Design</th>
-                                                            <th>Size</th>
-                                                            <th>Serial No</th>
-                                                            <th>Cost</th>
-                                                            <th>Price</th>
-                                                            <th class="vat-column" style="display: none;">VAT</th>
-                                                            <th>Action</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody id="dagItemsBodyInvoice">
-                                                        <tr id="noDagItemRow">
-                                                            <td colspan="7" class="text-center text-muted">No items
-                                                                added</td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
 
 
 

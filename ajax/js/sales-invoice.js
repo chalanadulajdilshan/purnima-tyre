@@ -1027,114 +1027,110 @@ jQuery(document).ready(function () {
     }
 
     const invoiceNo = $("#invoice_no").val().trim();
-    const dag_id = $("#dag_id").val();
 
-    if (dag_id != 0) {
-      processDAGInvoiceCreation();
-    } else {
-      $.ajax({
-        url: "ajax/php/sales-invoice.php",
-        method: "POST",
-        data: {
-          action: "check_invoice_id",
-          invoice_no: invoiceNo,
-        },
-        dataType: "json",
-        success: function (checkRes) {
-          if (checkRes.exists) {
-            // Show confirmation dialog for duplicate invoice
-            swal(
-              {
-                title: "Duplicate Invoice Number!",
-                text:
-                  "Invoice No <strong>" +
-                  invoiceNo +
-                  "</strong> already exists. This may be due to document tracking not being updated. Would you like to increment the document tracking ID and generate a new invoice number?",
-                type: "warning",
-                html: true,
-                showCancelButton: true,
-                confirmButtonText: "Yes, Update & Continue",
-                cancelButtonText: "No, Cancel",
-                closeOnConfirm: false,
-                closeOnCancel: true,
-              },
-              function (isConfirm) {
-                if (isConfirm) {
-                  // User confirmed, resolve the duplicate
-                  const paymentType = $(
-                    'input[name="payment_type"]:checked'
-                  ).val();
+    $.ajax({
+      url: "ajax/php/sales-invoice.php",
+      method: "POST",
+      data: {
+        action: "check_invoice_id",
+        invoice_no: invoiceNo,
+      },
+      dataType: "json",
+      success: function (checkRes) {
+        if (checkRes.exists) {
+          // Show confirmation dialog for duplicate invoice
+          swal(
+            {
+              title: "Duplicate Invoice Number!",
+              text:
+                "Invoice No <strong>" +
+                invoiceNo +
+                "</strong> already exists. This may be due to document tracking not being updated. Would you like to increment the document tracking ID and generate a new invoice number?",
+              type: "warning",
+              html: true,
+              showCancelButton: true,
+              confirmButtonText: "Yes, Update & Continue",
+              cancelButtonText: "No, Cancel",
+              closeOnConfirm: false,
+              closeOnCancel: true,
+            },
+            function (isConfirm) {
+              if (isConfirm) {
+                // User confirmed, resolve the duplicate
+                const paymentType = $(
+                  'input[name="payment_type"]:checked'
+                ).val();
 
-                  $.ajax({
-                    url: "ajax/php/sales-invoice.php",
-                    method: "POST",
-                    data: {
-                      action: "resolve_duplicate_invoice",
-                      payment_type: paymentType,
-                    },
-                    dataType: "json",
-                    success: function (resolveRes) {
-                      if (resolveRes.status === "success") {
-                        // Update the invoice number field with the new ID
-                        $("#invoice_no").val(resolveRes.invoice_id);
+                $.ajax({
+                  url: "ajax/php/sales-invoice.php",
+                  method: "POST",
+                  data: {
+                    action: "resolve_duplicate_invoice",
+                    payment_type: paymentType,
+                  },
+                  dataType: "json",
+                  success: function (resolveRes) {
+                    if (resolveRes.status === "success") {
+                      // Update the invoice number field with the new ID
+                      $("#invoice_no").val(resolveRes.invoice_id);
 
-                        swal({
-                          title: "Success!",
-                          text:
-                            "Document tracking updated. New invoice number: <strong>" +
-                            resolveRes.invoice_id +
-                            "</strong>. Proceeding with invoice creation...",
-                          type: "success",
-                          html: true,
-                          timer: 2000,
-                          showConfirmButton: false,
-                        });
+                      swal({
+                        title: "Success!",
+                        text:
+                          "Document tracking updated. New invoice number: <strong>" +
+                          resolveRes.invoice_id +
+                          "</strong>. Proceeding with invoice creation...",
+                        type: "success",
+                        html: true,
+                        timer: 2000,
+                        showConfirmButton: false,
+                      });
 
-                        // Proceed with invoice creation after a short delay
-                        setTimeout(function () {
-                          processInvoiceCreation();
-                        }, 2000);
-                      } else {
-                        swal({
-                          title: "Error!",
-                          text:
-                            resolveRes.message ||
-                            "Unable to resolve duplicate invoice.",
-                          type: "error",
-                          timer: 3000,
-                          showConfirmButton: false,
-                        });
-                      }
-                    },
-                    error: function () {
+                      // Proceed with invoice creation after a short delay
+                      setTimeout(function () {
+                        processInvoiceCreation();
+                      }, 2000);
+                    } else {
                       swal({
                         title: "Error!",
-                        text: "Unable to update document tracking.",
+                        text:
+                          resolveRes.message ||
+                          "Unable to resolve duplicate invoice.",
                         type: "error",
                         timer: 3000,
                         showConfirmButton: false,
                       });
-                    },
-                  });
-                }
+                    }
+                  },
+                  error: function () {
+                    swal({
+                      title: "Error!",
+                      text: "Unable to update document tracking.",
+                      type: "error",
+                      timer: 3000,
+                      showConfirmButton: false,
+                    });
+                  },
+                });
               }
-            );
-            return;
-          }
+            }
+          );
+          return;
+        }
 
-          processInvoiceCreation();
-        },
-        error: function () {
-          swal({
-            title: "Error!",
-            text: "Unable to verify Invoice No. right now.",
-            type: "error",
-            timer: 3000,
-            showConfirmButton: false,
-          });
-        },
-      });
-    }
+        processInvoiceCreation();
+      },
+      error: function () {
+        swal({
+          title: "Error!",
+          text: "Unable to verify Invoice No. right now.",
+          type: "error",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      },
+    });
+
   });
 
   $("#save").click(function (event) {
@@ -1163,120 +1159,116 @@ jQuery(document).ready(function () {
       });
     }
 
-    const dag_id = $("#dag_id").val();
 
-    if (dag_id != 0) {
-      processDAGInvoiceCreation();
-    } else {
-      $.ajax({
-        url: "ajax/php/sales-invoice.php",
-        method: "POST",
-        data: {
-          action: "check_invoice_id",
-          invoice_no: invoiceNo,
-        },
-        dataType: "json",
-        success: function (checkRes) {
-          if (checkRes.exists) {
-            // Show confirmation dialog for duplicate invoice
-            swal(
-              {
-                title: "Duplicate Invoice Number!",
-                text:
-                  "Invoice No <strong>" +
-                  invoiceNo +
-                  "</strong> already exists. This may be due to document tracking not being updated. Would you like to increment the document tracking ID and generate a new invoice number?",
-                type: "warning",
-                html: true,
-                showCancelButton: true,
-                confirmButtonText: "Yes, Update & Continue",
-                cancelButtonText: "No, Cancel",
-                closeOnConfirm: false,
-                closeOnCancel: true,
-              },
-              function (isConfirm) {
-                if (isConfirm) {
-                  // User confirmed, resolve the duplicate
-                  const paymentType = $(
-                    'input[name="payment_type"]:checked'
-                  ).val();
+    $.ajax({
+      url: "ajax/php/sales-invoice.php",
+      method: "POST",
+      data: {
+        action: "check_invoice_id",
+        invoice_no: invoiceNo,
+      },
+      dataType: "json",
+      success: function (checkRes) {
+        if (checkRes.exists) {
+          // Show confirmation dialog for duplicate invoice
+          swal(
+            {
+              title: "Duplicate Invoice Number!",
+              text:
+                "Invoice No <strong>" +
+                invoiceNo +
+                "</strong> already exists. This may be due to document tracking not being updated. Would you like to increment the document tracking ID and generate a new invoice number?",
+              type: "warning",
+              html: true,
+              showCancelButton: true,
+              confirmButtonText: "Yes, Update & Continue",
+              cancelButtonText: "No, Cancel",
+              closeOnConfirm: false,
+              closeOnCancel: true,
+            },
+            function (isConfirm) {
+              if (isConfirm) {
+                // User confirmed, resolve the duplicate
+                const paymentType = $(
+                  'input[name="payment_type"]:checked'
+                ).val();
 
-                  $.ajax({
-                    url: "ajax/php/sales-invoice.php",
-                    method: "POST",
-                    data: {
-                      action: "resolve_duplicate_invoice",
-                      payment_type: paymentType,
-                    },
-                    dataType: "json",
-                    success: function (resolveRes) {
-                      if (resolveRes.status === "success") {
-                        // Update the invoice number field with the new ID
-                        $("#invoice_no").val(resolveRes.invoice_id);
+                $.ajax({
+                  url: "ajax/php/sales-invoice.php",
+                  method: "POST",
+                  data: {
+                    action: "resolve_duplicate_invoice",
+                    payment_type: paymentType,
+                  },
+                  dataType: "json",
+                  success: function (resolveRes) {
+                    if (resolveRes.status === "success") {
+                      // Update the invoice number field with the new ID
+                      $("#invoice_no").val(resolveRes.invoice_id);
 
-                        swal({
-                          title: "Success!",
-                          text:
-                            "Document tracking updated. New invoice number: <strong>" +
-                            resolveRes.invoice_id +
-                            "</strong>. Proceeding with invoice creation...",
-                          type: "success",
-                          html: true,
-                          timer: 2000,
-                          showConfirmButton: false,
-                        });
+                      swal({
+                        title: "Success!",
+                        text:
+                          "Document tracking updated. New invoice number: <strong>" +
+                          resolveRes.invoice_id +
+                          "</strong>. Proceeding with invoice creation...",
+                        type: "success",
+                        html: true,
+                        timer: 2000,
+                        showConfirmButton: false,
+                      });
 
-                        // Proceed with invoice creation after a short delay
-                        setTimeout(function () {
-                          processInvoiceCreation();
-                        }, 2000);
-                      } else {
-                        swal({
-                          title: "Error!",
-                          text:
-                            resolveRes.message ||
-                            "Unable to resolve duplicate invoice.",
-                          type: "error",
-                          timer: 3000,
-                          showConfirmButton: false,
-                        });
-                      }
-                    },
-                    error: function () {
+                      // Proceed with invoice creation after a short delay
+                      setTimeout(function () {
+                        processInvoiceCreation();
+                      }, 2000);
+                    } else {
                       swal({
                         title: "Error!",
-                        text: "Unable to update document tracking.",
+                        text:
+                          resolveRes.message ||
+                          "Unable to resolve duplicate invoice.",
                         type: "error",
                         timer: 3000,
                         showConfirmButton: false,
                       });
-                    },
-                  });
-                }
+                    }
+                  },
+                  error: function () {
+                    swal({
+                      title: "Error!",
+                      text: "Unable to update document tracking.",
+                      type: "error",
+                      timer: 3000,
+                      showConfirmButton: false,
+                    });
+                  },
+                });
               }
-            );
-            return;
-          }
+            }
+          );
+          return;
+        }
 
-          processInvoiceCreation();
-        },
-        error: function () {
-          swal({
-            title: "Error!",
-            text: "Unable to verify Invoice No. right now.",
-            type: "error",
-            timer: 3000,
-            showConfirmButton: false,
-          });
-        },
-      });
-    }
+        processInvoiceCreation();
+      },
+      error: function () {
+        swal({
+          title: "Error!",
+          text: "Unable to verify Invoice No. right now.",
+          type: "error",
+          timer: 3000,
+          showConfirmButton: false,
+        });
+      },
+    });
+
   });
 
   //ITEM INVOICE PROCESS
   function processInvoiceCreation() {
     const items = [];
-    const dagItems = [];
+
 
     //  item invoice to send this php file
     $("#invoiceItemsBody tr").each(function () {
@@ -1323,7 +1315,7 @@ jQuery(document).ready(function () {
     });
 
     // Validate items
-    if (items.length === 0 && dagItems.length === 0) {
+    if (items.length === 0) {
       return swal({
         title: "Error!",
         text: "Please add at least one item.",
@@ -1558,22 +1550,7 @@ jQuery(document).ready(function () {
           return;
         }
 
-        const invoiceId = res.invoice_id;
-        // Save DAG items
-        $.ajax({
-          url: "ajax/php/sales-invoice-dag.php",
-          type: "POST",
-          data: {
-            invoice_id: invoiceId,
-            items: JSON.stringify(dagItems),
-          },
-          success: function () {
-            console.log("DAG invoice saved");
-          },
-          error: function () {
-            console.error("DAG invoice save failed");
-          },
-        });
+
 
         swal({
           title: "Success!",
@@ -1601,168 +1578,7 @@ jQuery(document).ready(function () {
     });
   }
 
-  //PROCESS DAG INVOICE CREATION
-  function processDAGInvoiceCreation() {
-    const finalTotal = parseFloat($("#finalTotal").val()) || 0;
-    const paymentType = $('input[name="payment_type"]:checked').val();
 
-    // For cash payments, check if paid amount is sufficient
-    if (paymentType === "1") {
-      const paid = parseFloat($("#amountPaid").val()) || 0;
-      if (paid < finalTotal) {
-        swal({
-          title: "Error!",
-          text: "Paid amount cannot be less than Final Total",
-          type: "error",
-          timer: 3000,
-          showConfirmButton: false,
-        });
-        return;
-      }
-    }
-
-    const dagItems = [];
-
-    $("#dagItemsBodyInvoice")
-      .find("tr")
-      .not("#noDagItemRow")
-      .each(function () {
-        const vehicleNo = $(this).find("td:eq(0)").text().trim();
-        const beltDesign = $(this).find("td:eq(1)").text().trim();
-        const size = $(this).find("td:eq(2)").text().trim();
-        const serialNo = $(this).find("td:eq(3)").text().trim();
-        const price = parseFloat($(this).find(".dag-price").val()) || 0;
-        const cost = parseFloat($(this).find(".dag-cost").val()) || 0;
-        const dagItemId = $(this).find(".dag-price").data("dag-item-id");
-
-        // Validate that selling price is not lower than cost
-        if (cost > 0 && price < cost) {
-          swal({
-            title: "Validation Error!",
-            text: `Selling price (${price.toFixed(
-              2
-            )}) cannot be lower than cost (${cost.toFixed(
-              2
-            )}) for item: ${vehicleNo} - ${serialNo}`,
-            type: "error",
-            timer: 4000,
-            showConfirmButton: true,
-          });
-          return false; // Stop processing
-        }
-
-        // Treat any DAG table row (except the placeholder) as a valid item
-        dagItems.push({
-          dag_item_id: dagItemId,
-          vehicle_no: vehicleNo,
-          belt_design: beltDesign,
-          size: size,
-          serial_no: serialNo,
-          price: price,
-          cost: cost,
-          qty: 1, // Always 1 for DAG items
-          total: price,
-          is_dag: true,
-        });
-      });
-
-    // Also check DOM rows to avoid false negatives on some pages
-    const dagRowCount = $("#dagItemsBodyInvoice")
-      .find("tr")
-      .not("#noDagItemRow").length;
-
-    if (dagItems.length === 0 && dagRowCount === 0) {
-      swal({
-        title: "Error!",
-        text: "Please add at least one DAG item with a price.",
-        type: "error",
-        timer: 3000,
-        showConfirmButton: false,
-      });
-      return;
-    }
-
-    const invoiceId = $("#invoice_no").val();
-    if (!invoiceId) {
-      swal("Error!", "Invoice ID is missing.", "error");
-      return;
-    }
-
-    // Validate required fields
-    const customerId = $("#customer_id").val();
-    const customerName = $("#customer_name").val();
-    const dagId = $("#dag_id").val();
-
-    if (!customerId || !customerName) {
-      swal({
-        title: "Error!",
-        text: "Please select a customer before creating invoice.",
-        type: "error",
-        timer: 3000,
-        showConfirmButton: false,
-      });
-      return;
-    }
-
-    if (!dagId) {
-      swal({
-        title: "Error!",
-        text: "Please select a DAG before creating invoice.",
-        type: "error",
-        timer: 3000,
-        showConfirmButton: false,
-      });
-      return;
-    }
-
-    $(".someBlock").preloader();
-
-    // Prepare FormData with all values
-    const formData = new FormData($("#form-data")[0]);
-    formData.append("create", true);
-    formData.append("paid", paymentType === "1" ? $("#amountPaid").val() : "0");
-    formData.append("payment_type", paymentType);
-    formData.append("customer_id", customerId);
-    formData.append("customer_name", customerName);
-    formData.append("customer_mobile", $("#customer_mobile").val() || "");
-    formData.append("customer_address", $("#customer_address").val() || "");
-    formData.append("department_id", $("#department_id").val() || "1");
-    formData.append("invoice_no", invoiceId);
-    formData.append("recommended_person", $("#recommended_person").val() || "");
-    formData.append("items", JSON.stringify(dagItems));
-    formData.append("dag_id", dagId);
-
-    $.ajax({
-      url: "ajax/php/sales-invoice-dag.php",
-      type: "POST",
-      data: formData,
-      processData: false,
-      contentType: false,
-      dataType: "json",
-      success: function (res) {
-        $(".someBlock").preloader("remove");
-        swal({
-          title: "Success!",
-          text: "DAG Invoice saved successfully!",
-          type: "success",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-
-        if ($("#paymentModal").hasClass("show")) {
-          $("#paymentModal").modal("hide");
-        }
-
-        // Open regular invoice page for DAG invoices too
-        window.open("invoice.php?invoice_no=" + invoiceId, "_blank");
-        setTimeout(() => location.reload(), 2000);
-      },
-      error: function () {
-        $(".someBlock").preloader("remove");
-        swal("Error!", "Failed to save DAG invoice.", "error");
-      },
-    });
-  }
 
   //ADD ITEM TO INVOICE TABLE
   function addItem() {
