@@ -395,10 +395,11 @@ if (!empty($customerMobile)) {
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 5 : 4; ?>" class="text-end">
+                                        <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 4 : 3; ?>"
+                                            class="text-end font-weight-bold">
                                             <strong>Net Amount:-</strong>
                                         </td>
-                                        <td class="text-end">
+                                        <td class="text-end font-weight-bold">
                                             <strong><?php echo number_format($subtotal, 2); ?></strong>
                                         </td>
                                     </tr>
