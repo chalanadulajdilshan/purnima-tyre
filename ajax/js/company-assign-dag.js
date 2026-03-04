@@ -146,11 +146,21 @@ jQuery(document).ready(function () {
                     let html = '';
                     if (response.data.length > 0) {
                         response.data.forEach((assignment, index) => {
+                            let myNumbersHtml = '';
+                            if (assignment.my_numbers) {
+                                let nums = assignment.my_numbers.split(', ');
+                                nums.forEach(num => {
+                                    myNumbersHtml += `<span class="badge bg-soft-primary text-primary me-1 mb-1" style="font-size: 11px;">${num}</span>`;
+                                });
+                            } else {
+                                myNumbersHtml = '<span class="text-muted">-</span>';
+                            }
                             html += `<tr>
                                 <td>${index + 1}</td>
                                 <td>${assignment.assignment_number}</td>
                                 <td>${assignment.company_name}</td>
                                 <td>${assignment.company_receipt_number}</td>
+                                <td style="white-space: normal; max-width: 250px;">${myNumbersHtml}</td>
                                 <td>${assignment.company_issued_date}</td>
                                 <td>${assignment.created_at}</td>
                                 <td>
@@ -166,7 +176,7 @@ jQuery(document).ready(function () {
                             </tr>`;
                         });
                     } else {
-                        html = `<tr><td colspan="7" class="text-center">No matching records found.</td></tr>`;
+                        html = `<tr><td colspan="8" class="text-center">No matching records found.</td></tr>`;
                     }
                     $("#assignmentSelectionTableBody").html(html);
                 }
