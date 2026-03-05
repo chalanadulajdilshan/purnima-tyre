@@ -34,7 +34,11 @@ if (isset($_POST['search_dag'])) {
         $query = "SELECT dc.*, c.name as customer_name, c.name_2 as customer_name_2 
                   FROM `dag_customers` dc 
                   LEFT JOIN `customer_master` c ON dc.customer_id = c.id 
-                  WHERE dc.my_number LIKE '%$keyword%' OR dc.serial_no LIKE '%$keyword%' 
+                  WHERE dc.id NOT IN (
+                      SELECT dag_id 
+                      FROM `dag_company_assignment_items`
+                  )
+                  AND (dc.my_number LIKE '%$keyword%' OR dc.serial_no LIKE '%$keyword%') 
                   ORDER BY dc.id DESC LIMIT 20";
     }
 
@@ -148,10 +152,19 @@ if (isset($_POST['search_assignment'])) {
     $keyword = $_POST['keyword'];
     $db = Database::getInstance();
 
-    $query = "SELECT da.*, c.name as company_name 
+    $query = "SELECT da.*, c.name as company_name,
+              (SELECT GROUP_CONCAT(dc.my_number SEPARATOR ', ')
+               FROM `dag_company_assignment_items` dai
+               JOIN `dag_customers` dc ON dai.dag_id = dc.id
+               WHERE dai.assignment_id = da.id) as my_numbers
               FROM `dag_company_assignments` da 
               LEFT JOIN `company_master` c ON da.company_id = c.id 
-              WHERE da.assignment_number LIKE '%$keyword%' OR da.company_receipt_number LIKE '%$keyword%' 
+              WHERE (da.assignment_number LIKE '%$keyword%' OR da.company_receipt_number LIKE '%$keyword%'
+              OR EXISTS (
+                  SELECT 1 FROM `dag_company_assignment_items` dai2
+                  JOIN `dag_customers` dc2 ON dai2.dag_id = dc2.id
+                  WHERE dai2.assignment_id = da.id AND dc2.my_number LIKE '%$keyword%'
+              )) 
               ORDER BY da.id DESC LIMIT 20";
 
     $result = $db->readQuery($query);

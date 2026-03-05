@@ -118,8 +118,7 @@ if ($homeViewMode === 'nav_buttons' || $homeViewMode === 'header') {
             <!-- Responsive Menu Toggle -->
             <?php if ($showTopNav) { ?>
                 <button type="button" class="btn btn-sm px-3 font-size-16 d-lg-none header-item waves-effect waves-light"
-                    data-bs-toggle="collapse" data-bs-target="#topnav-menu-content"
-                    style="color: white;">
+                    data-bs-toggle="collapse" data-bs-target="#topnav-menu-content" style="color: white;">
                     <i class="fa fa-fw fa-bars"></i>
                 </button>
             <?php } ?>
@@ -146,7 +145,8 @@ if ($homeViewMode === 'nav_buttons' || $homeViewMode === 'header') {
             </div>
 
             <?php if ($homeViewMode === 'nav_buttons' || $homeViewMode === 'header') { ?>
-                <a href="<?php echo $dashboardHref; ?>" id="dashboard-back-btn" class="btn btn-sm d-flex align-items-center waves-effect" title="Dashboard" aria-label="Dashboard">
+                <a href="<?php echo $dashboardHref; ?>" id="dashboard-back-btn"
+                    class="btn btn-sm d-flex align-items-center waves-effect" title="Dashboard" aria-label="Dashboard">
                     <i class="uil uil-estate"></i>
                     <span class="ms-1 d-none d-md-inline">Dashboard</span>
                 </a>
@@ -190,12 +190,15 @@ if ($homeViewMode === 'nav_buttons' || $homeViewMode === 'header') {
                     $user = new User($_SESSION['id']);
                     $profileImage = !empty($user->image_name) ? 'upload/users/' . $user->image_name : 'assets/images/users/avatar-4.jpg';
                     ?>
-                    <img class="rounded-circle header-profile-user" src="<?php echo $profileImage; ?>" alt="<?php echo htmlspecialchars($user->name); ?>">
-                    <span class="d-none d-xl-inline-block ms-1 fw-medium font-size-15"><?php echo htmlspecialchars($user->name); ?></span>
+                    <img class="rounded-circle header-profile-user" src="<?php echo $profileImage; ?>"
+                        alt="<?php echo htmlspecialchars($user->name); ?>">
+                    <span
+                        class="d-none d-xl-inline-block ms-1 fw-medium font-size-15"><?php echo htmlspecialchars($user->name); ?></span>
                     <i class="uil-angle-down d-none d-xl-inline-block font-size-15"></i>
                 </button>
                 <div class="dropdown-menu dropdown-menu-end">
-                    <a class="dropdown-item" href="profile.php"><i class="uil uil-user-circle me-1"></i> View Profile</a>
+                    <a class="dropdown-item" href="profile.php"><i class="uil uil-user-circle me-1"></i> View
+                        Profile</a>
                     <a class="dropdown-item" href="#"><i class="uil uil-lock-alt me-1"></i> Settings </a>
                     <a class="dropdown-item" href="log-out.php"><i class="uil uil-sign-out-alt me-1"></i> Sign out</a>
                 </div>
@@ -205,145 +208,145 @@ if ($homeViewMode === 'nav_buttons' || $homeViewMode === 'header') {
 
     <!-- Navigation Menu -->
     <?php if ($showTopNav) { ?>
-    <div class="container-fluid">
-        <div class="topnav">
-            <nav class="navbar navbar-light navbar-expand-lg topnav-menu">
-                <div class="collapse navbar-collapse" id="topnav-menu-content">
-                    <ul class="navbar-nav">
-                        <?php
-                        $PAGE_CATEGORY = new PageCategory(NULL);
-                        $USER_PERMISSION = new UserPermission();
-                        $user_id = isset($_SESSION['id']) ? (int)$_SESSION['id'] : 0;
+        <div class="container-fluid">
+            <div class="topnav">
+                <nav class="navbar navbar-light navbar-expand-lg topnav-menu">
+                    <div class="collapse navbar-collapse" id="topnav-menu-content">
+                        <ul class="navbar-nav">
+                            <?php
+                            $PAGE_CATEGORY = new PageCategory(NULL);
+                            $USER_PERMISSION = new UserPermission();
+                            $user_id = isset($_SESSION['id']) ? (int) $_SESSION['id'] : 0;
 
-                        foreach ($PAGE_CATEGORY->getActiveCategory() as $category):
-                            $hasCategoryAccess = false;
-                            $categoryPages = [];
+                            foreach ($PAGE_CATEGORY->getActiveCategory() as $category):
+                                $hasCategoryAccess = false;
+                                $categoryPages = [];
 
-                            // Get all pages for this category first to check permissions
-                            if ($category['id'] != 1) { // Skip dashboard for now
-                                $PAGES = new Pages(null);
-                                $categoryPages = $PAGES->getPagesByCategory($category['id']);
-
-                                // Check if user has any permission for any page in this category
-                                foreach ($categoryPages as $page) {
-                                    $permissions = $USER_PERMISSION->hasPermission($user_id, $page['id']);
-                                    if (in_array(true, $permissions, true)) {
-                                        $hasCategoryAccess = true;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            // Skip category if user has no permissions for any page in it
-                            if (!$hasCategoryAccess && $category['id'] != 1) {
-                                continue;
-                            }
-
-                            if ($category['id'] == 1): // Dashboard
-                                $dashboardPage = (new Pages(null))->getPagesByCategory($category['id'])[0] ?? null;
-                                if ($dashboardPage):
-                                    $permissions = $USER_PERMISSION->hasPermission($user_id, $dashboardPage['id']);
-                                    if (in_array(true, $permissions, true)): ?>
-                                        <li class="nav-item">
-                                            <a class="nav-link" href="<?php echo $dashboardPage['page_url'] . '?page_id=' . $dashboardPage['id']; ?>">
-                                                <i class="<?php echo $category['icon']; ?> me-2"></i> <?php echo $category['name']; ?>
-                                            </a>
-                                        </li>
-                                    <?php
-                                    endif;
-                                endif;
-                            elseif ($category['id'] == 4): // Reports Category
-                                $hasReportAccess = false;
-                                $reportSubmenus = [];
-                                $DEFAULT_DATA = new DefaultData();
-
-                                // First check if user has any report access
-                                foreach ($DEFAULT_DATA->pagesSubCategory() as $key => $subCategoryTitle) {
+                                // Get all pages for this category first to check permissions
+                                if ($category['id'] != 1) { // Skip dashboard for now
                                     $PAGES = new Pages(null);
-                                    $subPages = $PAGES->getPagesBySubCategory($key);
+                                    $categoryPages = $PAGES->getPagesByCategory($category['id']);
 
-                                    foreach ($subPages as $page) {
+                                    // Check if user has any permission for any page in this category
+                                    foreach ($categoryPages as $page) {
                                         $permissions = $USER_PERMISSION->hasPermission($user_id, $page['id']);
                                         if (in_array(true, $permissions, true)) {
-                                            $hasReportAccess = true;
-                                            if (!isset($reportSubmenus[$key])) {
-                                                $reportSubmenus[$key] = [
-                                                    'title' => $subCategoryTitle,
-                                                    'pages' => []
-                                                ];
-                                            }
-                                            $reportSubmenus[$key]['pages'][] = $page;
+                                            $hasCategoryAccess = true;
+                                            break;
                                         }
                                     }
                                 }
 
-                                if ($hasReportAccess): ?>
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle arrow-none" href="#" role="button">
-                                            <i class="uil-layers me-2"></i> Reports <div class="arrow-down"></div>
-                                        </a>
-                                        <div class="dropdown-menu">
-                                            <?php foreach ($reportSubmenus as $key => $submenu):
-                                                if (!empty($submenu['pages'])): ?>
-                                                    <div class="dropdown">
-                                                        <a class="dropdown-item dropdown-toggle arrow-none" href="#">
-                                                            <?php echo $submenu['title']; ?>
-                                                            <div class="arrow-down"></div>
-                                                        </a>
-                                                        <div class="dropdown-menu">
-                                                            <?php foreach ($submenu['pages'] as $page):
-                                                                $permissions = $USER_PERMISSION->hasPermission($user_id, $page['id']);
-                                                                if (in_array(true, $permissions, true)): ?>
-                                                                    <a class="dropdown-item"
-                                                                        href="<?php echo $page['page_url'] . '?page_id=' . $page['id']; ?>">
-                                                                        <?php if (!empty($page['page_icon'])): ?>
-                                                                            <i class="<?php echo htmlspecialchars($page['page_icon']); ?> me-2"></i>
-                                                                        <?php endif; ?>
-                                                                        <?php echo $page['page_name']; ?>
-                                                                    </a>
-                                                            <?php endif;
-                                                            endforeach; ?>
-                                                        </div>
-                                                    </div>
-                                            <?php endif;
-                                            endforeach; ?>
-                                        </div>
-                                    </li>
-                                <?php
-                                endif;
-                            else: // Other Categories
-                                $hasAnyPermission = false;
-                                $visiblePages = [];
-
-                                // Filter pages to only those the user has permission for
-                                foreach ($categoryPages as $page) {
-                                    // Always allow access to profile.php for logged-in users
-                                    if (basename($page['page_url']) === 'profile.php') {
-                                        $visiblePages[] = $page;
-                                        $hasAnyPermission = true;
-                                        continue;
-                                    }
-
-                                    // Check permissions for other pages
-                                    $permissions = $USER_PERMISSION->hasPermission($user_id, $page['id']);
-                                    if (in_array(true, $permissions, true)) {
-                                        $visiblePages[] = $page;
-                                        $hasAnyPermission = true;
-                                    }
+                                // Skip category if user has no permissions for any page in it
+                                if (!$hasCategoryAccess && $category['id'] != 1) {
+                                    continue;
                                 }
 
-                                if ($hasAnyPermission): ?>
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle arrow-none" href="#" role="button">
-                                            <i class="<?php echo $category['icon']; ?> me-2"></i> <?php echo $category['name']; ?>
-                                            <div class="arrow-down"></div>
-                                        </a>
-                                        <div class="dropdown-menu mega-dropdown-menu px-2 dropdown-mega-menu-xl">
-                                            <div class="row">
-                                                <?php foreach ($visiblePages as $page):
-                                                    $permissions = $USER_PERMISSION->hasPermission($user_id, $page['id']);
-                                                    if (in_array(true, $permissions, true)): ?>
-                                                        <div class="col-lg-3">
+                                if ($category['id'] == 1): // Dashboard
+                                    $dashboardPage = (new Pages(null))->getPagesByCategory($category['id'])[0] ?? null;
+                                    if ($dashboardPage):
+                                        $permissions = $USER_PERMISSION->hasPermission($user_id, $dashboardPage['id']);
+                                        if (in_array(true, $permissions, true)): ?>
+                                            <li class="nav-item">
+                                                <a class="nav-link"
+                                                    href="<?php echo $dashboardPage['page_url'] . '?page_id=' . $dashboardPage['id']; ?>">
+                                                    <i class="<?php echo $category['icon']; ?> me-2"></i> <?php echo $category['name']; ?>
+                                                </a>
+                                            </li>
+                                            <?php
+                                        endif;
+                                    endif;
+                                elseif ($category['id'] == 4): // Reports Category
+                                    $hasReportAccess = false;
+                                    $reportSubmenus = [];
+                                    $DEFAULT_DATA = new DefaultData();
+
+                                    // First check if user has any report access
+                                    foreach ($DEFAULT_DATA->pagesSubCategory() as $key => $subCategoryTitle) {
+                                        $PAGES = new Pages(null);
+                                        $subPages = $PAGES->getPagesBySubCategory($key);
+
+                                        foreach ($subPages as $page) {
+                                            $permissions = $USER_PERMISSION->hasPermission($user_id, $page['id']);
+                                            if (in_array(true, $permissions, true)) {
+                                                $hasReportAccess = true;
+                                                if (!isset($reportSubmenus[$key])) {
+                                                    $reportSubmenus[$key] = [
+                                                        'title' => $subCategoryTitle,
+                                                        'pages' => []
+                                                    ];
+                                                }
+                                                $reportSubmenus[$key]['pages'][] = $page;
+                                            }
+                                        }
+                                    }
+
+                                    if ($hasReportAccess): ?>
+                                        <li class="nav-item dropdown">
+                                            <a class="nav-link dropdown-toggle arrow-none" href="#" role="button">
+                                                <i class="uil-layers me-2"></i> Reports <div class="arrow-down"></div>
+                                            </a>
+                                            <div class="dropdown-menu">
+                                                <?php foreach ($reportSubmenus as $key => $submenu):
+                                                    if (!empty($submenu['pages'])): ?>
+                                                        <div class="dropdown">
+                                                            <a class="dropdown-item dropdown-toggle arrow-none" href="#">
+                                                                <?php echo $submenu['title']; ?>
+                                                                <div class="arrow-down"></div>
+                                                            </a>
+                                                            <div class="dropdown-menu">
+                                                                <?php foreach ($submenu['pages'] as $page):
+                                                                    $permissions = $USER_PERMISSION->hasPermission($user_id, $page['id']);
+                                                                    if (in_array(true, $permissions, true)): ?>
+                                                                        <a class="dropdown-item"
+                                                                            href="<?php echo $page['page_url'] . '?page_id=' . $page['id']; ?>">
+                                                                            <?php if (!empty($page['page_icon'])): ?>
+                                                                                <i class="<?php echo htmlspecialchars($page['page_icon']); ?> me-2"></i>
+                                                                            <?php endif; ?>
+                                                                            <?php echo $page['page_name']; ?>
+                                                                        </a>
+                                                                    <?php endif;
+                                                                endforeach; ?>
+                                                            </div>
+                                                        </div>
+                                                    <?php endif;
+                                                endforeach; ?>
+                                            </div>
+                                        </li>
+                                        <?php
+                                    endif;
+                                else: // Other Categories
+                                    $hasAnyPermission = false;
+                                    $visiblePages = [];
+
+                                    // Filter pages to only those the user has permission for
+                                    foreach ($categoryPages as $page) {
+                                        // Always allow access to profile.php for logged-in users
+                                        if (basename($page['page_url']) === 'profile.php') {
+                                            $visiblePages[] = $page;
+                                            $hasAnyPermission = true;
+                                            continue;
+                                        }
+
+                                        // Check permissions for other pages
+                                        $permissions = $USER_PERMISSION->hasPermission($user_id, $page['id']);
+                                        if (in_array(true, $permissions, true)) {
+                                            $visiblePages[] = $page;
+                                            $hasAnyPermission = true;
+                                        }
+                                    }
+
+                                    if ($hasAnyPermission): ?>
+                                        <li class="nav-item dropdown">
+                                            <a class="nav-link dropdown-toggle arrow-none" href="#" role="button">
+                                                <i class="<?php echo $category['icon']; ?> me-2"></i> <?php echo $category['name']; ?>
+                                                <div class="arrow-down"></div>
+                                            </a>
+                                            <?php if (count($visiblePages) <= 4): ?>
+                                                <div class="dropdown-menu">
+                                                    <?php foreach ($visiblePages as $page):
+                                                        $permissions = $USER_PERMISSION->hasPermission($user_id, $page['id']);
+                                                        if (in_array(true, $permissions, true)): ?>
                                                             <a class="dropdown-item"
                                                                 href="<?php echo $page['page_url'] . '?page_id=' . $page['id']; ?>">
                                                                 <?php if (!empty($page['page_icon'])): ?>
@@ -351,20 +354,38 @@ if ($homeViewMode === 'nav_buttons' || $homeViewMode === 'header') {
                                                                 <?php endif; ?>
                                                                 <?php echo $page['page_name']; ?>
                                                             </a>
-                                                        </div>
-                                                <?php endif;
-                                                endforeach; ?>
-                                            </div>
-                                        </div>
-                                    </li>
-                        <?php
+                                                        <?php endif;
+                                                    endforeach; ?>
+                                                </div>
+                                            <?php else: ?>
+                                                <div class="dropdown-menu mega-dropdown-menu px-2 dropdown-mega-menu-xl">
+                                                    <div class="row">
+                                                        <?php foreach ($visiblePages as $page):
+                                                            $permissions = $USER_PERMISSION->hasPermission($user_id, $page['id']);
+                                                            if (in_array(true, $permissions, true)): ?>
+                                                                <div class="col-lg-3">
+                                                                    <a class="dropdown-item"
+                                                                        href="<?php echo $page['page_url'] . '?page_id=' . $page['id']; ?>">
+                                                                        <?php if (!empty($page['page_icon'])): ?>
+                                                                            <i class="<?php echo htmlspecialchars($page['page_icon']); ?> me-2"></i>
+                                                                        <?php endif; ?>
+                                                                        <?php echo $page['page_name']; ?>
+                                                                    </a>
+                                                                </div>
+                                                            <?php endif;
+                                                        endforeach; ?>
+                                                    </div>
+                                                </div>
+                                            <?php endif; ?>
+                                        </li>
+                                        <?php
+                                    endif;
                                 endif;
-                            endif;
-                        endforeach; ?>
-                    </ul>
-                </div>
-            </nav>
+                            endforeach; ?>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
         </div>
-    </div>
     <?php } ?>
 </header>

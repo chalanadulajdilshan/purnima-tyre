@@ -291,6 +291,7 @@ $assignment_number = 'CDA-' . str_pad($lastId, 5, "0", STR_PAD_LEFT);
                                     <th>Assignment No</th>
                                     <th>Company</th>
                                     <th>Receipt No</th>
+                                    <th>My Numbers</th>
                                     <th>Issued Date</th>
                                     <th>Date Created</th>
                                     <th>Action</th>
