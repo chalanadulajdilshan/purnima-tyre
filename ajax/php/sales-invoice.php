@@ -90,7 +90,7 @@ if (isset($_POST['create'])) {
 
     $paymentType = $_POST['payment_type'];
 
-    $departmentId = isset($_POST['department_id']) ? (int)$_POST['department_id'] : 0;
+    $departmentId = isset($_POST['department_id']) ? (int) $_POST['department_id'] : 0;
     $stockErrors = [];
 
     if (!empty($items) && $departmentId > 0) {
@@ -106,8 +106,8 @@ if (isset($_POST['create'])) {
                 continue;
             }
 
-            $itemId = (int)$item['item_id'];
-            $qtyForStock = (float)$item['qty'];
+            $itemId = (int) $item['item_id'];
+            $qtyForStock = (float) $item['qty'];
             $effectiveDepartmentId = $departmentId;
 
             if (!empty($item['arn_no'])) {
@@ -115,9 +115,9 @@ if (isset($_POST['create'])) {
                 $arnCheckId = $ARN_MASTER_CHECK->getArnIdByArnNo($item['arn_no']);
 
                 if ($arnCheckId) {
-                    $deptResult = $db->readQuery("SELECT department_id FROM stock_item_tmp WHERE arn_id = '" . (int)$arnCheckId . "' AND item_id = '" . $itemId . "' LIMIT 1");
+                    $deptResult = $db->readQuery("SELECT department_id FROM stock_item_tmp WHERE arn_id = '" . (int) $arnCheckId . "' AND item_id = '" . $itemId . "' LIMIT 1");
                     if ($deptRow = mysqli_fetch_assoc($deptResult)) {
-                        $effectiveDepartmentId = (int)$deptRow['department_id'];
+                        $effectiveDepartmentId = (int) $deptRow['department_id'];
                     }
                 }
             }
@@ -157,7 +157,7 @@ if (isset($_POST['create'])) {
 
         // Treat discount as a fixed value per unit
         if (isset($item['discount'])) {
-            $discount_per_unit = (float)$item['discount'];
+            $discount_per_unit = (float) $item['discount'];
         } else {
             $discount_per_unit = 0;
         }
@@ -288,7 +288,7 @@ if (isset($_POST['create'])) {
         foreach ($items as $item) {
 
             // Treat discount as a fixed value per unit
-            $item_discount_per_unit = isset($item['discount']) ? (float)$item['discount'] : 0;
+            $item_discount_per_unit = isset($item['discount']) ? (float) $item['discount'] : 0;
 
             $ITEM_MASTER = new ItemMaster($item['item_id']);
 
@@ -411,12 +411,12 @@ if (isset($_POST['create'])) {
                 if (is_array($payments)) {
                     foreach ($payments as $payment) {
                         $INVOICE_PAYMENT = new InvoicePayment(NULL);
-                        $INVOICE_PAYMENT->invoice_id  = $invoiceTableId;
-                        $INVOICE_PAYMENT->method_id   = $payment['method_id'];
-                        $INVOICE_PAYMENT->amount      = $payment['amount'];
+                        $INVOICE_PAYMENT->invoice_id = $invoiceTableId;
+                        $INVOICE_PAYMENT->method_id = $payment['method_id'];
+                        $INVOICE_PAYMENT->amount = $payment['amount'];
                         $INVOICE_PAYMENT->reference_no = $payment['reference_no'] ?? null;
-                        $INVOICE_PAYMENT->bank_name    = $pssayment['bank_name'] ?? null;
-                        $INVOICE_PAYMENT->cheque_date  = $payment['cheque_date'] ?? null;
+                        $INVOICE_PAYMENT->bank_name = $payment['bank_name'] ?? null;
+                        $INVOICE_PAYMENT->cheque_date = $payment['cheque_date'] ?? null;
 
                         $res = $INVOICE_PAYMENT->create();
                     }
@@ -592,8 +592,8 @@ if (isset($_POST['action']) && $_POST['action'] == 'cancel') {
             if (strpos($item['item_name'], '|ARN:') !== false) {
                 preg_match('/\|ARN:(\d+)\|DEPT:(\d+)/', $item['item_name'], $matches);
                 if (isset($matches[1]) && isset($matches[2])) {
-                    $arnId = (int)$matches[1];
-                    $arnDepartmentId = (int)$matches[2];
+                    $arnId = (int) $matches[1];
+                    $arnDepartmentId = (int) $matches[2];
                 }
             }
 
@@ -646,7 +646,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'cancel') {
         $AUDIT_LOG->description = 'CANCEL INVOICE NO #' . $SALES_INVOICE->invoice_no;
         $AUDIT_LOG->user_id = $_SESSION['id'];
         $AUDIT_LOG->created_at = date("Y-m-d H:i:s");
-        $result =   $AUDIT_LOG->create();
+        $result = $AUDIT_LOG->create();
 
         if ($result) {
             echo json_encode(['status' => 'success']);

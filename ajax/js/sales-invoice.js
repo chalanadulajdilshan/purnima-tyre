@@ -1552,17 +1552,24 @@ jQuery(document).ready(function () {
 
 
 
+        $("#paymentModal").modal("hide");
+
+        // Use invoice_id from server response for the print URL
+        var savedInvoiceId = res.invoice_id || "";
+        window.open("invoice.php?invoice_no=" + savedInvoiceId, "_blank");
+
         swal({
           title: "Success!",
           text: "Invoice saved successfully!",
           type: "success",
-          timer: 3000,
+          timer: 2000,
           showConfirmButton: false,
         });
 
-        $("#paymentModal").modal("hide");
-        window.open("invoice.php?invoice_no=" + invoiceId, "_blank");
-        setTimeout(() => location.reload(), 3000);
+        // Reload page after success message
+        setTimeout(function () {
+          location.reload();
+        }, 2000);
       },
       error: function (xhr) {
         $(".someBlock").preloader("remove");
