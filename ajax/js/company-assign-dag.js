@@ -121,12 +121,22 @@ jQuery(document).ready(function () {
         }
     }
 
-    // Update row color based on status
+    // Update row color and date disabled state based on status
     $(document).on("change", ".item-company-status", function () {
-        if ($(this).val() === 'Rejected') {
-            $(this).closest("tr").addClass("table-danger");
+        let status = $(this).val();
+        let tr = $(this).closest("tr");
+        let dateInput = tr.find(".item-company-received-date");
+
+        if (status === 'Rejected') {
+            tr.addClass("table-danger");
         } else {
-            $(this).closest("tr").removeClass("table-danger");
+            tr.removeClass("table-danger");
+        }
+
+        if (status === 'Processing') {
+            dateInput.val('').prop('disabled', true);
+        } else {
+            dateInput.prop('disabled', false);
         }
     });
 
@@ -242,9 +252,16 @@ jQuery(document).ready(function () {
                         $("#dagItemsBody").append(rowHtml);
                     });
 
-                    // Initialize datepickers
+                    // Initialize datepickers and disabled state
                     $(".date-picker-date").datepicker({
                         dateFormat: 'yy-mm-dd'
+                    });
+
+                    $("#dagItemsBody tr").each(function () {
+                        let status = $(this).find(".item-company-status").val();
+                        if (status === 'Processing') {
+                            $(this).find(".item-company-received-date").prop('disabled', true);
+                        }
                     });
 
                     updateToggleState();

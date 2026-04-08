@@ -2,6 +2,10 @@
 <?php
 include 'class/include.php';
 include 'auth.php';
+
+$DAG_INVOICE = new DagInvoice(NULL);
+$nextId = $DAG_INVOICE->getNextId();
+$invoice_number = 'DINV-' . str_pad($nextId, 5, "0", STR_PAD_LEFT);
 ?>
 <html lang="en">
 
@@ -49,7 +53,11 @@ include 'auth.php';
                                 </a>
                             <?php endif; ?>
 
-
+                            <?php if ($PERMISSIONS['delete_page'] ?? true): ?>
+                                <a href="#" class="btn btn-danger" id="deleteInvoice" style="display: none;">
+                                    <i class="uil uil-trash-alt me-1"></i> Delete
+                                </a>
+                            <?php endif; ?>
 
                             <a href="#" class="btn btn-secondary" id="print" target="_blank" style="display: none;">
                                 <i class="uil uil-print me-1"></i> Print
@@ -83,9 +91,15 @@ include 'auth.php';
                                             </div>
                                         </div>
                                         <div class="flex-grow-1 overflow-hidden">
-                                            <h5 class="font-size-16 mb-1">Step 1: Customer Details</h5>
-                                            <p class="text-muted text-truncate mb-0">Select the customer for
-                                                the DAG invoice</p>
+                                            <h5 class="font-size-16 mb-1">Step 1: Invoice Details</h5>
+                                            <p class="text-muted text-truncate mb-0">Set invoice number, customer, and
+                                                payment mode</p>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <button class="btn btn-outline-info btn-sm" type="button"
+                                                data-bs-toggle="modal" data-bs-target="#invoiceSearchModal">
+                                                <i class="uil uil-search me-1"></i> Search Invoice
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -93,7 +107,14 @@ include 'auth.php';
                                 <div class="p-4 pt-0">
                                     <form id="form-data" autocomplete="off">
                                         <div class="row">
-                                            <div class="col-md-3">
+                                            <div class="col-md-2">
+                                                <label class="form-label" for="invoice_number">Invoice Number</label>
+                                                <input id="invoice_number" name="invoice_number" type="text"
+                                                    value="<?php echo $invoice_number; ?>"
+                                                    class="form-control mb-3" readonly>
+                                            </div>
+
+                                            <div class="col-md-2">
                                                 <label class="form-label" for="customer_code">Customer Code
                                                     <span class="text-danger">*</span></label>
                                                 <div class="input-group mb-3">
@@ -106,14 +127,32 @@ include 'auth.php';
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <label for="customer_name" class="form-label">Customer Name
                                                     <span class="text-danger">*</span></label>
                                                 <input id="customer_name" name="customer_name" type="text"
                                                     class="form-control mb-3" placeholder="Select Customer" readonly>
                                             </div>
 
+                                            <div class="col-md-5">
+                                                <label class="form-label">Payment Mode</label>
+                                                <div class="d-flex gap-3 mt-2">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input payment-mode" type="radio"
+                                                            name="payment_mode" id="pay_cash" value="cash" checked>
+                                                        <label class="form-check-label" for="pay_cash">Cash</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input payment-mode" type="radio"
+                                                            name="payment_mode" id="pay_credit" value="credit">
+                                                        <label class="form-check-label"
+                                                            for="pay_credit">Credit</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                             <input type="hidden" id="customer_id" name="customer_id">
+                                            <input type="hidden" id="invoice_id" name="id" value="0">
                                         </div>
                                     </form>
                                 </div>
@@ -135,20 +174,24 @@ include 'auth.php';
                                             </div>
                                         </div>
                                         <div class="flex-grow-1 overflow-hidden">
-                                            <h5 class="font-size-16 mb-1">Step 2: DAG Items</h5>
-                                            <p class="text-muted text-truncate mb-0">Set price and discount
-                                                for each DAG item</p>
-                                        </div>
-                                        <div class="flex-shrink-0">
-                                            <button class="btn btn-outline-info btn-sm" type="button"
-                                                data-bs-toggle="modal" data-bs-target="#dagInvoiceSearchModal">
-                                                <i class="uil uil-search me-1"></i> Search Invoice
-                                            </button>
+                                            <h5 class="font-size-16 mb-1">Step 2: Add DAG Items</h5>
+                                            <p class="text-muted text-truncate mb-0">Search DAGs by My Number and add
+                                                them to the invoice</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="p-4 pt-0">
+                                    <div class="row mb-4 align-items-end">
+                                        <div class="col-md-5">
+                                            <label class="form-label" for="search_dag">Find DAG by Search</label>
+                                            <button class="btn btn-secondary w-100" type="button"
+                                                data-bs-toggle="modal" data-bs-target="#dagItemSearchModal">
+                                                <i class="uil uil-search"></i> Select DAG Items
+                                            </button>
+                                        </div>
+                                    </div>
+
                                     <div class="table-responsive">
                                         <table class="table table-bordered mb-0" id="dagInvoiceTable">
                                             <thead class="table-light">
@@ -253,7 +296,6 @@ include 'auth.php';
                                 <th>#</th>
                                 <th>Code</th>
                                 <th>Customer Name</th>
-                                <th>DAG Items</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -265,37 +307,78 @@ include 'auth.php';
         </div>
     </div>
 
-    <!-- DAG Invoice Search Modal (View / Edit / Delete / Print) -->
-    <div class="modal fade" id="dagInvoiceSearchModal" tabindex="-1" role="dialog"
-        aria-labelledby="dagInvoiceModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+    <!-- DAG Item Search Modal -->
+    <div class="modal fade" id="dagItemSearchModal" tabindex="-1" role="dialog" aria-labelledby="dagItemModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="dagInvoiceModalLabel">DAG Invoices</h5>
+                    <h5 class="modal-title" id="dagItemModalLabel">Select DAG Item</h5>
                     <div class="input-group ms-3" style="max-width: 400px;">
-                        <input type="text" id="dagInvoiceSearchInput" class="form-control"
-                            placeholder="Search by DAG No / Customer">
-                        <button class="btn btn-outline-primary" type="button" id="searchDagInvoiceBtn">
+                        <input type="text" id="dagItemSearchInput" class="form-control"
+                            placeholder="Search by My Number / Serial No / DAG No">
+                        <button class="btn btn-outline-primary" type="button" id="searchDagItemBtn">
                             Search
                         </button>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <table id="dagInvoiceSelectionTable"
+                    <table id="dagItemSelectionTable"
                         class="table table-bordered table-hover dt-responsive nowrap w-100">
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Customer Name</th>
-                                <th>DAG No</th>
+                                <th>DAG Number</th>
+                                <th>My Number</th>
+                                <th>Customer</th>
+                                <th>Size</th>
+                                <th>Brand</th>
                                 <th>Serial No</th>
-                                <th>Items</th>
-                                <th class="text-end">Total</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody id="dagInvoiceSelectionTableBody">
+                        <tbody id="dagItemSelectionTableBody">
+                            <!-- DAGs loaded here via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invoice Search Modal -->
+    <div class="modal fade" id="invoiceSearchModal" tabindex="-1" role="dialog"
+        aria-labelledby="invoiceSearchModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="invoiceSearchModalLabel">DAG Invoices</h5>
+                    <div class="input-group ms-3" style="max-width: 400px;">
+                        <input type="text" id="invoiceSearchInput" class="form-control"
+                            placeholder="Search by Invoice No / Customer">
+                        <button class="btn btn-outline-primary" type="button" id="searchInvoiceBtn">
+                            Search
+                        </button>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table id="invoiceSelectionTable"
+                        class="table table-bordered table-hover dt-responsive nowrap w-100">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Invoice No</th>
+                                <th>Customer</th>
+                                <th>Items</th>
+                                <th>Payment</th>
+                                <th class="text-end">Total</th>
+                                <th>Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="invoiceSelectionTableBody">
                         </tbody>
                     </table>
                 </div>
@@ -306,13 +389,12 @@ include 'auth.php';
     <!-- Right bar overlay-->
     <div class="rightbar-overlay"></div>
 
-    <!-- JAVASCRIPT -->
-    <script src="assets/libs/jquery/jquery.min.js"></script>
-    <script src="ajax/js/common.js"></script>
-    <script src="ajax/js/dag-invoice.js"></script>
-
     <!-- include main js  -->
     <?php include 'main-js.php' ?>
+
+    <!-- JAVASCRIPT -->
+    <script src="ajax/js/common.js"></script>
+    <script src="ajax/js/dag-invoice.js"></script>
 
 </body>
 

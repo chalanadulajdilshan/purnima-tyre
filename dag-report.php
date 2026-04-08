@@ -29,6 +29,8 @@ $reports = $DAG_CUSTOMER->getReportData();
     <link href="assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css" />
     <link href="assets/libs/datatables.net-responsive-bs4/css/responsive.bootstrap4.min.css" rel="stylesheet"
         type="text/css" />
+    <link href="assets/libs/datatables.net-buttons-bs4/css/buttons.bootstrap4.min.css" rel="stylesheet"
+        type="text/css" />
 
     <style>
         .badge-dot {
@@ -171,10 +173,8 @@ $reports = $DAG_CUSTOMER->getReportData();
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between mb-4">
                                         <h4 class="card-title">DAG Lifecycle Report</h4>
-                                        <div>
-                                            <button class="btn btn-danger btn-sm" onclick="window.print()">
-                                                <i class="mdi mdi-printer me-1"></i> Print
-                                            </button>
+                                        <div id="datatable-buttons-container">
+                                            <!-- DataTables buttons will be rendered here if manually moved, or using standard dom -->
                                         </div>
                                     </div>
 
@@ -186,6 +186,7 @@ $reports = $DAG_CUSTOMER->getReportData();
                                                     <th style="width:30px;"></th>
                                                     <th>DAG No</th>
                                                     <th>Customer & Issued</th>
+                                                    <th>Vehicle No</th>
                                                     <th>Tyre Details</th>
                                                     <th>DAG Received</th>
                                                     <th>Invoice Status</th>
@@ -215,9 +216,23 @@ $reports = $DAG_CUSTOMER->getReportData();
     <!-- JAVASCRIPT -->
     <?php include 'main-js.php' ?>
 
+    <script>
+        const COMPANY_LOGO = '<?php echo $logoPath; ?>';
+        const COMPANY_NAME = '<?php echo htmlspecialchars($COMPANY->name); ?>';
+    </script>
+
     <!-- Required datatable js -->
     <script src="assets/libs/datatables.net/js/jquery.dataTables.min.js"></script>
     <script src="assets/libs/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
+    
+    <!-- DataTables Buttons JS -->
+    <script src="assets/libs/jszip/jszip.min.js"></script>
+    <script src="assets/libs/datatables.net-buttons/js/dataTables.buttons.min.js"></script>
+    <script src="assets/libs/datatables.net-buttons-bs4/js/buttons.bootstrap4.min.js"></script>
+    <script src="assets/libs/datatables.net-buttons/js/buttons.html5.min.js"></script>
+    <script src="assets/libs/datatables.net-buttons/js/buttons.print.min.js"></script>
+    <script src="assets/libs/datatables.net-buttons/js/buttons.colVis.min.js"></script>
+
     <script src="assets/libs/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
     <script src="assets/libs/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
 
