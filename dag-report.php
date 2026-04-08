@@ -173,9 +173,7 @@ $reports = $DAG_CUSTOMER->getReportData();
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between mb-4">
                                         <h4 class="card-title">DAG Lifecycle Report</h4>
-                                        <div id="datatable-buttons-container">
-                                            <!-- DataTables buttons will be rendered here if manually moved, or using standard dom -->
-                                        </div>
+
                                     </div>
 
                                     <div class="table-responsive">

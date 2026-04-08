@@ -14,52 +14,8 @@ jQuery(document).ready(function ($) {
         paging: true,
         lengthMenu: [10, 25, 50, 100],
         pageLength: 25,
-        dom: '<"d-flex justify-content-between align-items-center mb-0"lBf>rtip',
-        buttons: [
-            {
-                extend: 'excelHtml5',
-                text: '<i class="mdi mdi-file-excel-outline me-1"></i> Excel',
-                className: 'btn btn-success btn-sm ms-2',
-                exportOptions: {
-                    columns: [1, 2, 3, 4, 5, 6, 7]
-                },
-                title: 'DAG Lifecycle Report - ' + new Date().toLocaleDateString()
-            },
-            {
-                extend: 'print',
-                text: '<i class="mdi mdi-printer me-1"></i> Print',
-                className: 'btn btn-danger btn-sm ms-2',
-                exportOptions: {
-                    columns: [1, 2, 3, 4, 5, 6, 7]
-                },
-                customize: function (win) {
-                    $(win.document.body)
-                        .css('font-size', '10pt')
-                        .prepend(
-                            '<div class="d-flex align-items-center mb-4" style="border-bottom: 2px solid #333; padding-bottom: 15px;">' +
-                            '<img src="' + window.location.origin + '/' + COMPANY_LOGO + '" style="height: 80px; margin-right: 20px;" />' +
-                            '<div>' +
-                            '<h2 style="margin: 0; color: #333;">' + COMPANY_NAME + '</h2>' +
-                            '<h4 style="margin: 5px 0 0 0; color: #666;">DAG Lifecycle Report</h4>' +
-                            '<p style="margin: 5px 0 0 0; font-size: 12px; color: #888;">Report Generated On: ' + new Date().toLocaleString() + '</p>' +
-                            '</div>' +
-                            '</div>'
-                        );
-
-                    $(win.document.body).find('table')
-                        .addClass('compact')
-                        .css('font-size', 'inherit');
-                    
-                    // Style the table for professional look
-                    $(win.document.body).find('table thead th').css({
-                        'background-color': '#f8f9fa',
-                        'color': '#333',
-                        'font-weight': 'bold',
-                        'border': '1px solid #ddd'
-                    });
-                }
-            }
-        ],
+        dom: '<"d-flex justify-content-between align-items-center mb-0"lf>rtip',
+        buttons: [],
         language: {
             emptyTable: "No DAG records found for the selected filters",
             info: "Showing _START_ to _END_ of _TOTAL_ entries",
@@ -76,8 +32,7 @@ jQuery(document).ready(function ($) {
         order: [[1, 'desc']]
     });
 
-    // Move buttons to the specific container for cleaner UI
-    dagReportTable.buttons().container().appendTo('#datatable-buttons-container');
+    // Buttons removed by request
 
     // Filter button
     $("#btn-filter").click(function (e) {
