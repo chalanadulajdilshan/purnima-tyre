@@ -1,4 +1,3 @@
-<!doctype html>
 <?php
 include 'class/include.php';
 
@@ -6,21 +5,40 @@ if (!isset($_SESSION)) {
     session_start();
 }
 
-$customer_id = isset($_GET['customer_id']) ? (int) $_GET['customer_id'] : 0;
+$invoice_id = isset($_GET['invoice_id']) ? (int) $_GET['invoice_id'] : 0;
+
 $US = new User($_SESSION['id']);
 $COMPANY_PROFILE = new CompanyProfile($US->company_id);
 
-$CUSTOMER = new CustomerMaster($customer_id);
-$DAG_CUSTOMER = new DagCustomer(NULL);
-$dag_items = $DAG_CUSTOMER->getByCustomerId($customer_id);
+if ($invoice_id > 0) {
+    $INVOICE = new DagInvoice($invoice_id);
+    $dag_items = $INVOICE->getItems();
+    $customer_id = $INVOICE->customer_id;
+    $payment_mode = $INVOICE->payment_mode ?? 'cash';
+    $invoice_number = $INVOICE->invoice_number;
+    $invoice_date = $INVOICE->invoice_date;
+} else {
+    // Fallback: legacy support via ids parameter
+    $ids_param = isset($_GET['ids']) ? $_GET['ids'] : '';
+    $customer_id = isset($_GET['customer_id']) ? (int) $_GET['customer_id'] : 0;
+    $payment_mode = isset($_GET['payment_mode']) ? $_GET['payment_mode'] : 'cash';
+    $invoice_number = '';
+    $invoice_date = date('Y-m-d');
 
-// Collect DAG numbers for bill number display
-$dagNumbers = [];
-foreach ($dag_items as $item) {
-    $dagNumbers[] = $item['dag_number'] ?: 'DAG-' . str_pad($item['id'], 5, '0', STR_PAD_LEFT);
+    $DAG_CUSTOMER = new DagCustomer(NULL);
+    if (!empty($ids_param)) {
+        $dag_items = $DAG_CUSTOMER->getByIds($ids_param);
+        if (!empty($dag_items)) {
+            $customer_id = $dag_items[0]['customer_id'];
+        }
+    } else {
+        $dag_items = $DAG_CUSTOMER->getByCustomerId($customer_id);
+    }
 }
-$billNumber = implode(', ', $dagNumbers);
+
+$CUSTOMER = new CustomerMaster($customer_id);
 ?>
+<!doctype html>
 <html lang="en">
 
 <head>
@@ -141,8 +159,13 @@ $billNumber = implode(', ', $dagNumbers);
                     </div>
                     <div class="col-sm-6 text-sm-end">
                         <h4 class="font-size-16 mb-2">DAG INVOICE</h4>
-                        <p class="mb-1"><strong>Bill No:</strong>
-                            <?php echo htmlspecialchars($billNumber); ?>
+                        <?php if ($invoice_number): ?>
+                            <p class="mb-1"><strong>Invoice No:</strong>
+                                <?php echo htmlspecialchars($invoice_number); ?>
+                            </p>
+                        <?php endif; ?>
+                        <p class="mb-1"><strong>Invoice Date:</strong>
+                            <?php echo $invoice_date ? date('d M, Y', strtotime($invoice_date)) : date('d M, Y'); ?>
                         </p>
                         <p class="mb-1"><strong>Print Date:</strong>
                             <?php echo date('d M, Y'); ?>
@@ -153,6 +176,15 @@ $billNumber = implode(', ', $dagNumbers);
                         <p class="mb-0"><strong>Customer Name:</strong>
                             <?php echo htmlspecialchars($CUSTOMER->name . (isset($CUSTOMER->name_2) ? ' ' . $CUSTOMER->name_2 : '')); ?>
                         </p>
+                        <div class="mt-2 d-flex justify-content-end gap-3">
+                            <span><strong>Mode:</strong></span>
+                            <span>
+                                <?php echo ($payment_mode == 'cash') ? '<i class="mdi mdi-checkbox-marked-outline text-success"></i>' : '<i class="mdi mdi-checkbox-blank-outline"></i>'; ?> Cash
+                            </span>
+                            <span>
+                                <?php echo ($payment_mode == 'credit') ? '<i class="mdi mdi-checkbox-marked-outline text-success"></i>' : '<i class="mdi mdi-checkbox-blank-outline"></i>'; ?> Credit
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -163,6 +195,7 @@ $billNumber = implode(', ', $dagNumbers);
                         <thead>
                             <tr>
                                 <th style="width: 35px;">#</th>
+                                <th>My Number</th>
                                 <th>Company</th>
                                 <th>Size</th>
                                 <th>Brand</th>
@@ -191,7 +224,6 @@ $billNumber = implode(', ', $dagNumbers);
                                     $discountTotal += $discountAmount;
                                     $grandTotal += $total;
 
-                                    $dagNumber = $item['dag_number'] ?: 'DAG-' . str_pad($item['id'], 5, '0', STR_PAD_LEFT);
                                     $companyName = $item['company_name'] ?? '-';
                                     ?>
                                     <tr>
@@ -199,16 +231,19 @@ $billNumber = implode(', ', $dagNumbers);
                                             <?php echo str_pad($index + 1, 2, '0', STR_PAD_LEFT); ?>
                                         </td>
                                         <td>
+                                            <?php echo htmlspecialchars($item['my_number'] ?? ''); ?>
+                                        </td>
+                                        <td>
                                             <?php echo htmlspecialchars($companyName); ?>
                                         </td>
                                         <td>
-                                            <?php echo htmlspecialchars($item['size']); ?>
+                                            <?php echo htmlspecialchars($item['size'] ?? ''); ?>
                                         </td>
                                         <td>
-                                            <?php echo htmlspecialchars($item['brand']); ?>
+                                            <?php echo htmlspecialchars($item['brand'] ?? ''); ?>
                                         </td>
                                         <td>
-                                            <?php echo htmlspecialchars($item['serial_no']); ?>
+                                            <?php echo htmlspecialchars($item['serial_no'] ?? ''); ?>
                                         </td>
                                         <td>
                                             <?php
@@ -229,7 +264,7 @@ $billNumber = implode(', ', $dagNumbers);
                                     <?php
                                 }
                             } else {
-                                echo "<tr><td colspan='9' class='text-center'>No DAG items found for this customer</td></tr>";
+                                echo "<tr><td colspan='10' class='text-center'>No DAG items found</td></tr>";
                             }
                             ?>
                         </tbody>

@@ -14,13 +14,60 @@ jQuery(document).ready(function ($) {
         paging: true,
         lengthMenu: [10, 25, 50, 100],
         pageLength: 25,
+        dom: '<"d-flex justify-content-between align-items-center mb-0"lBf>rtip',
+        buttons: [
+            {
+                extend: 'excelHtml5',
+                text: '<i class="mdi mdi-file-excel-outline me-1"></i> Excel',
+                className: 'btn btn-success btn-sm ms-2',
+                exportOptions: {
+                    columns: [1, 2, 3, 4, 5, 6, 7]
+                },
+                title: 'DAG Lifecycle Report - ' + new Date().toLocaleDateString()
+            },
+            {
+                extend: 'print',
+                text: '<i class="mdi mdi-printer me-1"></i> Print',
+                className: 'btn btn-danger btn-sm ms-2',
+                exportOptions: {
+                    columns: [1, 2, 3, 4, 5, 6, 7]
+                },
+                customize: function (win) {
+                    $(win.document.body)
+                        .css('font-size', '10pt')
+                        .prepend(
+                            '<div class="d-flex align-items-center mb-4" style="border-bottom: 2px solid #333; padding-bottom: 15px;">' +
+                            '<img src="' + window.location.origin + '/' + COMPANY_LOGO + '" style="height: 80px; margin-right: 20px;" />' +
+                            '<div>' +
+                            '<h2 style="margin: 0; color: #333;">' + COMPANY_NAME + '</h2>' +
+                            '<h4 style="margin: 5px 0 0 0; color: #666;">DAG Lifecycle Report</h4>' +
+                            '<p style="margin: 5px 0 0 0; font-size: 12px; color: #888;">Report Generated On: ' + new Date().toLocaleString() + '</p>' +
+                            '</div>' +
+                            '</div>'
+                        );
+
+                    $(win.document.body).find('table')
+                        .addClass('compact')
+                        .css('font-size', 'inherit');
+                    
+                    // Style the table for professional look
+                    $(win.document.body).find('table thead th').css({
+                        'background-color': '#f8f9fa',
+                        'color': '#333',
+                        'font-weight': 'bold',
+                        'border': '1px solid #ddd'
+                    });
+                }
+            }
+        ],
         language: {
             emptyTable: "No DAG records found for the selected filters",
             info: "Showing _START_ to _END_ of _TOTAL_ entries",
             infoEmpty: "No entries found",
             infoFiltered: "(filtered from _MAX_ total entries)",
-            lengthMenu: "Show _MENU_ entries",
-            search: "Search:",
+            lengthMenu: "Show _MENU_",
+            search: "_INPUT_",
+            searchPlaceholder: "Search...",
             zeroRecords: "No matching records found"
         },
         columnDefs: [
@@ -28,6 +75,9 @@ jQuery(document).ready(function ($) {
         ],
         order: [[1, 'desc']]
     });
+
+    // Move buttons to the specific container for cleaner UI
+    dagReportTable.buttons().container().appendTo('#datatable-buttons-container');
 
     // Filter button
     $("#btn-filter").click(function (e) {
@@ -113,39 +163,46 @@ jQuery(document).ready(function ($) {
                 }
 
                 var rowClass = '';
-                if (r.is_cancelled == 1) rowClass = 'table-danger';
-                else if (r.is_invoiced == 1) rowClass = 'table-success';
+                if (r.is_cancelled == 1) rowClass = 'table-danger text-danger';
+                else if (r.is_invoiced == 1 && r.active_invoice_found) rowClass = 'table-success';
 
                 // Invoice status badge for the master row
                 var invBadge = '';
                 if (r.is_cancelled == 1) {
-                    invBadge = '<span class="badge bg-danger font-size-12">Cancelled</span>';
-                } else if (r.is_invoiced == 1) {
+                    invBadge = '<span class="badge bg-danger font-size-12">DAG Cancelled</span>';
+                } else if (r.active_invoice_found) {
                     invBadge = '<span class="badge bg-success font-size-12">Invoiced</span>';
+                    invBadge += '<br><small class="text-primary fw-bold">' + escHtml(r.invoice_number) + '</small>';
                 } else {
                     invBadge = '<span class="badge bg-warning font-size-12">Not Invoiced</span>';
+                    if (r.invoice_history && r.invoice_history.length > 0) {
+                        invBadge += '<br><small class="text-muted">History: ' + r.invoice_history.length + ' bills</small>';
+                    }
                 }
 
-                // Add row and attach nested assignments data to the node
+                // Add row and store metadata on the node
                 var rowNode = dagReportTable.row.add([
-                    '<span class="mdi mdi-plus-circle-outline text-primary" style="font-size:18px; cursor:pointer;" title="View Company Assignments"></span>',
+                    '<span class="mdi mdi-plus-circle-outline text-primary" style="font-size:18px; cursor:pointer;" title="View Details"></span>',
                     '<strong>' + escHtml(dagNumber) + '</strong><br><small class="text-muted">My#: ' + escHtml(r.my_number || '') + '</small>',
                     '<div class="timeline-info"><span class="value">' + escHtml(customerName) + '</span><br><small class="text-muted">' + escHtml(customerCode) + '</small></div>' + issuedHtml,
+                    '<strong>' + escHtml(r.vehicle_number || '-') + '</strong>',
                     '<div class="timeline-info"><span class="label">Size:</span> <span class="value">' + escHtml(r.size || '') + '</span><br><span class="label">Brand:</span> <span class="value">' + escHtml(r.brand || '') + '</span><br><span class="label">Serial:</span> <span class="value">' + escHtml(r.serial_no || '') + '</span></div>',
                     '<div class="timeline-info"><span class="value">' + fmtDate(r.dag_received_date) + '</span>' + (r.remark ? '<br><small class="text-muted">' + escHtml(r.remark) + '</small>' : '') + '</div>',
                     invBadge,
                     pricingHtml
-                ]).draw(false).node();
+                ]).node();
 
-                // Store assignments data for expansion
-                var rowData = dagReportTable.row(rowNode).data();
-                rowData._company_assignments = r.company_assignments || [];
-                dagReportTable.row(rowNode).data(rowData);
+                // Store complex data on the node
+                $(rowNode).data('assignments', r.company_assignments || []);
+                $(rowNode).data('invoice_history', r.invoice_history || []);
 
                 if (rowClass) $(rowNode).addClass(rowClass);
                 $(rowNode).find('td:first').addClass('details-control text-center').css('vertical-align', 'middle');
             });
         }
+        
+        // Draw once at the end
+        dagReportTable.draw(false);
     }
 
     // Toggle child rows on click
@@ -155,18 +212,53 @@ jQuery(document).ready(function ($) {
         var icon = $(this).find('span.mdi');
 
         if (row.child.isShown()) {
-            // Close row
             row.child.hide();
             tr.removeClass('shown');
             icon.removeClass('mdi-minus-circle-outline').addClass('mdi-plus-circle-outline');
         } else {
-            // Extend data inside row child
-            var data = row.data();
-            var assignments = data._company_assignments || [];
+            var assignments = $(tr).data('assignments') || [];
+            var invoices = $(tr).data('invoice_history') || [];
 
-            var childHtml = '<div class="p-3 bg-light rounded" style="border-left: 3px solid #5b73e8;">';
-            childHtml += '<h5 class="font-size-14 mb-3">Company Assignment History</h5>';
+            var childHtml = '<div class="p-3 bg-light rounded" style="border-left: 5px solid #5b73e8;">';
+            
+            // --- SECTION: Invoice & Billing History ---
+            childHtml += '<h5 class="font-size-14 mb-2 text-primary"><i class="mdi mdi-receipt me-1"></i> Billing & Invoice History</h5>';
+            if (invoices.length > 0) {
+                childHtml += '<div class="table-responsive mb-4"><table class="table table-sm table-bordered mb-0 bg-white">';
+                childHtml += '<thead class="table-light"><tr>' +
+                    '<th>Invoice #</th>' +
+                    '<th>Date</th>' +
+                    '<th>Payment</th>' +
+                    '<th>Cost</th>' +
+                    '<th>Price</th>' +
+                    '<th>Disc %</th>' +
+                    '<th>Total</th>' +
+                    '<th>Status</th>' +
+                    '</tr></thead><tbody>';
 
+                $.each(invoices, function (i, inv) {
+                    var statusBadge = inv.invoice_cancelled == 1 
+                        ? '<span class="badge bg-danger rounded-pill">Cancelled</span>' 
+                        : '<span class="badge bg-success rounded-pill">Active</span>';
+                    
+                    childHtml += '<tr class="' + (inv.invoice_cancelled == 1 ? 'table-light text-muted' : 'fw-bold') + '">' +
+                        '<td>' + escHtml(inv.invoice_number) + '</td>' +
+                        '<td>' + fmtDate(inv.issued_date) + '</td>' +
+                        '<td><span class="badge ' + (inv.payment_mode === 'credit' ? 'bg-warning' : 'bg-info') + '">' + escHtml(inv.payment_mode) + '</span></td>' +
+                        '<td>' + parseFloat(inv.cost).toFixed(2) + '</td>' +
+                        '<td>' + parseFloat(inv.price).toFixed(2) + '</td>' +
+                        '<td>' + parseFloat(inv.discount).toFixed(2) + '%</td>' +
+                        '<td>' + parseFloat(inv.total).toFixed(2) + '</td>' +
+                        '<td>' + statusBadge + '</td>' +
+                        '</tr>';
+                });
+                childHtml += '</tbody></table></div>';
+            } else {
+                childHtml += '<p class="text-muted mb-4 small">No invoices found for this DAG.</p>';
+            }
+
+            // --- SECTION: Company Assignments ---
+            childHtml += '<h5 class="font-size-14 mb-2 text-primary"><i class="mdi mdi-factory me-1"></i> Company Assignment History</h5>';
             if (assignments.length > 0) {
                 childHtml += '<div class="table-responsive"><table class="table table-sm table-bordered mb-0 bg-white">';
                 childHtml += '<thead class="table-light"><tr>' +

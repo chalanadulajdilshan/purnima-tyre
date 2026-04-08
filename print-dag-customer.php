@@ -7,10 +7,34 @@ if (!isset($_SESSION)) {
 }
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+$dag_number = isset($_GET['dag_number']) ? $_GET['dag_number'] : '';
+
 $US = new User($_SESSION['id']);
 $COMPANY_PROFILE = new CompanyProfile($US->company_id);
 
-$DAG_CUSTOMER = new DagCustomer($id);
+$DAG_CUSTOMER = new DagCustomer(NULL);
+$items = [];
+
+if ($dag_number) {
+    $items = $DAG_CUSTOMER->getItemsByDagNumber($dag_number);
+    if (!empty($items)) {
+        // Use the first item to populate common details
+        $DAG_CUSTOMER->__construct($items[0]['id']);
+    }
+} elseif ($id) {
+    $DAG_CUSTOMER->__construct($id);
+    $items = [$DAG_CUSTOMER->all()[0]]; // This is a bit hacky, but DagCustomer->all() returns everything. 
+    // Wait, DagCustomer doesn't have a good way to get JUST this one item as an array row easily without re-querying or using constructor properties.
+    // Let's just manually create the array for the loop if only ID is provided.
+    $items = [[
+        'id' => $DAG_CUSTOMER->id,
+        'size' => $DAG_CUSTOMER->size,
+        'brand' => $DAG_CUSTOMER->brand,
+        'serial_no' => $DAG_CUSTOMER->serial_no,
+        'dag_received_date' => $DAG_CUSTOMER->dag_received_date
+    ]];
+}
+
 $CUSTOMER = new CustomerMaster($DAG_CUSTOMER->customer_id);
 ?>
 <html lang="en">
@@ -148,18 +172,22 @@ $CUSTOMER = new CustomerMaster($DAG_CUSTOMER->customer_id);
                                 <th style="width: 50px;">#</th>
                                 <th>Size</th>
                                 <th>Brand</th>
+                                <th>My Number</th>
                                 <th>Serial No</th>
                                 <th>Received Date</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>01</td>
-                                <td><?php echo htmlspecialchars($DAG_CUSTOMER->size); ?></td>
-                                <td><?php echo htmlspecialchars($DAG_CUSTOMER->brand); ?></td>
-                                <td><?php echo htmlspecialchars($DAG_CUSTOMER->serial_no); ?></td>
-                                <td><?php echo htmlspecialchars($DAG_CUSTOMER->dag_received_date); ?></td>
-                            </tr>
+                            <?php foreach ($items as $index => $item) { ?>
+                                <tr>
+                                    <td><?php echo str_pad($index + 1, 2, "0", STR_PAD_LEFT); ?></td>
+                                    <td><?php echo htmlspecialchars($item['size']); ?></td>
+                                    <td><?php echo htmlspecialchars($item['brand']); ?></td>
+                                    <td><?php echo htmlspecialchars($item['my_number']); ?></td>
+                                    <td><?php echo htmlspecialchars($item['serial_no']); ?></td>
+                                    <td><?php echo htmlspecialchars($item['dag_received_date']); ?></td>
+                                </tr>
+                            <?php } ?>
                         </tbody>
                     </table>
                 </div>

@@ -2,6 +2,12 @@
 <?php
 include 'class/include.php';
 include 'auth.php';
+
+// Get sizes and brands for JS dropdowns
+$SIZE = new Sizes(NULL);
+$sizes = $SIZE->all();
+$BRAND = new Brand(NULL);
+$brands = $BRAND->all();
 ?>
 <html lang="en">
 
@@ -15,6 +21,56 @@ include 'auth.php';
     <meta content="<?php echo $COMPANY_PROFILE_DETAILS->name ?>" name="author" />
     <!-- include main CSS -->
     <?php include 'main-css.php' ?>
+
+    <style>
+        .step-card {
+            border-left: 3px solid #556ee6;
+        }
+
+        .dag-items-table .form-control,
+        .dag-items-table .form-select {
+            font-size: 13px;
+            padding: 0.3rem 0.5rem;
+        }
+
+        .dag-items-table th {
+            font-size: 12px;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        .dag-items-table td {
+            vertical-align: middle;
+        }
+
+        .qty-section {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            border: 1px dashed #ced4da;
+        }
+
+        #dagItemsSection {
+            display: none;
+        }
+
+        #dagItemsSection.show {
+            display: block;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 
 </head>
 
@@ -71,12 +127,12 @@ include 'auth.php';
 
                     <!-- end page title -->
 
+                    <!-- ==================== STEP 1: Customer & Common Details ==================== -->
                     <div class="row">
                         <div class="col-lg-12">
-                            <div class="card">
+                            <div class="card step-card">
 
                                 <div class="p-4">
-
                                     <div class="d-flex align-items-center">
                                         <div class="flex-shrink-0 me-3">
                                             <div class="avatar-xs">
@@ -86,28 +142,30 @@ include 'auth.php';
                                             </div>
                                         </div>
                                         <div class="flex-grow-1 overflow-hidden">
-                                            <h5 class="font-size-16 mb-1">Create DAG Customer</h5>
-                                            <p class="text-muted text-truncate mb-0">Fill all information below to
-                                                create a DAG Customer</p>
+                                            <h5 class="font-size-16 mb-1">Step 1: Customer & Common Details</h5>
+                                            <p class="text-muted text-truncate mb-0">Select customer, set date and
+                                                quantity of DAG items</p>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <button class="btn btn-outline-info btn-sm" type="button"
+                                                data-bs-toggle="modal" data-bs-target="#dagCustomerModal">
+                                                <i class="uil uil-search me-1"></i> Search Existing
+                                            </button>
                                         </div>
                                     </div>
-
                                 </div>
 
-                                <div class="p-4">
-
+                                <div class="p-4 pt-0">
                                     <form id="form-data" autocomplete="off">
                                         <div class="row">
-
-                                            <!-- Row 1: DAG Number, My Number, Size, Brand, Serial No -->
-                                            <div class="col-md-3">
-                                                <label class="form-label" for="dag_number">DAG Number</label>
-                                                <input id="dag_number" name="dag_number" type="text"
-                                                    class="form-control" placeholder="DAG Number" value="<?php $DAG = new DagCustomer(NULL);
-                                                    echo 'DAG-' . str_pad($DAG->getNextId(), 5, "0", STR_PAD_LEFT); ?>"
-                                                    readonly>
+                                            <!-- DAG Number -->
+                                            <div class="col-md-2">
+                                                <label for="dag_number_display" class="form-label">DAG Number</label>
+                                                <input id="dag_number_display" type="text" class="form-control mb-3"
+                                                    placeholder="NEW" readonly>
                                             </div>
 
+                                            <!-- Customer Code -->
                                             <div class="col-md-2">
                                                 <label for="customer_code" class="form-label">Customer Code <span
                                                         class="text-danger">*</span></label>
@@ -124,7 +182,8 @@ include 'auth.php';
                                             <!-- hidden customer id -->
                                             <input type="hidden" id="customer_id" name="customer_id">
 
-                                            <div class="col-md-4">
+                                            <!-- Customer Name -->
+                                            <div class="col-md-3">
                                                 <label for="customer_name" class="form-label">Customer Name <span
                                                         class="text-danger">*</span></label>
                                                 <input id="customer_name" name="customer_name" type="text"
@@ -132,62 +191,8 @@ include 'auth.php';
                                                     required>
                                             </div>
 
-                                            <div class="col-md-3">
-                                                <label class="form-label" for="my_number">My Number <span
-                                                        class="text-danger">*</span></label>
-                                                <div class="input-group mb-3">
-                                                    <input id="my_number" name="my_number" type="text"
-                                                        placeholder="Enter My Number" class="form-control" required>
-                                                    <button class="btn btn-info" type="button" data-bs-toggle="modal"
-                                                        data-bs-target="#dagCustomerModal">
-                                                        <i class="uil uil-search me-1"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-3">
-                                                <label class="form-label" for="size">Size <span
-                                                        class="text-danger">*</span></label>
-                                                <div class="input-group mb-3">
-                                                    <select class="form-select" name="size" id="size" required>
-                                                        <option value="">--Select Size--</option>
-                                                        <?php
-                                                        $SIZE = new Sizes(NULL);
-                                                        foreach ($SIZE->all() as $size) {
-                                                            ?>
-                                                            <option value="<?php echo $size['name']; ?>">
-                                                                <?php echo $size['name']; ?>
-                                                            </option>
-                                                        <?php } ?>
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-3">
-                                                <label for="brand" class="form-label">Brand <span
-                                                        class="text-danger">*</span></label>
-                                                <select class="form-select mb-3" name="brand" id="brand" required>
-                                                    <option value="">--Select Brand--</option>
-                                                    <?php
-                                                    $BRAND = new Brand(NULL);
-                                                    foreach ($BRAND->all() as $brand) {
-                                                        ?>
-                                                        <option value="<?php echo $brand['name']; ?>">
-                                                            <?php echo $brand['name']; ?>
-                                                        </option>
-                                                    <?php } ?>
-                                                </select>
-                                            </div>
-
-                                            <div class="col-md-3">
-                                                <label for="serial_no" class="form-label">Serial No <span
-                                                        class="text-danger">*</span></label>
-                                                <input id="serial_no" name="serial_no" type="text"
-                                                    class="form-control mb-3" placeholder="Enter Serial No" required>
-                                            </div>
-
-                                            <!-- Row 2: DAG Received Date, Remark -->
-                                            <div class="col-md-3">
+                                            <!-- DAG Received Date (common) -->
+                                            <div class="col-md-2">
                                                 <label for="dag_received_date" class="form-label">DAG Received Date
                                                     <span class="text-danger">*</span></label>
                                                 <div class="input-group mb-3">
@@ -199,21 +204,100 @@ include 'auth.php';
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-6">
-                                                <label for="remark" class="form-label">Remark</label>
-                                                <textarea id="remark" name="remark" class="form-control" rows="3"
-                                                    placeholder="Enter remark..."></textarea>
+                                            <!-- Vehicle Number (common) -->
+                                            <div class="col-md-2">
+                                                <label for="vehicle_number" class="form-label">Vehicle Number</label>
+                                                <input id="vehicle_number" name="vehicle_number" type="text"
+                                                    class="form-control mb-3" placeholder="Vehicle No...">
                                             </div>
 
+                                            <!-- Remark (common) -->
+                                            <div class="col-md-3">
+                                                <label for="remark" class="form-label">Remark</label>
+                                                <input id="remark" name="remark" type="text" class="form-control mb-3"
+                                                    placeholder="Enter remark...">
+                                            </div>
+
+                                            <!-- Qty & Generate -->
+                                            <div class="col-md-2">
+                                                <label for="item_qty" class="form-label">Qty <span
+                                                        class="text-danger">*</span></label>
+                                                <div class="input-group mb-3">
+                                                    <input type="number" class="form-control" id="item_qty"
+                                                        name="item_qty" min="1" value="1" placeholder="Qty">
+                                                    <button class="btn btn-primary" type="button" id="generateRowsBtn">
+                                                        <i class="uil uil-plus-circle me-1"></i> Go
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                         <input type="hidden" id="id" name="id" value="0">
-
+                                        <input type="hidden" id="dag_number" name="dag_number" value="">
                                     </form>
-
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- ==================== STEP 2: DAG Items Table ==================== -->
+                    <div class="row" id="dagItemsSection">
+                        <div class="col-lg-12">
+                            <div class="card step-card">
+                                <div class="p-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="flex-shrink-0 me-3">
+                                            <div class="avatar-xs">
+                                                <div class="avatar-title rounded-circle bg-soft-primary text-primary">
+                                                    02
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1 overflow-hidden">
+                                            <h5 class="font-size-16 mb-1">Step 2: DAG Items</h5>
+                                            <p class="text-muted text-truncate mb-0">Fill in the details for each DAG
+                                                item</p>
+                                        </div>
+                                        <div class="flex-shrink-0">
+                                            <button class="btn btn-outline-success btn-sm" type="button"
+                                                id="addOneRowBtn">
+                                                <i class="uil uil-plus me-1"></i> Add Row
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="p-4 pt-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered mb-0 dag-items-table" id="dagItemsTable">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th width="5%">#</th>
+                                                    <th width="25%">My Number <span
+                                                            class="text-danger">*</span></th>
+                                                    <th width="20%">Size <span class="text-danger">*</span>
+                                                    </th>
+                                                    <th width="20%">Brand <span class="text-danger">*</span>
+                                                    </th>
+                                                    <th width="25%">Serial No <span
+                                                            class="text-danger">*</span></th>
+                                                    <th width="5%"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="dagItemsBody">
+                                                <!-- Dynamic rows will be added here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div class="mt-3 text-muted" id="rowCountInfo">
+                                        <small><i class="uil uil-info-circle me-1"></i><span id="rowCountText">0
+                                                items</span></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div> <!-- container-fluid -->
             </div>
             <?php include 'footer.php' ?>
@@ -239,62 +323,63 @@ include 'auth.php';
                                     style="border-collapse: collapse; border-spacing: 0; width: 100%;">
                                     <thead>
                                         <tr>
-                                            <th>#</th>
+                                            <th style="width: 20px;"></th> <!-- Expand icon -->
                                             <th>DAG Number</th>
-                                            <th>My Number</th>
-                                            <th>Size</th>
-                                            <th>Brand</th>
-                                            <th>Serial No</th>
+                                            <th>Customer</th>
+                                            <th>Vehicle No</th>
                                             <th>Date</th>
+                                            <th>Qty</th>
+                                            <th>My Numbers</th> <!-- Hidden, for search -->
                                             <th>Remark</th>
+                                            <th style="width: 50px;">Action</th>
                                         </tr>
                                     </thead>
-
-
                                     <tbody>
                                         <?php
                                         $DAG_CUSTOMER = new DagCustomer(NULL);
-                                        foreach ($DAG_CUSTOMER->all() as $key => $dag_customer) {
-                                            $key++;
-                                            $CUSTOMER = new CustomerMaster($dag_customer['customer_id']);
+                                        foreach ($DAG_CUSTOMER->getGroupedAll() as $dag_customer) {
+                                            $customer_name = $dag_customer['customer_name'] . ($dag_customer['customer_name_2'] ? ' ' . $dag_customer['customer_name_2'] : '');
                                             ?>
-                                            <tr class="select-dag-customer" data-id="<?php echo $dag_customer['id']; ?>"
+                                            <tr class="dag-group-row" 
+                                                data-dag_number="<?php echo htmlspecialchars($dag_customer['dag_number']); ?>"
                                                 data-customer_id="<?php echo $dag_customer['customer_id']; ?>"
-                                                data-customer_code="<?php echo htmlspecialchars($CUSTOMER->code); ?>"
-                                                data-customer_name="<?php echo htmlspecialchars($CUSTOMER->name . (isset($CUSTOMER->name_2) ? ' ' . $CUSTOMER->name_2 : '')); ?>"
-                                                data-my_number="<?php echo htmlspecialchars($dag_customer['my_number']); ?>"
-                                                data-size="<?php echo htmlspecialchars($dag_customer['size']); ?>"
-                                                data-brand="<?php echo htmlspecialchars($dag_customer['brand']); ?>"
-                                                data-serial_no="<?php echo htmlspecialchars($dag_customer['serial_no']); ?>"
+                                                data-customer_code="<?php echo htmlspecialchars($dag_customer['customer_code']); ?>"
+                                                data-customer_name="<?php echo htmlspecialchars($customer_name); ?>"
+                                                data-vehicle_number="<?php echo htmlspecialchars($dag_customer['vehicle_number']); ?>"
                                                 data-dag_received_date="<?php echo htmlspecialchars($dag_customer['dag_received_date']); ?>"
                                                 data-remark="<?php echo htmlspecialchars($dag_customer['remark']); ?>">
 
-                                                <td>
-                                                    <?php echo $key; ?>
+                                                <td class="details-control text-center">
+                                                    <i class="mdi mdi-plus-circle-outline text-primary" style="font-size:18px; cursor:pointer;"></i>
                                                 </td>
                                                 <td>
-                                                    <?php echo htmlspecialchars($dag_customer['dag_number']); ?>
+                                                    <strong><?php echo htmlspecialchars($dag_customer['dag_number']); ?></strong>
                                                 </td>
                                                 <td>
-                                                    <?php echo htmlspecialchars($dag_customer['my_number']); ?>
+                                                    <?php echo htmlspecialchars($customer_name); ?><br>
+                                                    <small class="text-muted"><?php echo htmlspecialchars($dag_customer['customer_code']); ?></small>
                                                 </td>
                                                 <td>
-                                                    <?php echo htmlspecialchars($dag_customer['size']); ?>
-                                                </td>
-                                                <td>
-                                                    <?php echo htmlspecialchars($dag_customer['brand']); ?>
-                                                </td>
-                                                <td>
-                                                    <?php echo htmlspecialchars($dag_customer['serial_no']); ?>
+                                                    <?php echo htmlspecialchars($dag_customer['vehicle_number'] ?: '-'); ?>
                                                 </td>
                                                 <td>
                                                     <?php echo htmlspecialchars($dag_customer['dag_received_date']); ?>
                                                 </td>
                                                 <td>
-                                                    <?php echo htmlspecialchars($dag_customer['remark']); ?>
+                                                    <span class="badge bg-soft-info text-info font-size-12"><?php echo $dag_customer['item_count']; ?></span>
+                                                </td>
+                                                <td>
+                                                    <?php echo htmlspecialchars($dag_customer['all_my_numbers']); ?>
+                                                </td>
+                                                <td>
+                                                    <small class="text-muted"><?php echo htmlspecialchars($dag_customer['remark']); ?></small>
+                                                </td>
+                                                <td class="text-center">
+                                                    <button type="button" class="btn btn-sm btn-info select-dag-group" title="Select this DAG">
+                                                        <i class="uil uil-check-circle me-1"></i> Select
+                                                    </button>
                                                 </td>
                                             </tr>
-
                                         <?php } ?>
                                     </tbody>
                                 </table>
@@ -317,13 +402,17 @@ include 'auth.php';
         <!-- /////////////////////////// -->
         <script src="ajax/js/common.js"></script>
         <script src="ajax/js/customer-master.js"></script>
+
+        <!-- Pass Size and Brand options to JS -->
+        <script>
+            var sizeOptions = <?php echo json_encode(array_map(function ($s) { return $s['name']; }, $sizes)); ?>;
+            var brandOptions = <?php echo json_encode(array_map(function ($b) { return $b['name']; }, $brands)); ?>;
+        </script>
+
         <script src="ajax/js/dag-customer.js"></script>
 
         <!-- include main js  -->
         <?php include 'main-js.php' ?>
-        <script>
-            $('#dagCustomerTable').DataTable();
-        </script>
 
 </body>
 
