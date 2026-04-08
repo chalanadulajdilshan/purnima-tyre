@@ -89,18 +89,18 @@ $brands = $BRAND->all();
                 <div class="container-fluid">
                     <div class="row mb-4">
                         <div class="col-md-8 d-flex align-items-center flex-wrap gap-2">
-                            <a href="#" class="btn btn-success" id="new">
+                            <a href="#" class="btn btn-success" id="new-dag-customer">
                                 <i class="uil uil-plus me-1"></i> New
                             </a>
 
                             <?php if ($PERMISSIONS['add_page']): ?>
-                                <a href="#" class="btn btn-primary" id="create">
+                                <a href="#" class="btn btn-primary" id="create-dag-customer">
                                     <i class="uil uil-save me-1"></i> Save
                                 </a>
                             <?php endif; ?>
 
                             <?php if ($PERMISSIONS['edit_page']): ?>
-                                <a href="#" class="btn btn-warning" id="update" style="display: none;">
+                                <a href="#" class="btn btn-warning" id="update-dag-customer" style="display: none;">
                                     <i class="uil uil-edit me-1"></i> Update
                                 </a>
                             <?php endif; ?>

@@ -172,7 +172,7 @@ jQuery(document).ready(function () {
     // ==========================================
     // CREATE (SAVE) - Multiple Items
     // ==========================================
-    $("#create").click(function (event) {
+    $("#create-dag-customer").click(function (event) {
         event.preventDefault();
 
         if (!validateForm()) {
@@ -238,7 +238,7 @@ jQuery(document).ready(function () {
     // ==========================================
     // UPDATE - Single Item (from search modal)
     // ==========================================
-    $("#update").click(function (event) {
+    $("#update-dag-customer").click(function (event) {
         event.preventDefault();
 
         if (!validateForm()) {
@@ -373,7 +373,7 @@ jQuery(document).ready(function () {
     // ==========================================
     // NEW BUTTON - Reset
     // ==========================================
-    $('#new').click(function (e) {
+    $('#new-dag-customer').click(function (e) {
         e.preventDefault();
         $("#form-data")[0].reset();
         setNextDagNumber();
@@ -385,8 +385,8 @@ jQuery(document).ready(function () {
         $("#dagItemsSection").removeClass("show");
         updateRowCount();
 
-        $("#create").show();
-        $("#update").hide();
+        $("#create-dag-customer").show();
+        $("#update-dag-customer").hide();
         $(".delete-item").hide();
         $("#print").hide();
     });
@@ -487,8 +487,8 @@ jQuery(document).ready(function () {
                     // Let's just switch to "Update" mode if at least one item was loaded.
                     if (result.data.length > 0) {
                         $("#id").val(result.data[0].id); // Set first ID as reference if needed
-                        $("#create").hide();
-                        $("#update").show();
+                        $("#create-dag-customer").hide();
+                        $("#update-dag-customer").show();
                         $(".delete-item").show();
                         $("#print").show();
                         $("#print").attr("href", "print-dag-customer.php?dag_number=" + dag_number);
