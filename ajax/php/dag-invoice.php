@@ -54,15 +54,16 @@ if (isset($_POST['search_dag_items'])) {
     $query = "SELECT dc.id, dc.dag_number, dc.my_number, dc.size, dc.brand, dc.serial_no,
                      dc.dag_received_date, dc.vehicle_number, dc.customer_id, dc.cost,
                      c.name as customer_name, c.name_2 as customer_name_2, c.code as customer_code,
-                     (SELECT cm.name FROM dag_company_assignment_items dcai
-                      JOIN dag_company_assignments dca ON dcai.assignment_id = dca.id
-                      JOIN company_master cm ON dca.company_id = cm.id
-                      WHERE dcai.dag_id = dc.id
-                      ORDER BY dcai.id DESC LIMIT 1) as company_name
+                     cm.name as company_name
               FROM `dag_customers` dc
               LEFT JOIN `customer_master` c ON dc.customer_id = c.id
+              INNER JOIN `dag_company_assignment_items` dcai ON dcai.dag_id = dc.id
+              INNER JOIN `dag_company_assignments` dca ON dcai.assignment_id = dca.id
+              INNER JOIN `company_master` cm ON dca.company_id = cm.id
               WHERE dc.is_invoiced = 0
                 AND dc.is_cancelled = 0
+                AND dcai.id = (SELECT MAX(id) FROM dag_company_assignment_items WHERE dag_id = dc.id)
+                AND dcai.company_status != 'Processing'
                 AND (dc.my_number LIKE '%$keyword%' 
                      OR dc.serial_no LIKE '%$keyword%' 
                      OR dc.dag_number LIKE '%$keyword%'
