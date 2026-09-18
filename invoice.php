@@ -234,31 +234,33 @@ if (!empty($customerMobile)) {
 
                     <!-- Customer Details -->
                     <div class="row mb-3">
-                        <div class="col-12">
-                            <p class="mb-1" style="font-size:14px;"><strong>Customer:</strong>
-                                <?php echo $SALES_INVOICE->customer_name ?></p>
-                            <p class="mb-1" style="font-size:14px;"><strong>Contact No:</strong>
-                                <?php
-                                $contactParts = [];
-                                if (!empty($SALES_INVOICE->customer_mobile)) {
-                                    $contactParts[] = $SALES_INVOICE->customer_mobile;
-                                }
-                                if (!empty($SALES_INVOICE->customer_address)) {
-                                    $contactParts[] = $SALES_INVOICE->customer_address;
-                                }
-                                echo !empty($contactParts) ? implode(' - ', $contactParts) : '.................................';
-                                ?>
-                            </p>
-                            <p class="mb-1" style="font-size:14px;"><strong>VAT No:</strong>
-                                <?php
-                                if (!empty($SALES_INVOICE->customer_id)) {
-                                    $CUSTOMER_MASTER = new CustomerMaster($SALES_INVOICE->customer_id);
-                                    echo !empty($CUSTOMER_MASTER->vat_no) ? $CUSTOMER_MASTER->vat_no : '.................................';
-                                } else {
-                                    echo '.................................';
-                                }
-                                ?>
-                            </p>
+                        <div class="col-sm-7">
+                            <div
+                                style="border:1px solid #ccc; border-radius:4px; padding:8px 12px; font-size:14px; line-height:1.5;">
+                                <p class="mb-1" style="font-weight:700; text-transform:uppercase; letter-spacing:.5px;">
+                                    Bill To</p>
+                                <p class="mb-1"><strong>Customer:</strong>
+                                    <?php echo htmlspecialchars($SALES_INVOICE->customer_name) ?>
+                                </p>
+                                <p class="mb-1"><strong>Contact No:</strong>
+                                    <?php echo !empty($SALES_INVOICE->customer_mobile) ? htmlspecialchars($SALES_INVOICE->customer_mobile) : '.................................'; ?>
+                                </p>
+                                <?php if (!empty($SALES_INVOICE->customer_address)): ?>
+                                    <p class="mb-1"><strong>Address:</strong>
+                                        <?php echo htmlspecialchars($SALES_INVOICE->customer_address) ?>
+                                    </p>
+                                <?php endif; ?>
+                                <p class="mb-0"><strong>VAT No:</strong>
+                                    <?php
+                                    if (!empty($SALES_INVOICE->customer_id)) {
+                                        $CUSTOMER_MASTER = new CustomerMaster($SALES_INVOICE->customer_id);
+                                        echo !empty($CUSTOMER_MASTER->vat_no) ? htmlspecialchars($CUSTOMER_MASTER->vat_no) : '.................................';
+                                    } else {
+                                        echo '.................................';
+                                    }
+                                    ?>
+                                </p>
+                            </div>
                         </div>
                     </div>
 
@@ -313,14 +315,14 @@ if (!empty($customerMobile)) {
                                         ?>
                                         <tr>
                                             <td>0<?php echo $key; ?></td>
-                                            <td colspan="3">
-                                                <?php echo $temp_items['item_code_name'] . ' ' . $temp_items['display_name']; ?>
+                                            <td colspan="3" style="line-height:1.3;">
+                                                <?php echo trim($temp_items['item_code_name'] . ' ' . $temp_items['display_name']); ?>
                                                 <?php if (!empty($temp_items['next_service_date']) && $temp_items['next_service_date'] !== '0000-00-00' && strtotime($temp_items['next_service_date']) > 0): ?>
-                                                    <br><strong>Next Service Date:</strong>
-                                                    <?php echo date('d M, Y', strtotime($temp_items['next_service_date'])); ?>
+                                                    <br><span style="font-size:12px;color:#666;"><strong>Next Service Date:</strong>
+                                                        <?php echo date('d M, Y', strtotime($temp_items['next_service_date'])); ?></span>
                                                 <?php elseif (!empty($temp_items['current_km'])): ?>
-                                                    <br><strong>Next Service Km:</strong>
-                                                    <?php echo ($temp_items['current_km'] + 500); ?>
+                                                    <br><span style="font-size:12px;color:#666;"><strong>Next Service Km:</strong>
+                                                        <?php echo ($temp_items['current_km'] + 500); ?></span>
                                                 <?php endif; ?>
                                             </td>
                                             <td><?php echo isset($temp_items['serial_no']) ? $temp_items['serial_no'] : ''; ?>
@@ -333,91 +335,84 @@ if (!empty($customerMobile)) {
                                             <td class="text-end"><?php echo number_format($line_total, 2); ?></td>
                                         </tr>
                                     <?php } ?>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Terms & Conditions (left) + Totals (right) -->
+                        <div class="row mt-3">
+                            <div class="col-sm-7">
+                                <h6 style="margin-top:8px;"><strong>Terms &amp; Conditions:</strong></h6>
+                                <ul style="padding-left:20px;margin-bottom:0;font-size:13px;line-height:1.5;">
                                     <?php
-                                    // Calculate rowspan based on visible rows + hidden discount row
-                                    // Cash: Gross, Discount(hidden), Net (3 rows) - VAT is now hidden
-                                    // Credit: Gross, Paid, Payable, Discount(hidden), Net (5 rows) - VAT is now hidden
-                                    $rowSpan = ($SALES_INVOICE->payment_type == 2) ? 5 : 3;
+                                    $invoiceRemark = new InvoiceRemark();
+                                    $paymentRemarks = $invoiceRemark->getRemarkByPaymentType($SALES_INVOICE->payment_type);
+                                    if (!empty($paymentRemarks)) {
+                                        foreach ($paymentRemarks as $remark) {
+                                            if (!empty($remark['remark'])) {
+                                                echo '<li>' . htmlspecialchars($remark['remark']) . '</li>';
+                                            }
+                                        }
+                                    }
                                     ?>
+                                </ul>
+                            </div>
+                            <div class="col-sm-5">
+                                <table class="table table-sm" style="font-size:14px;">
                                     <tr>
-                                        <td colspan="4" rowspan="<?php echo $rowSpan; ?>" style="vertical-align:top;  ">
-                                            <h6 style="margin-top:8px;"><strong>Terms & Conditions:</strong></h6>
-                                            <ul style="padding-left:20px;margin-bottom:0;">
-                                                <?php
-                                                $invoiceRemark = new InvoiceRemark();
-                                                $paymentRemarks = $invoiceRemark->getRemarkByPaymentType($SALES_INVOICE->payment_type);
-                                                if (!empty($paymentRemarks)) {
-                                                    foreach ($paymentRemarks as $remark) {
-                                                        if (!empty($remark['remark'])) {
-                                                            echo '<li>' . htmlspecialchars($remark['remark']) . '</li>';
-                                                        }
-                                                    }
-                                                }
-                                                ?>
-                                            </ul>
-                                        </td>
-                                        <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 4 : 3; ?>"
-                                            class="text-end font-weight-bold"><strong>Gross Amount:-</strong>
-                                        </td>
-                                        <td class="text-end font-weight-bold">
+                                        <td class="text-end font-weight-bold"><strong>Gross Amount:-</strong></td>
+                                        <td class="text-end font-weight-bold" style="width:130px;">
                                             <strong><?php echo number_format($subtotal, 2); ?></strong>
                                         </td>
                                     </tr>
-                                    <?php if ($SALES_INVOICE->payment_type == 2): // Credit payment 
+                                    <?php if ($SALES_INVOICE->payment_type == 2): // Credit payment
                                                 ?>
                                         <tr>
-                                            <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 4 : 3; ?>"
-                                                class="text-end font-weight-bold"><strong>Paid Amount:-</strong>
-                                            </td>
+                                            <td class="text-end font-weight-bold"><strong>Paid Amount:-</strong></td>
                                             <td class="text-end font-weight-bold">
                                                 <strong><?php echo number_format($SALES_INVOICE->outstanding_settle_amount, 2); ?></strong>
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 4 : 3; ?>"
-                                                class="text-end font-weight-bold"><strong>Payable Amount:-</strong>
-                                            </td>
+                                            <td class="text-end font-weight-bold"><strong>Payable Amount:-</strong></td>
                                             <td class="text-end font-weight-bold">
                                                 <strong><?php echo number_format($SALES_INVOICE->grand_total - $SALES_INVOICE->outstanding_settle_amount, 2); ?></strong>
                                             </td>
                                         </tr>
                                     <?php endif; ?>
                                     <tr hidden>
-                                        <td colspan="4" class="text-end font-weight-bold">Discount:-</td>
+                                        <td class="text-end font-weight-bold">Discount:-</td>
                                         <td class="text-end font-weight-bold">-
                                             <?php echo number_format($total_discount, 2); ?>
                                         </td>
                                     </tr>
                                     <tr hidden>
-                                        <td colspan="4" class="text-end font-weight-bold"><strong>VAT :-</strong></td>
+                                        <td class="text-end font-weight-bold"><strong>VAT :-</strong></td>
                                         <td class="text-end font-weight-bold">
                                             <strong><?php echo number_format($SALES_INVOICE->tax, 2); ?></strong>
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td colspan="<?php echo ($SALES_INVOICE->tax > 0) ? 4 : 3; ?>"
-                                            class="text-end font-weight-bold">
-                                            <strong>Net Amount:-</strong>
-                                        </td>
+                                    <tr style="border-top:2px solid #333;">
+                                        <td class="text-end font-weight-bold"><strong>Net Amount:-</strong></td>
                                         <td class="text-end font-weight-bold">
                                             <strong><?php echo number_format($subtotal, 2); ?></strong>
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td colspan="5" style="padding-top:50px !important;">
-                                            <table style="width:100%;">
-                                                <tr>
-                                                    <td style="text-align:center;">
-                                                        _________________________<br><strong>Prepared By</strong></td>
-                                                    <td style="text-align:center;">
-                                                        _________________________<br><strong>Approved By</strong></td>
-                                                    <td style="text-align:center;">
-                                                        _________________________<br><strong>Received By</strong></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                    </tr>
-                                </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Signature -->
+                        <div style="margin-top:50px;">
+                            <table style="width:100%;">
+                                <tr>
+                                    <td style="text-align:center;">
+                                        _________________________<br><strong>Prepared By</strong></td>
+                                    <td style="text-align:center;">
+                                        _________________________<br><strong>Approved By</strong></td>
+                                    <td style="text-align:center;">
+                                        _________________________<br><strong>Received By</strong></td>
+                                </tr>
                             </table>
                         </div>
                     <?php } ?>
