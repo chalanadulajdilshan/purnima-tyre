@@ -1,7 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(php -l invoice.php)"
+      "Bash(php -l invoice.php)",
+      "Bash(\"/c/xampp/mysql/bin/mysql.exe\" -u root purnima-tyre -e \"SELECT id, payment_type, is_active, queue, LEFT\\(remark,60\\) AS remark FROM remark ORDER BY payment_type, queue;\")",
+      "Bash(\"/c/xampp/mysql/bin/mysql.exe\" -u root -h 127.0.0.1 purnima-tyre -e \"SELECT id, payment_type, is_active, queue, LEFT\\(remark,60\\) AS remark FROM remark ORDER BY payment_type, queue;\")",
+      "Bash(\"/c/xampp/mysql/bin/mysqladmin.exe\" -u root status)"
     ]
   }
 }

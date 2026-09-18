@@ -234,32 +234,32 @@ if (!empty($customerMobile)) {
 
                     <!-- Customer Details -->
                     <div class="row mb-3">
-                        <div class="col-sm-7">
+                        <div class="col-12">
                             <div
-                                style="border:1px solid #ccc; border-radius:4px; padding:8px 12px; font-size:14px; line-height:1.5;">
-                                <p class="mb-1" style="font-weight:700; text-transform:uppercase; letter-spacing:.5px;">
-                                    Bill To</p>
-                                <p class="mb-1"><strong>Customer:</strong>
+                                style="border:1px solid #ccc; border-radius:4px; padding:8px 12px; font-size:14px; display:flex; flex-wrap:wrap; align-items:center; gap:8px 24px;">
+                                <span style="font-weight:700; text-transform:uppercase; letter-spacing:.5px;">Bill
+                                    To:</span>
+                                <span><strong>Customer:</strong>
                                     <?php echo htmlspecialchars($SALES_INVOICE->customer_name) ?>
-                                </p>
-                                <p class="mb-1"><strong>Contact No:</strong>
-                                    <?php echo !empty($SALES_INVOICE->customer_mobile) ? htmlspecialchars($SALES_INVOICE->customer_mobile) : '.................................'; ?>
-                                </p>
+                                </span>
+                                <span><strong>Contact No:</strong>
+                                    <?php echo !empty($SALES_INVOICE->customer_mobile) ? htmlspecialchars($SALES_INVOICE->customer_mobile) : '................'; ?>
+                                </span>
                                 <?php if (!empty($SALES_INVOICE->customer_address)): ?>
-                                    <p class="mb-1"><strong>Address:</strong>
+                                    <span><strong>Address:</strong>
                                         <?php echo htmlspecialchars($SALES_INVOICE->customer_address) ?>
-                                    </p>
+                                    </span>
                                 <?php endif; ?>
-                                <p class="mb-0"><strong>VAT No:</strong>
+                                <span><strong>VAT No:</strong>
                                     <?php
                                     if (!empty($SALES_INVOICE->customer_id)) {
                                         $CUSTOMER_MASTER = new CustomerMaster($SALES_INVOICE->customer_id);
-                                        echo !empty($CUSTOMER_MASTER->vat_no) ? htmlspecialchars($CUSTOMER_MASTER->vat_no) : '.................................';
+                                        echo !empty($CUSTOMER_MASTER->vat_no) ? htmlspecialchars($CUSTOMER_MASTER->vat_no) : '................';
                                     } else {
-                                        echo '.................................';
+                                        echo '................';
                                     }
                                     ?>
-                                </p>
+                                </span>
                             </div>
                         </div>
                     </div>
