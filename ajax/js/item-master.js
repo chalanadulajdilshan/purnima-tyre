@@ -122,6 +122,8 @@ jQuery(document).ready(function () {
         $('#pattern').val(item.pattern);
         $('#category').val(item.category_id).trigger('change');
         $('#list_price').val(item.list_price);
+        $('#price_wo_vat').val(item.price_wo_vat);
+        $('#price_with_vat').val(item.price_with_vat);
         $('#group').val(item.group).trigger('change');
         $('#re_order_level').val(item.re_order_level);
         $('#re_order_qty').val(item.re_order_qty);
@@ -200,6 +202,8 @@ jQuery(document).ready(function () {
         $('#pattern').val(data.pattern);
         $('#category').val(data.category_id);
         $('#list_price').val(data.list_price);
+        $('#price_wo_vat').val(data.price_wo_vat);
+        $('#price_with_vat').val(data.price_with_vat);
         $('#group').val(data.group);
         $('#re_order_level').val(data.re_order_level);
         $('#re_order_qty').val(data.re_order_qty);

@@ -679,6 +679,8 @@ if (isset($_POST['action']) && $_POST['action'] === 'get_by_id') {
                 'size' => $row['size'],
                 'pattern' => $row['pattern'],
                 'list_price' => (float)$row['list_price'],
+                'price_wo_vat' => (float)$row['price_wo_vat'],
+                'price_with_vat' => (float)$row['price_with_vat'],
                 'invoice_price' => (float)$row['invoice_price'],
                 're_order_level' => $row['re_order_level'],
                 're_order_qty' => $row['re_order_qty'],
@@ -720,6 +722,8 @@ if (isset($_POST['action']) && $_POST['action'] === 'get_by_code') {
                 'size' => $row['size'],
                 'pattern' => $row['pattern'],
                 'list_price' => (float)$row['list_price'],
+                'price_wo_vat' => (float)$row['price_wo_vat'],
+                'price_with_vat' => (float)$row['price_with_vat'],
                 'invoice_price' => (float)$row['invoice_price'],
                 're_order_level' => $row['re_order_level'],
                 're_order_qty' => $row['re_order_qty'],
@@ -763,6 +767,8 @@ if (isset($_POST['create'])) {
     $ITEM->group = $_POST['group'];
     $ITEM->category = $_POST['category'];
     $ITEM->list_price = $_POST['list_price'];
+    $ITEM->price_wo_vat = $_POST['price_wo_vat'] ?? 0;
+    $ITEM->price_with_vat = $_POST['price_with_vat'] ?? 0;
     $ITEM->invoice_price = $_POST['invoice_price'];
     $ITEM->re_order_level = $_POST['re_order_level'];
     $ITEM->re_order_qty = $_POST['re_order_qty'];
@@ -833,6 +839,8 @@ if (isset($_POST['update'])) {
     $ITEM->stock_type = $_POST['stock_type'];
     $ITEM->note = $_POST['note'];
     $ITEM->list_price = $_POST['list_price'];
+    $ITEM->price_wo_vat = $_POST['price_wo_vat'] ?? 0;
+    $ITEM->price_with_vat = $_POST['price_with_vat'] ?? 0;
     $ITEM->invoice_price = $_POST['invoice_price'];
     $ITEM->discount = $_POST['discount'];
     $ITEM->is_active = isset($_POST['is_active']) ? 1 : 0;

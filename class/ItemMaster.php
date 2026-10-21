@@ -14,6 +14,8 @@ class ItemMaster
     public $re_order_level;
     public $re_order_qty;
     public $list_price;
+    public $price_wo_vat;
+    public $price_with_vat;
     public $invoice_price;
     public $stock_type;
     public $note;
@@ -37,6 +39,8 @@ class ItemMaster
                 $this->group = $result['group'];
                 $this->category = $result['category'];
                 $this->list_price = $result['list_price'];
+                $this->price_wo_vat = $result['price_wo_vat'];
+                $this->price_with_vat = $result['price_with_vat'];
                 $this->invoice_price = $result['invoice_price'];
                 $this->re_order_level = $result['re_order_level'];
                 $this->re_order_qty = $result['re_order_qty'];
@@ -52,11 +56,11 @@ class ItemMaster
     {
         $query = "INSERT INTO `item_master` (
     `code`, `name`, `brand`, `size`, `pattern`, `group`, `category`, 
-     `re_order_level`, `re_order_qty`, `stock_type`, `note`,`list_price`,`invoice_price`,`discount`, `is_active`
+     `re_order_level`, `re_order_qty`, `stock_type`, `note`,`list_price`,`price_wo_vat`,`price_with_vat`,`invoice_price`,`discount`, `is_active`
 ) VALUES (
     '$this->code', '$this->name', '$this->brand', '$this->size', '$this->pattern', '$this->group',
     '$this->category',  '$this->re_order_level', '$this->re_order_qty',
-     '$this->stock_type', '$this->note', '$this->list_price', '$this->invoice_price', '$this->discount', '$this->is_active'
+     '$this->stock_type', '$this->note', '$this->list_price', '" . (float) $this->price_wo_vat . "', '" . (float) $this->price_with_vat . "', '$this->invoice_price', '$this->discount', '$this->is_active'
 )";
 
 
@@ -81,8 +85,10 @@ class ItemMaster
             `pattern` = '$this->pattern', 
             `group` = '$this->group', 
             `category` = '$this->category', 
-            `list_price` = '$this->list_price', 
-            `invoice_price` = '$this->invoice_price', 
+            `list_price` = '$this->list_price',
+            `price_wo_vat` = '" . (float) $this->price_wo_vat . "',
+            `price_with_vat` = '" . (float) $this->price_with_vat . "',
+            `invoice_price` = '$this->invoice_price',
             `re_order_level` = '$this->re_order_level', 
             `re_order_qty` = '$this->re_order_qty', 
             `stock_type` = '$this->stock_type', 
@@ -414,6 +420,8 @@ class ItemMaster
                         "category_id" => $row['category'],
                         "category" => $CATEGORY->name,
                         "list_price" => $row['list_price'],
+                        "price_wo_vat" => $row['price_wo_vat'],
+                        "price_with_vat" => $row['price_with_vat'],
                         "invoice_price" => $row['invoice_price'],
                         "discount" => $row['discount'],
                         "stock_type" => $row['stock_type'],
@@ -528,6 +536,8 @@ class ItemMaster
                 "category_id" => $row['category'],
                 "category" => $CATEGORY->name,
                 "list_price" => $row['list_price'],
+                "price_wo_vat" => $row['price_wo_vat'],
+                "price_with_vat" => $row['price_with_vat'],
                 "invoice_price" => $row['invoice_price'],
                 "discount" => $row['discount'],
                 "stock_type" => $row['stock_type'],

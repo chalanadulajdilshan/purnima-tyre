@@ -221,6 +221,23 @@ $item_id = 'TI/0' . ($lastId + 1);
                                                 </div>
                                             </div>
 
+                                            <!-- Price Without VAT -->
+                                            <div class="col-md-3">
+                                                <div class="mb-3">
+                                                    <label class="form-label" for="price_wo_vat">Price Without VAT</label>
+                                                    <input id="price_wo_vat" name="price_wo_vat" type="text"
+                                                        class="form-control" placeholder="Enter price without VAT">
+                                                </div>
+                                            </div>
+                                            <!-- Price With VAT -->
+                                            <div class="col-md-3">
+                                                <div class="mb-3">
+                                                    <label class="form-label" for="price_with_vat">Price With VAT</label>
+                                                    <input id="price_with_vat" name="price_with_vat" type="text"
+                                                        class="form-control" placeholder="Auto-calculated (18%)">
+                                                </div>
+                                            </div>
+
                                             <!-- List Price -->
                                             <div class="col-md-3">
                                                 <div class="mb-3">
@@ -391,8 +408,19 @@ $item_id = 'TI/0' . ($lastId + 1);
                 }
             }
 
+            // Function to calculate price with VAT based on price without VAT
+            function calculatePriceWithVat() {
+                const VAT_RATE = 18;
+                const priceWoVat = parseFloat($('#price_wo_vat').val()) || 0;
+
+                $('#price_with_vat').val((priceWoVat * (1 + VAT_RATE / 100)).toFixed(2));
+            }
+
             // Add event listeners to the relevant fields
             $('#brand, #size, #pattern').on('change keyup', updateItemName);
+
+            // When price without VAT changes, update price with VAT
+            $('#price_wo_vat').on('change keyup', calculatePriceWithVat);
 
             // When list price or discount changes, update invoice price
             $('#list_price, #discount').on('change keyup', function() {
