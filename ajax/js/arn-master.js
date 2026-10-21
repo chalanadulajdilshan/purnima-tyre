@@ -252,7 +252,7 @@ jQuery(document).ready(function () {
 
 
     // Bind Enter key to add item
-    $('#rec_quantity, #invoice_price,  #credit_price, #actual_cost,#list_price,#dis_1,#dis_2,#dis_3,#dis_4,#dis_5').on('keydown', function (e) {
+    $('#rec_quantity, #invoice_price,  #credit_price, #actual_cost,#list_price,#price_without_vat,#price_with_vat,#dis_1,#dis_2,#dis_3,#dis_4,#dis_5').on('keydown', function (e) {
         if (e.key === "Enter") {
             e.preventDefault();
             $('#addItemBtn').trigger('click');
@@ -284,9 +284,10 @@ jQuery(document).ready(function () {
         // Optionally put a "no items" row
         $('#itemTableBody').append(`
         <tr id="noDataRow">
-            <td colspan="13" class="text-center text-muted">No items added</td>
+            <td colspan="15" class="text-center text-muted">No items added</td>
         </tr>
     `);
+        updateSummaryValues();
     });
 
 
@@ -400,6 +401,8 @@ jQuery(document).ready(function () {
         const unitTotal = parseFloat($('#unit_total').val()) || 0;
         const listPrice = parseFloat($('#list_price').val()) || 0;
         const InvoicePrice = parseFloat($('#invoice_price').val()) || 0;
+        const priceWithoutVat = parseFloat($('#price_without_vat').val()) || 0;
+        const priceWithVat = parseFloat($('#price_with_vat').val()) || 0;
 
         // ─────── Validations ───────
         if (!code) {
@@ -464,6 +467,8 @@ jQuery(document).ready(function () {
             <td><input type="number" name="items[][actual_cost]" class="form-control form-control-sm" value="${actualCost.toFixed(2)}" readonly></td>
             <td><input type="number" name="items[][unit_total]" class="form-control form-control-sm" value="${unitTotal.toFixed(2)}" readonly></td>
             <td><input type="number" name="items[][invoice_price]" class="form-control form-control-sm" value="${InvoicePrice.toFixed(2)}" readonly></td>
+            <td><input type="number" name="items[][price_without_vat]" class="form-control form-control-sm" value="${priceWithoutVat.toFixed(2)}" readonly></td>
+            <td><input type="number" name="items[][price_with_vat]" class="form-control form-control-sm" value="${priceWithVat.toFixed(2)}" readonly></td>
             <td>
                 <div class="btn btn-danger btn-sm deleteRowBtn">
                     <i class="uil uil-trash-alt me-1"></i>
@@ -492,6 +497,7 @@ jQuery(document).ready(function () {
         $('#itemCode').val('');
         $('#rec_quantity').val('');
         $('#list_price').val('');
+        $('#price_without_vat, #price_with_vat').val('');
         $('#dis_1, #dis_2, #dis_3, #dis_4, #dis_5, #dis_6, #dis_7, #dis_8').val('');
         $('#actual_cost').val('');
         $('#unit_total').val('');
@@ -507,7 +513,7 @@ jQuery(document).ready(function () {
         if ($('#itemTableBody tr').length === 0) {
             $('#itemTableBody').append(`
             <tr id="noDataRow">
-                <td colspan="13" class="text-center text-muted">No items added</td>
+                <td colspan="15" class="text-center text-muted">No items added</td>
             </tr>
         `);
         }
@@ -625,6 +631,8 @@ jQuery(document).ready(function () {
                                 <td><input type="number" step="0.01" name="items[${index}][actual_cost]" class="form-control form-control-sm" value="${actualCost.toFixed(2)}"></td>
                                 <td><input type="number" step="0.01" name="items[${index}][unit_total]" class="form-control form-control-sm" value="${unitTotal.toFixed(2)}" readonly></td>
                                 <td><input type="number" step="0.01" name="items[${index}][list_price]" class="form-control form-control-sm" value="${item.item_selling_price}"></td>
+                                <td><input type="number" step="0.01" name="items[${index}][price_without_vat]" class="form-control form-control-sm" value=""></td>
+                                <td><input type="number" step="0.01" name="items[${index}][price_with_vat]" class="form-control form-control-sm" value=""></td>
                                <td>
                                 <button class="btn btn-danger btn-sm deleteRowBtn">
                                     <i class="uil uil-trash-alt me-1"></i>
@@ -640,7 +648,7 @@ jQuery(document).ready(function () {
                     } else {
                         $('#itemTableBody').append(`
                         <tr id="noDataRow">
-                            <td colspan="13" class="text-center text-muted">No items found</td>
+                            <td colspan="15" class="text-center text-muted">No items found</td>
                         </tr>
                     `);
                     }
@@ -703,7 +711,6 @@ jQuery(document).ready(function () {
         // Update fields
         $row.find('input[name*="[actual_cost]"]').val(actualCost.toFixed(2));
         $row.find('input[name*="[unit_total]"]').val(unitTotal.toFixed(2));
-
         // Call summary update
         if (typeof updateSummaryValues === "function") {
             updateSummaryValues();
@@ -1033,6 +1040,8 @@ jQuery(document).ready(function () {
                     actual_cost: parseFloat($(cols[9]).find("input").val()) || 0,
                     unit_total: parseFloat($(cols[10]).find("input").val()) || 0,
                     invoice_price: parseFloat($(cols[11]).find("input").val()) || 0,
+                    price_without_vat: parseFloat($(cols[12]).find("input").val()) || 0,
+                    price_with_vat: parseFloat($(cols[13]).find("input").val()) || 0,
                 });
             });
 
@@ -1308,7 +1317,7 @@ jQuery(document).ready(function () {
                 tbody.empty();
 
                 if (items.length === 0) {
-                    tbody.append('<tr id="noDataRow"><td colspan="13" class="text-center">No data available</td></tr>');
+                    tbody.append('<tr id="noDataRow"><td colspan="15" class="text-center">No data available</td></tr>');
                     return;
                 }
 
@@ -1333,6 +1342,8 @@ jQuery(document).ready(function () {
                             <td><input type="number" name="items[][actual_cost]" class="form-control form-control-sm" value="${item.final_cost}" readonly></td>
                             <td><input type="number" name="items[][unit_total]" class="form-control form-control-sm" value="${item.unit_total}" readonly></td>
                             <td><input type="number" name="items[][list_price]" class="form-control form-control-sm" value="${item.list_price}" readonly></td>
+                            <td><input type="number" class="form-control form-control-sm" value="${item.price_without_vat || 0}" readonly></td>
+                            <td><input type="number" class="form-control form-control-sm" value="${item.price_with_vat || 0}" readonly></td>
                             <td> </td>
                         </tr>
                     `;

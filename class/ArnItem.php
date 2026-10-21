@@ -23,8 +23,31 @@ class ArnItem
     public $created_at;
     public $updated_at;
     public $is_cancelled;
+    public $price_without_vat;
+    public $price_with_vat;
+
+    private static $vatColumnsChecked = false;
+
+    public static function ensureVatColumns()
+    {
+        if (self::$vatColumnsChecked) {
+            return;
+        }
+
+        self::$vatColumnsChecked = true;
+        $db = Database::getInstance();
+        $result = $db->readQuery("SHOW COLUMNS FROM `arn_items` LIKE 'price_with_vat'");
+
+        if ($result && mysqli_num_rows($result) > 0) {
+            return;
+        }
+
+        @mysqli_query($db->DB_CON, "ALTER TABLE `arn_items` ADD COLUMN `price_without_vat` DECIMAL(15,2) NOT NULL DEFAULT 0, ADD COLUMN `price_with_vat` DECIMAL(15,2) NOT NULL DEFAULT 0");
+    }
+
     public function __construct($id = NULL)
     {
+        self::ensureVatColumns();
         if ($id) {
             $db = Database::getInstance();
             $query = "SELECT * FROM `arn_items` WHERE `id` = '$id'";
@@ -50,6 +73,8 @@ class ArnItem
                 $this->created_at = $row['created_at'];
                 $this->updated_at = $row['updated_at'];
                 $this->is_cancelled = $row['is_cancelled'];
+                $this->price_without_vat = $row['price_without_vat'];
+                $this->price_with_vat = $row['price_with_vat'];
             }
         }
     }
@@ -60,11 +85,11 @@ class ArnItem
         $query = "INSERT INTO `arn_items` (
             `arn_id`, `item_code`, `order_qty`, `received_qty`,
             `discount_1`, `discount_2`, `discount_3`, `discount_4`, `discount_5`, `discount_6`, `discount_7`, `discount_8`, `final_cost`, `unit_total`,
-            `list_price`,`invoice_price`,   `created_at`
+            `list_price`,`invoice_price`, `price_without_vat`, `price_with_vat`,  `created_at`
         ) VALUES (
             '{$this->arn_id}', '{$this->item_code}', '{$this->order_qty}', '{$this->received_qty}',
             '{$this->discount_1}', '{$this->discount_2}', '{$this->discount_3}', '{$this->discount_4}', '{$this->discount_5}', '{$this->discount_6}', '{$this->discount_7}', '{$this->discount_8}', '{$this->final_cost}', '{$this->unit_total}',
-            '{$this->list_price}', '{$this->invoice_price}',   NOW()
+            '{$this->list_price}', '{$this->invoice_price}', '" . (float)$this->price_without_vat . "', '" . (float)$this->price_with_vat . "',  NOW()
         )";
 
 

@@ -103,9 +103,17 @@ class StockItemTmp
 
         return $array_res;
     }
+    // ARN item VAT prices for the same ARN + item
+    private function arnVatPriceColumns()
+    {
+        ArnItem::ensureVatColumns();
+        return "(SELECT ai.price_without_vat FROM `arn_items` ai WHERE ai.arn_id = sit.arn_id AND ai.item_code = sit.item_id ORDER BY ai.id DESC LIMIT 1) AS price_without_vat,
+                 (SELECT ai.price_with_vat FROM `arn_items` ai WHERE ai.arn_id = sit.arn_id AND ai.item_code = sit.item_id ORDER BY ai.id DESC LIMIT 1) AS price_with_vat";
+    }
+
     public function getByItemId($id)
     {
-        $query = "SELECT sit.* 
+        $query = "SELECT sit.*, " . $this->arnVatPriceColumns() . "
                  FROM `stock_item_tmp` sit
                  INNER JOIN `arn_master` am ON sit.arn_id = am.id
                  WHERE sit.`item_id` = '" . (int) $id . "' 
@@ -124,7 +132,7 @@ class StockItemTmp
 
     public function getByItemIdAndDepartment($id, $department_id)
     {
-        $query = "SELECT sit.* 
+        $query = "SELECT sit.*, " . $this->arnVatPriceColumns() . "
                  FROM `stock_item_tmp` sit
                  INNER JOIN `arn_master` am ON sit.arn_id = am.id
                  WHERE sit.`item_id` = '" . (int) $id . "' 

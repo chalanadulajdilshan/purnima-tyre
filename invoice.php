@@ -52,6 +52,44 @@ if (!empty($customerMobile)) {
         $customerMobile = '94' . substr($customerMobile, 1);
     }
 }
+
+// VAT invoices are printed in the TAX INVOICE format
+$isTaxInvoice = $SALES_INVOICE->invoice_type == 'INV' && (float) $SALES_INVOICE->tax > 0;
+
+function numberToWords($number)
+{
+    $number = (int) $number;
+    $ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve',
+        'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+    $tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+    if ($number < 20) {
+        return $ones[$number];
+    }
+    if ($number < 100) {
+        return trim($tens[intdiv($number, 10)] . ' ' . $ones[$number % 10]);
+    }
+    if ($number < 1000) {
+        return trim($ones[intdiv($number, 100)] . ' Hundred ' . numberToWords($number % 100));
+    }
+    foreach ([1000000000 => 'Billion', 1000000 => 'Million', 1000 => 'Thousand'] as $value => $label) {
+        if ($number >= $value) {
+            return trim(numberToWords(intdiv($number, $value)) . " $label " . numberToWords($number % $value));
+        }
+    }
+    return '';
+}
+
+function amountInWords($amount)
+{
+    $rupees = (int) floor($amount);
+    $cents = (int) round(($amount - $rupees) * 100);
+    $words = ($rupees > 0 ? numberToWords($rupees) : 'Zero') . ' Rupees';
+    if ($cents > 0) {
+        $words .= ' and ' . numberToWords($cents) . ' Cents';
+    }
+    return $words . ' Only';
+}
 ?>
 <html lang="en">
 
@@ -126,6 +164,66 @@ if (!empty($customerMobile)) {
             border-top-width: 0 !important;
             border-style: none !important;
         }
+
+        /* TAX INVOICE layout */
+        .tax-invoice {
+            font-size: 13px;
+            color: #000;
+        }
+
+        .tax-invoice .ti-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .tax-invoice .ti-header img {
+            max-height: 70px;
+            max-width: 200px;
+        }
+
+        .tax-invoice .ti-header h2 {
+            flex: 1;
+            text-align: center;
+            font-weight: 900;
+            font-size: 26px;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .tax-invoice table.ti-box {
+            width: 100%;
+            border: 1px solid #000 !important;
+            border-collapse: collapse !important;
+        }
+
+        #invoice-content .tax-invoice table.ti-box > tbody > tr > td,
+        #invoice-content .tax-invoice table.ti-box > thead > tr > th {
+            border: 1px solid #000;
+            padding: 6px 8px !important;
+            vertical-align: top !important;
+        }
+
+        .tax-invoice .ti-title {
+            text-align: center;
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: 2px;
+        }
+
+        #invoice-content .tax-invoice table.ti-info,
+        #invoice-content .tax-invoice table.ti-info td {
+            border: none !important;
+            padding: 1px 0 !important;
+        }
+
+        .tax-invoice table.ti-info td:first-child {
+            width: 120px;
+        }
+
+        .tax-invoice table.ti-info td:nth-child(2) {
+            width: 12px;
+        }
     </style>
 
 </head>
@@ -153,6 +251,150 @@ if (!empty($customerMobile)) {
 
         <div class="card" id="invoice-content">
             <div class="card-body">
+                <?php if ($isTaxInvoice) {
+                    $logoPath = 'assets/images/logo.png';
+                    if (!empty($COMPANY_PROFILE->image_name) && file_exists('uploads/company-logos/' . $COMPANY_PROFILE->image_name)) {
+                        $logoPath = 'uploads/company-logos/' . $COMPANY_PROFILE->image_name;
+                    } elseif (file_exists('assets/images/logo.jpg')) {
+                        $logoPath = 'assets/images/logo.jpg';
+                    }
+
+                    $purchaserTin = (!empty($CUSTOMER_MASTER->vat_no)) ? $CUSTOMER_MASTER->vat_no : '0';
+                    $invoiceDate = date('m/d/Y', strtotime($SALES_INVOICE->invoice_date));
+                    $totalInclVat = (float) $SALES_INVOICE->grand_total;
+                    $vatAmount = (float) $SALES_INVOICE->tax;
+                    $totalSupply = $totalInclVat - $vatAmount;
+                    $vatPercentage = (float) $COMPANY_PROFILE->vat_percentage;
+
+                    $TEMP_SALES_ITEM = new SalesInvoiceItem(null);
+                    $taxItems = $TEMP_SALES_ITEM->getItemsByInvoiceId($invoice_id);
+                ?>
+                    <!-- TAX INVOICE PRINT -->
+                    <div class="tax-invoice">
+                        <div class="ti-header">
+                            <img src="<?php echo $logoPath; ?>" alt="Logo">
+                            <h2><?php echo htmlspecialchars($COMPANY_PROFILE->name) ?></h2>
+                        </div>
+
+                        <table class="ti-box">
+                            <tbody>
+                                <tr>
+                                    <td colspan="2" class="ti-title">TAX INVOICE</td>
+                                </tr>
+                                <tr>
+                                    <td style="width:50%;">
+                                        <table class="ti-info">
+                                            <tr><td>Invoice Date</td><td>:</td><td><?php echo $invoiceDate ?></td></tr>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table class="ti-info">
+                                            <tr><td>Tax Invoice No</td><td>:</td><td><?php echo htmlspecialchars($SALES_INVOICE->invoice_no) ?></td></tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table class="ti-info">
+                                            <tr><td>Supplier's TIN</td><td>:</td><td><?php echo htmlspecialchars($COMPANY_PROFILE->vat_number) ?></td></tr>
+                                            <tr><td>Supplier's Name</td><td>:</td><td><?php echo htmlspecialchars($COMPANY_PROFILE->name) ?></td></tr>
+                                            <tr><td>Address</td><td>:</td><td><?php echo htmlspecialchars($COMPANY_PROFILE->address) ?></td></tr>
+                                            <tr><td>Telephone No</td><td>:</td><td><?php echo htmlspecialchars($COMPANY_PROFILE->mobile_number_1) ?></td></tr>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table class="ti-info">
+                                            <tr><td>Purchaser's TIN</td><td>:</td><td><?php echo htmlspecialchars($purchaserTin) ?></td></tr>
+                                            <tr><td>Purchaser's Name</td><td>:</td><td><?php echo htmlspecialchars($SALES_INVOICE->customer_name) ?></td></tr>
+                                            <tr><td>Address</td><td>:</td><td><?php echo htmlspecialchars($SALES_INVOICE->customer_address) ?></td></tr>
+                                            <tr><td>Telephone No</td><td>:</td><td><?php echo htmlspecialchars($SALES_INVOICE->customer_mobile) ?></td></tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table class="ti-info">
+                                            <tr><td>Date of Delivery</td><td>:</td><td><?php echo $invoiceDate ?></td></tr>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table class="ti-info">
+                                            <tr><td>Place of Supply</td><td>:</td><td><?php echo htmlspecialchars($COMPANY_PROFILE->address) ?></td></tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Additional Information if any:</td>
+                                    <td>
+                                        <table class="ti-info">
+                                            <tr><td>Saleman</td><td>:</td><td><?php echo htmlspecialchars($SALES_INVOICE->recommended_person) ?></td></tr>
+                                            <tr><td>Po No</td><td>:</td><td></td></tr>
+                                            <tr><td>Vehicle No</td><td>:</td><td><?php echo htmlspecialchars($SALES_INVOICE->vehicle_no) ?></td></tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2">
+                                        <table class="ti-info">
+                                            <tr><td>Remark</td><td>:</td><td><?php echo htmlspecialchars($SALES_INVOICE->remark) ?></td></tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <table class="ti-box" style="border-top:none !important;">
+                            <thead>
+                                <tr>
+                                    <th style="width:40px;">No</th>
+                                    <th>Item Description</th>
+                                    <th style="width:110px;">Unit Price</th>
+                                    <th style="width:55px;">Qty</th>
+                                    <th style="width:140px;">Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($taxItems as $key => $taxItem) {
+                                    $price = (float) $taxItem['price'];
+                                    $quantity = (int) $taxItem['quantity'];
+                                ?>
+                                    <tr>
+                                        <td class="text-center"><?php echo $key + 1; ?></td>
+                                        <td><?php echo htmlspecialchars(trim($taxItem['item_code_name'] . ' ' . $taxItem['display_name'])); ?></td>
+                                        <td class="text-end"><?php echo number_format($price, 2); ?></td>
+                                        <td class="text-center"><?php echo $quantity; ?></td>
+                                        <td class="text-end"><?php echo number_format($price * $quantity, 2); ?></td>
+                                    </tr>
+                                <?php } ?>
+                                <tr>
+                                    <td colspan="4">Total Value of Supply</td>
+                                    <td class="text-end"><?php echo number_format($totalSupply, 2); ?></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4">VAT Amount (Total Value of Supply @ <?php echo rtrim(rtrim(number_format($vatPercentage, 2), '0'), '.'); ?>%)</td>
+                                    <td class="text-end"><?php echo number_format($vatAmount, 2); ?></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4"><strong>Total Amount including VAT</strong></td>
+                                    <td class="text-end"><strong><?php echo number_format($totalInclVat, 2); ?></strong></td>
+                                </tr>
+                                <tr>
+                                    <td colspan="5"><strong>Total Amount in words:</strong> <?php echo amountInWords($totalInclVat); ?></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div style="margin-top:60px;">
+                            <table style="width:100%;">
+                                <tr>
+                                    <td style="text-align:center;">_____________________________<br><strong>Prepared By</strong></td>
+                                    <td style="text-align:center;">_____________________________<br><strong>Approved By</strong></td>
+                                    <td style="text-align:center;">_____________________________<br><strong>Received By</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                <?php } else { ?>
                 <!-- Company & Customer Info -->
                 <div class="invoice-title">
                     <div class="row mb-2">
@@ -420,6 +662,7 @@ if (!empty($customerMobile)) {
 
 
                 </div>
+                <?php } ?>
             </div>
         </div>
 

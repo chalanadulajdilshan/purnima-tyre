@@ -365,6 +365,18 @@ $arn_id = $COMPANY_PROFILE_DETAILS->company_code . '/ARN/00/' . ($lastId + 1);
                                                         class="form-control form-control-sm">
                                                 </div>
 
+                                                <div class="col-6 col-sm-4 col-md-2 col-lg-1">
+                                                    <label class="form-label">Price - VAT</label>
+                                                    <input type="text" id="price_without_vat" class="form-control form-control-sm"
+                                                        placeholder="Without VAT">
+                                                </div>
+
+                                                <div class="col-6 col-sm-4 col-md-2 col-lg-1">
+                                                    <label class="form-label">Price + VAT</label>
+                                                    <input type="text" id="price_with_vat" class="form-control form-control-sm"
+                                                        placeholder="With VAT">
+                                                </div>
+
 
                                                 <div class="col-6 col-sm-4 col-md-2 col-lg-1">
                                                     <label class="form-label"> Brand Dis %</label>
@@ -441,13 +453,15 @@ $arn_id = $COMPANY_PROFILE_DETAILS->company_code . '/ARN/00/' . ($lastId + 1);
                                                         <th>Actual Cost</th>
                                                         <th>Unit Total</th>
                                                         <th>Selling Price</th>
+                                                        <th>Price - VAT</th>
+                                                        <th>Price + VAT</th>
                                                         <th>Action</th>
                                                     </tr>
                                                 </thead>
 
                                                 <tbody id="itemTableBody">
                                                     <tr id="noDataRow">
-                                                        <td colspan="8" class="text-center">No data available</td>
+                                                        <td colspan="15" class="text-center">No data available</td>
                                                     </tr>
                                                 </tbody>
                                             </table>

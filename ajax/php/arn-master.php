@@ -128,6 +128,8 @@ if (isset($data['create'])) {
             $ARN_ITEM->unit_total = $item['unit_total'];
             $ARN_ITEM->list_price = $item['list_price'];
             $ARN_ITEM->invoice_price = $item['invoice_price'];
+            $ARN_ITEM->price_without_vat = $item['price_without_vat'] ?? 0;
+            $ARN_ITEM->price_with_vat = $item['price_with_vat'] ?? 0;
             $ARN_ITEM->created_at = date("Y-m-d H:i:s");
             $ARN_ITEM->create();
 

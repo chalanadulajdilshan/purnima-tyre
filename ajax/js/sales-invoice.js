@@ -228,8 +228,10 @@ jQuery(document).ready(function () {
           tbody += `
                     <tr class="table-info arn-row ${rowClass}" 
                         data-arn-index="${i}" 
-                        data-qty="${totalQty}" 
-                        data-used="${usedQty}" 
+                        data-qty="${totalQty}"
+                        data-used="${usedQty}"
+                        data-price-without-vat="${parseFloat(row.price_without_vat) || 0}"
+                        data-price-with-vat="${parseFloat(row.price_with_vat) || 0}"
                         data-arn-id="${arnId}">
                         
                         <td colspan="1" style="width: 15%;"><strong>ARN:</strong> ${arnId}
@@ -685,7 +687,7 @@ jQuery(document).ready(function () {
     $("#itemName").val(itemName);
     $("#item_id").val(item_id);
     $("#itemPrice").val(itemPrice);
-    $("#itemSalePrice").val(itemSalePrice);
+    $("#itemSalePrice").val(itemSalePrice).removeData("vat-prices");
 
     calculatePayment();
 
@@ -739,6 +741,16 @@ jQuery(document).ready(function () {
     let listPrice = listPriceMatch
       ? parseFloat(listPriceMatch[1].replace(/,/g, ""))
       : 0;
+
+    // Use ARN VAT / non-VAT price based on "Apply VAT" (fallback to sales price)
+    const priceWithoutVat = parseFloat($(this).data("price-without-vat")) || 0;
+    const priceWithVat = parseFloat($(this).data("price-with-vat")) || 0;
+    $("#itemSalePrice").data("vat-prices", {
+      withoutVat: priceWithoutVat,
+      withVat: priceWithVat,
+      fallback: invoicePrice,
+    });
+    invoicePrice = getVatBasedSalePrice(invoicePrice);
 
     // Apply to inputs
     $("#itemCode").val(itemCode);
@@ -2281,8 +2293,24 @@ jQuery(document).ready(function () {
     calculatePayment("salePrice");
   });
 
+  // Pick ARN price with/without VAT based on the "Apply VAT" toggle
+  function getVatBasedSalePrice(fallbackPrice) {
+    const prices = $("#itemSalePrice").data("vat-prices");
+    if (!prices) return fallbackPrice;
+
+    const vatPrice = $("#is_vat_invoice").is(":checked")
+      ? prices.withVat
+      : prices.withoutVat;
+    return vatPrice > 0 ? vatPrice : prices.fallback;
+  }
+
   // VAT checkbox change event
   $("#is_vat_invoice").on("change", function () {
+    // Update selling price of the item currently being entered
+    if ($("#itemSalePrice").data("vat-prices") && $("#itemCode").val()) {
+      $("#itemSalePrice").val(getVatBasedSalePrice(0).toFixed(2));
+      calculatePayment("salePrice");
+    }
     updateFinalTotal();
   });
 
